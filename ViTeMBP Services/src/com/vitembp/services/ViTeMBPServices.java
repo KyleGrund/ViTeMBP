@@ -17,8 +17,7 @@
  */
 package com.vitembp.services;
 
-import java.net.URL;
-import java.net.URLClassLoader;
+import com.vitembp.services.interfaces.CommandLine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,24 +26,18 @@ import org.apache.logging.log4j.Logger;
  * @author Kyle
  */
 public class ViTeMBPServices {
+    /**
+     * Class logger instance.
+     */
     private static final Logger LOGGER = LogManager.getLogger();
     
     /**
      * Entry point for the ViTeMBP project.
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        LOGGER.info("ViTeMBPServies starting...");
-        
-        // emit classpath for debugging
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader)cl).getURLs();
-        for(URL url: urls){
-        	LOGGER.info("Class path: " + url.getFile());
-        }
-        
-        // TODO code application logic here
-        LOGGER.info("ViTeMBPServies exiting...");
+    public static void main(String[] args) {       
+        LOGGER.info("ViTeMBPServies starting.");
+        CommandLine.acceptArgs(args);
+        LOGGER.info("ViTeMBPServies exiting.");
     }
-    
 }

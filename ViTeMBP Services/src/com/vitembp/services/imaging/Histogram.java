@@ -185,7 +185,7 @@ public class Histogram {
         }
         
         // normalize the data by dividing the counts by the number of pixels
-        Double factor = 1 / ((double)width * (double)height);
+        double factor = 1 / ((double)width * (double)height);
         this.blueValues = ToNormalizedList(blues, factor);
         this.greenValues = ToNormalizedList(greens, factor);
         this.redValues = ToNormalizedList(reds, factor);

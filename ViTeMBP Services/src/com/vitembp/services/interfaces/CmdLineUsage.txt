@@ -1,0 +1,4 @@
+ViTeMPB Services command line interface usage.
+Switches: 
+-fs <filename> [<color channel>]
+    finds synchronization frames for the green, or specified, color channel.

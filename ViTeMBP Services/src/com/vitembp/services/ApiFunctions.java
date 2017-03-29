@@ -1,0 +1,57 @@
+/*
+ * Video Telemetry for Mountain Bike Platform back-end services.
+ * Copyright (C) 2017 Kyle Grund
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.vitembp.services;
+
+import com.vitembp.services.video.Processing;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
+/**
+ * This class contains static functions which act as the primary interface to
+ * the functionality provided by the service classes.
+ */
+public final class ApiFunctions {
+    /**
+     * Private initializer making this class appear static.
+     */
+    private ApiFunctions() {
+    }
+    
+    /**
+     * The possible color channels to perform operations with.
+     */
+    public static enum COLOR_CHANNELS {
+        RED,
+        GREEN,
+        BLUE
+    };
+    
+    /**
+     * Finds the frames which have an outlier brightness in the given color.
+     * channel.
+     * @param videoFile The file to examine.
+     * @param channel The color channel to evaluate.
+     * @return The frames which have an outlier brightness in the given color.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public static List<Integer> findChannelSyncFrames(Path videoFile, COLOR_CHANNELS channel) throws IOException {
+        return Processing.findChannelSyncFrames(videoFile, channel);
+    }
+}
