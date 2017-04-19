@@ -62,13 +62,14 @@ public class HistogramList extends ArrayList<Histogram> {
     
     /**
      * Gets the standard deviation of the double selected from the
-     * Histograms in the collection by the selector function provided.
+     * Histograms in the collection by the selector function provided. This
+     * function excludes any negative deviations from the average.
      * @param selector A function which selects the value from the Histogram
      * to be evaluated.
      * @return The standard deviation of the double selected from the
      * Histograms in the collection by the selector function provided.
      */
-    public double getStdev(Function<Histogram, Double> selector) {
+    public double getPosStdev(Function<Histogram, Double> selector) {
         // average value of the elements
         double average = getAverage(selector);
         
@@ -79,11 +80,40 @@ public class HistogramList extends ArrayList<Histogram> {
         int count = 1;
         
         for (Histogram element : this) {
-            stdev += (Math.abs(selector.apply(element) - average) - stdev) / count;
-            count++;
+            double dev = selector.apply(element) - average;
+            if (dev > 0) {
+                stdev += (dev - stdev) / count;
+                count++;
+            }
         }
         
         return stdev;
+    }
+    
+    /**
+     * Gets the maximum deviation of the double selected from the
+     * Histograms in the collection by the selector function provided.
+     * @param selector A function which selects the value from the Histogram
+     * to be evaluated.
+     * @return The standard deviation of the double selected from the
+     * Histograms in the collection by the selector function provided.
+     */
+    public double getMaxDev(Function<Histogram, Double> selector) {
+        // average value of the elements
+        double average = getAverage(selector);
+        
+        // currently found maximum deviation
+        double max = Double.MIN_VALUE;
+        
+        for (Histogram element : this) {
+            // calculate deviation and save it if it is a new maximum
+            double dev = selector.apply(element) - average;
+            if (dev > max) {
+                max = dev;
+            }
+        }
+        
+        return max;
     }
     
     /**
@@ -104,7 +134,7 @@ public class HistogramList extends ArrayList<Histogram> {
         
         // calculate the target value defining an outlier as
         double average = this.getAverage(selector);
-        double stdev = this.getStdev(selector);
+        double stdev = this.getPosStdev(selector);
         double target = (deviations * stdev) + average;
         
         // find all outlier histograms

@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,54 +42,146 @@ public class CommandLine {
     /**
      * Accepts and appropriately displays command line arguments.
      * @param args The command line arguments passed to the 
+     * @param functions The functionality to provide an interface for.
      */
-    public static void acceptArgs(String[] args) {
+    public static void acceptArgs(String[] args, ApiFunctions functions) {
         // log call
         LOGGER.info("Processing command: " + Arrays.toString(args));
         
         // if there were any arguments passed to the jvm
         if (args.length > 0) {
-            if (args[0].toUpperCase().equals("-FS")) {
-                // command: -fs <filename> [<color channel>]
-                if (args.length >= 2) {
-                    // gets the video file name
-                    Path videoFile = Paths.get(args[1]);
-                    
-                    // default channel to process to green
-                    COLOR_CHANNELS chan = COLOR_CHANNELS.GREEN;
-
-                    // parse color channel name if it is specified
-                    if (args.length >=3) {
-                        try {
-                            chan = COLOR_CHANNELS.valueOf(args[2].toUpperCase());
-                        } catch (IllegalArgumentException ex) {
-                            // name is not valid
-                            LOGGER.info("Invalid color channel specified.", ex);
-                            printUsage();
-                            return;
-                        }
-                    }
-                    
-                    // valid command was parsed, try to execute it
-                    List<Integer> frames = new ArrayList<>();
-                    try {
-                        frames = ApiFunctions.findChannelSyncFrames(
-                                videoFile,
-                                chan);
-                    } catch (IOException ex) {
-                        LOGGER.error("Exception finding sync frames.", ex);
-                    }
-                    
-                    // display results to console
-                    System.out.println("Frames: " + Arrays.toString(frames.toArray()));
-                    
-                    return;
-                }
-            }
+            if (processServerCommands(args, functions)) {
+                return;
+            } else if (processStandardCommands(args, functions)) {
+                return;
+            } 
         }
         
         // print usage as a valid command was not found
         printUsage();
+    }
+
+    private static boolean processServerCommands(String[] args, ApiFunctions functions) {
+        if (args[0].toUpperCase().equals("-HS")) {
+            System.out.println("Starting HTTP server.");
+            try {
+                Http server = new Http(8080, functions);
+            } catch (IOException ex) {
+                LOGGER.error("Exception starting web server.", ex);
+            }
+            return true;
+        } else if (args[0].toUpperCase().equals("-SQS")) {
+            // command: -fs <filename> [<color channel>]
+            if (args.length >= 4) {
+                // get the queue name
+                String name = args[1];
+                
+                // get the queue access key
+                String accessKey = args[2];
+                
+                // get the queue access key
+                String secretKey = args[3];
+                
+                //create callback consumer which processes commands on the queue
+                Consumer<String> callback = (str) -> {
+                    // we will process the strings from toProcess and put them
+                    // into found
+                    List<String> toProcess = new ArrayList<>(Arrays.asList(str.split(" ")));
+                    ArrayList<String> found = new ArrayList<>();
+                    
+                    // prime our algorithm by putting the first element to
+                    // process into found
+                    if (!toProcess.isEmpty()) {
+                        found.add(toProcess.remove(0));
+                    }
+                    
+                    while (!toProcess.isEmpty()) {
+                        // if the last found element starts with a quote and
+                        // doesn't end with one, just append the next element
+                        // as we are still inside a quote region othwerwise
+                        // just add the element
+                        if (found.get(found.size() - 1).startsWith("\"") &&
+                                !found.get(found.size() - 1).endsWith("\"")) {
+                            found.set(
+                                    found.size() - 1,
+                                    found.get(found.size() - 1) + " " + toProcess.remove(0));
+                        } else {
+                            found.add(toProcess.remove(0));
+                        }
+                    }
+                    
+                    // trim open and closed quotes
+                    for (int i = 0; i < found.size(); i++) {
+                        String toProc = found.get(i);
+                        if (toProc.startsWith("\"") && toProc.endsWith("\"")) {
+                            found.set(i, toProc.substring(1, toProc.length() - 1));
+                        }
+                        
+                        System.out.println(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
+                    }
+                    
+                    String[] foundArgs = found.toArray(new String[0]);
+                    System.out.println("Got args: " + Arrays.toString(foundArgs));
+                    
+                    // execute command
+                    boolean result = processStandardCommands(
+                            foundArgs,
+                            functions);
+                    
+                    if (result) {
+                        System.out.println("Execution succeeded.");
+                    } else {
+                        System.out.println("Execution failed.");
+                    }
+                };
+                
+                // create the SQS interface
+                AmazonSimpleQueueService sqs = new AmazonSimpleQueueService(
+                        functions,
+                        callback,
+                        name,
+                        accessKey,
+                        secretKey);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean processStandardCommands(String[] args, ApiFunctions functions) {
+        if (args[0].toUpperCase().equals("-FS")) {
+            // command: -fs <filename> [<color channel>]
+            if (args.length >= 2) {
+                // gets the video file name
+                Path videoFile = Paths.get(args[1]);
+                // default channel to process to green
+                COLOR_CHANNELS chan = COLOR_CHANNELS.GREEN;
+                // parse color channel name if it is specified
+                if (args.length >=3) {
+                    try {
+                        chan = COLOR_CHANNELS.valueOf(args[2].toUpperCase());
+                    } catch (IllegalArgumentException ex) {
+                        // name is not valid
+                        LOGGER.info("Invalid color channel specified.", ex);
+                        printUsage();
+                        return true;
+                    }
+                }
+                // valid command was parsed, try to execute it
+                List<Integer> frames = new ArrayList<>();
+                try {
+                    frames = functions.findChannelSyncFrames(
+                            videoFile,
+                            chan);
+                } catch (IOException ex) {
+                    LOGGER.error("Exception finding sync frames.", ex);
+                }
+                // display results to console
+                System.out.println("Frames: " + Arrays.toString(frames.toArray()));
+                return true;
+            }
+        }
+        return false;
     }
     
     /**

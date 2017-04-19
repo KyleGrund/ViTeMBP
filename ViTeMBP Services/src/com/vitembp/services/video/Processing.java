@@ -45,18 +45,20 @@ public class Processing {
      * The number of standard deviations out in brightness a color channel frame
      * must be to be considered an outlier and thus a synchronization frame.
      */
-    private static final double OUTLIER_DEVIATIONS = 5;
+    private static final double OUTLIER_DEVIATIONS = 2;
     
     /**
      * Finds the frames which have an outlier brightness in the given color.
      * channel.
      * @param videoFile The file to examine.
      * @param channel The color channel to evaluate.
+     * @param fileGenerator The filename generator which defines the names of
+     * sequential files to use when processing frames.
      * @return The frames which have an outlier brightness in the given color.
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public static List<Integer> findChannelSyncFrames(Path videoFile, ApiFunctions.COLOR_CHANNELS channel) throws IOException {       
+    public static List<Integer> findChannelSyncFrames(String videoFile, ApiFunctions.COLOR_CHANNELS channel, FilenameGenerator fileGenerator) throws IOException {       
         // build a temporary directory for images
         Path tempDir = Files.createTempDirectory("vitempb");
         
@@ -78,10 +80,18 @@ public class Processing {
         }
         
         // crate images with ffmpeg
-        Conversion.extractFrames(videoFile, tempDir, 1, 300, FilenameGenerator.PNG_NUMERIC_OUT);
+        Conversion.extractFrames(videoFile, tempDir, 1, 300, fileGenerator);
         
         // create histogram list from images
-        HistogramList histograms = HistogramList.loadFromDirectory(tempDir, FilenameGenerator.PNG_NUMERIC_OUT);
+        HistogramList histograms = HistogramList.loadFromDirectory(tempDir, fileGenerator);
+        
+        
+        // get stats for diagnostics
+        double maxDev = histograms.getMaxDev(selector);
+        double stdDev = histograms.getPosStdev(selector);
+        
+        System.out.println("Std deviation: " + Double.toString(stdDev));
+        System.out.println("Max deviation: " + Double.toString(maxDev));
         
         // return outliers which are the sync frames
         List<Integer> outliers = histograms.getPositiveOutliers(selector, OUTLIER_DEVIATIONS);

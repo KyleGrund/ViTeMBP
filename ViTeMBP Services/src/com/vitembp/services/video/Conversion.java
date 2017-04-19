@@ -20,11 +20,9 @@ package com.vitembp.services.video;
 import com.vitembp.services.FilenameGenerator;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,12 +46,12 @@ public class Conversion {
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public static void extractFrames(Path source, Path destination, int start, int count, FilenameGenerator nameGenerator) throws IOException {
+    public static void extractFrames(String source, Path destination, int start, int count, FilenameGenerator nameGenerator) throws IOException {
         // build the FFmpeg process that will extract the frames        
         ProcessBuilder pb = new ProcessBuilder(
                 "ffmpeg",
                 "-i",
-                source.toString(),
+                source,
                 "-vframes",
                 Integer.toString(count),
                 "-v",
@@ -65,7 +63,7 @@ public class Conversion {
         
         LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
         
-        // build a process that will execute the FFmpeg command
+        // execute the command
         Process proc = pb.start();
 
         try {
@@ -82,18 +80,49 @@ public class Conversion {
                 }
             }
         } catch (InterruptedException ex) {
-            LOGGER.error("Interrupted while waiting for process completion.", ex);
+            LOGGER.error("Interrupted while waiting for frame extraction process completion.", ex);
         }
     }
     
     /**
-     * Creates a video from a set of images in a directory.
+     * Creates a video from a series of images in a directory.
      * @param source The directory containing source images.
      * @param destination The destination file for the composed video.
      * @param nameGenerator A function which will generate a file name for a
      * given frame number.
+     * @param framerate The frame rate of the target in frames per second.
      */
-    public static void createFromFrames(Path source, Path destination, Function<Integer, String> nameGenerator) {
+    public static void assembleFrames(Path source, Path destination, FilenameGenerator nameGenerator, double framerate) throws IOException {
+        // build the FFmpeg process that will assemble the frames        
+        ProcessBuilder pb = new ProcessBuilder(
+            "ffmpeg",
+            "-framerate",
+            Double.toString(framerate),
+            "-i",
+            source.toString() + "\\" + nameGenerator.getFFmpegString(),
+            destination.toString());
         
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        
+        // execute the FFmpeg program
+        Process proc = pb.start();
+
+        try {
+            // execute and wait for the command
+            BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            String line = br.readLine();
+            while (line != null) {
+                LOGGER.error(line);
+                line = br.readLine();
+            }
+            
+            int result = proc.waitFor();
+            if (result != 0) {
+                // result is exit level, log anything > 0 as an error
+                LOGGER.error("Frame assembly completed with exit level: " + Integer.toString(result));
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while waiting for frame assembly process completion.", ex);
+        }
     }
 }

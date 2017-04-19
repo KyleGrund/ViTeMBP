@@ -19,20 +19,15 @@ package com.vitembp.services;
 
 import com.vitembp.services.video.Processing;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
 /**
- * This class contains static functions which act as the primary interface to
+ * This class contains functions which act as the primary interface to
  * the functionality provided by the service classes.
  */
 public final class ApiFunctions {
-    /**
-     * Private initializer making this class appear static.
-     */
-    private ApiFunctions() {
-    }
-    
     /**
      * The possible color channels to perform operations with.
      */
@@ -43,6 +38,20 @@ public final class ApiFunctions {
     };
     
     /**
+     * The file name generator which provides cross context names.
+     */
+    private final FilenameGenerator fileGenerator;
+    
+    /**
+     * Initializes a new instance of the ApiFunctions class.
+     * @param fileGenerator The file name generator which provides cross context
+     * names.
+     */
+    public ApiFunctions(FilenameGenerator fileGenerator) {
+        this.fileGenerator = fileGenerator;
+    }
+    
+    /**
      * Finds the frames which have an outlier brightness in the given color.
      * channel.
      * @param videoFile The file to examine.
@@ -51,7 +60,20 @@ public final class ApiFunctions {
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public static List<Integer> findChannelSyncFrames(Path videoFile, COLOR_CHANNELS channel) throws IOException {
-        return Processing.findChannelSyncFrames(videoFile, channel);
+    public List<Integer> findChannelSyncFrames(Path videoFile, COLOR_CHANNELS channel) throws IOException {
+        return Processing.findChannelSyncFrames(videoFile.toString(), channel, this.fileGenerator);
+    }
+    
+    /**
+     * Finds the frames which have an outlier brightness in the given color.
+     * channel.
+     * @param videoFile The file to examine.
+     * @param channel The color channel to evaluate.
+     * @return The frames which have an outlier brightness in the given color.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public List<Integer> findChannelSyncFrames(URI videoFile, COLOR_CHANNELS channel) throws IOException {
+        return Processing.findChannelSyncFrames(videoFile.toString(), channel, this.fileGenerator);
     }
 }

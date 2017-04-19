@@ -37,7 +37,11 @@ public class ViTeMBPServices {
      */
     public static void main(String[] args) {       
         LOGGER.info("ViTeMBPServies starting.");
-        CommandLine.acceptArgs(args);
+        
+        // build up the API interface and a command line interface for it
+        ApiFunctions funcs = new ApiFunctions(FilenameGenerator.PNG_NUMERIC_OUT);
+        CommandLine.acceptArgs(args, funcs);
+        
         LOGGER.info("ViTeMBPServies exiting.");
     }
 }
