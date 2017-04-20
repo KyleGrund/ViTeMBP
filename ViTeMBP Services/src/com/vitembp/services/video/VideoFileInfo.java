@@ -62,10 +62,18 @@ public class VideoFileInfo {
      * @param file The file instance pointing to the video file to examine.
      */
     public VideoFileInfo(File file) {
+        this(file.getAbsolutePath());
+    }
+    
+    /**
+     * Initializes a new instance of the VideoFileInfo class.
+     * @param file The file instance pointing to the video file to examine.
+     */
+    public VideoFileInfo(String file) {
         // build the FFmpeg process that will examine the file       
         ProcessBuilder pb = new ProcessBuilder(
                 "ffprobe",
-                file.getAbsolutePath()
+                file
         );
         
         List<String> response = new ArrayList<>();

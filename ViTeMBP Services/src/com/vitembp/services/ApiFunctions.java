@@ -60,20 +60,21 @@ public final class ApiFunctions {
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public List<Integer> findChannelSyncFrames(Path videoFile, COLOR_CHANNELS channel) throws IOException {
-        return Processing.findChannelSyncFrames(videoFile.toString(), channel, this.fileGenerator);
+    public List<Integer> findChannelSyncFrames(String videoFile, COLOR_CHANNELS channel) throws IOException {
+        return Processing.findChannelSyncFrames(videoFile, channel, this.fileGenerator);
     }
     
     /**
-     * Finds the frames which have an outlier brightness in the given color.
-     * channel.
-     * @param videoFile The file to examine.
+     * Creates a video from the input with diagnostics data about the find
+     * synchronization frames algorithm superimposed on top.
+     * @param videoFile The input file.
      * @param channel The color channel to evaluate.
+     * @param outputFile The output file.
      * @return The frames which have an outlier brightness in the given color.
-     * @throws java.io.IOException If there is an IOException processing the
+     * @throws IOException If there is an IOException while processing the
      * video file.
      */
-    public List<Integer> findChannelSyncFrames(URI videoFile, COLOR_CHANNELS channel) throws IOException {
-        return Processing.findChannelSyncFrames(videoFile.toString(), channel, this.fileGenerator);
+    public List<Integer> findChannelSyncFramesDiag(String videoFile, COLOR_CHANNELS channel, Path outputFile) throws IOException {
+        return Processing.findChannelSyncFrames(videoFile, channel, fileGenerator, outputFile);
     }
 }

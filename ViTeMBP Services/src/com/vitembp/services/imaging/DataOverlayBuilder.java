@@ -23,6 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 /**
@@ -53,6 +54,15 @@ public class DataOverlayBuilder {
                 this.frame.setRGB(x, y, 0x0);
             }   
         }
+    }
+    
+    /**
+     * Creates an overlay from the specified image.
+     * @param image The image to load 
+     */
+    public DataOverlayBuilder(Path image) throws IOException {
+        // load the bitmap data
+        this.frame = ImageIO.read(image.toFile());
     }
     
     /**

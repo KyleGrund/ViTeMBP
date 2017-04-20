@@ -126,7 +126,7 @@ public class Http {
                 // call to functions
                 List<Integer> result = null;
                 try {
-                    result = functions.findChannelSyncFrames(uri, ApiFunctions.COLOR_CHANNELS.GREEN);
+                    result = functions.findChannelSyncFrames(uri.toString(), ApiFunctions.COLOR_CHANNELS.GREEN);
                 } catch (Exception ex) {
                     LOGGER.error("IO error processing URI.", ex);
                     byte[] toSend = "Error processing request".getBytes();

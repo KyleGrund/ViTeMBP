@@ -171,7 +171,7 @@ public class CommandLine {
                 List<Integer> frames = new ArrayList<>();
                 try {
                     frames = functions.findChannelSyncFrames(
-                            videoFile,
+                            videoFile.toString(),
                             chan);
                 } catch (IOException ex) {
                     LOGGER.error("Exception finding sync frames.", ex);
@@ -180,7 +180,44 @@ public class CommandLine {
                 System.out.println("Frames: " + Arrays.toString(frames.toArray()));
                 return true;
             }
+        } else if (args[0].toUpperCase().equals("-FSD")) {
+            // command: -fs <filename> <outputFilename> [<color channel>]
+            if (args.length >= 3) {
+                // gets the input video file name
+                Path videoFile = Paths.get(args[1]);
+                
+                // gets the input video file name
+                Path outputFile = Paths.get(args[2]);
+                
+                // default channel to process to green
+                COLOR_CHANNELS chan = COLOR_CHANNELS.GREEN;
+                // parse color channel name if it is specified
+                if (args.length >=4) {
+                    try {
+                        chan = COLOR_CHANNELS.valueOf(args[3].toUpperCase());
+                    } catch (IllegalArgumentException ex) {
+                        // name is not valid
+                        LOGGER.info("Invalid color channel specified.", ex);
+                        printUsage();
+                        return true;
+                    }
+                }
+                // valid command was parsed, try to execute it
+                List<Integer> frames = new ArrayList<>();
+                try {
+                    frames = functions.findChannelSyncFramesDiag(
+                            videoFile.toString(),
+                            chan,
+                            outputFile);
+                } catch (IOException ex) {
+                    LOGGER.error("Exception finding sync frames.", ex);
+                }
+                // display results to console
+                System.out.println("Frames: " + Arrays.toString(frames.toArray()));
+                return true;
+            }
         }
+        
         return false;
     }
     

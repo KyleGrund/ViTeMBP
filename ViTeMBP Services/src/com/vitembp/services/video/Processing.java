@@ -19,6 +19,7 @@ package com.vitembp.services.video;
 
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.FilenameGenerator;
+import com.vitembp.services.imaging.DataOverlayBuilder;
 import com.vitembp.services.imaging.Histogram;
 import com.vitembp.services.imaging.HistogramList;
 import java.io.IOException;
@@ -54,11 +55,12 @@ public class Processing {
      * @param channel The color channel to evaluate.
      * @param fileGenerator The filename generator which defines the names of
      * sequential files to use when processing frames.
+     * @param overlayOutput The filename to output the video with overlay data.
      * @return The frames which have an outlier brightness in the given color.
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public static List<Integer> findChannelSyncFrames(String videoFile, ApiFunctions.COLOR_CHANNELS channel, FilenameGenerator fileGenerator) throws IOException {       
+    public static List<Integer> findChannelSyncFrames(String videoFile, ApiFunctions.COLOR_CHANNELS channel, FilenameGenerator fileGenerator, Path overlayOutput) throws IOException {
         // build a temporary directory for images
         Path tempDir = Files.createTempDirectory("vitempb");
         
@@ -96,18 +98,36 @@ public class Processing {
         // return outliers which are the sync frames
         List<Integer> outliers = histograms.getPositiveOutliers(selector, OUTLIER_DEVIATIONS);
         
+        // if diagnostic data requested build it now
+        if (overlayOutput != null) {
+            VideoFileInfo info = new VideoFileInfo(videoFile);
+            buildDiagOverlay(histograms, fileGenerator, tempDir, overlayOutput, info.getFrameRate());
+        }
+        
+        deleteTree(tempDir);
+        
+        // return synchronization frames
+        return outliers;
+    }
+
+    /**
+     * Deletes the directory including all subdirectories and files.
+     * @param tempDir The directory to delete.
+     * @throws IOException If an exception occurs during deletion.
+     */
+    private static void deleteTree(Path tempDir) throws IOException {
         // recursively delete all files in temp directory
         Files.walkFileTree(tempDir, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException
+                    throws IOException
             {
                 Files.delete(file);
                 return FileVisitResult.CONTINUE;
             }
             @Override
             public FileVisitResult postVisitDirectory(Path dir, IOException e)
-                throws IOException
+                    throws IOException
             {
                 if (e == null) {
                     Files.delete(dir);
@@ -118,8 +138,57 @@ public class Processing {
                 }
             }
         });
+    }
+    
+    /**
+     * Finds the frames which have an outlier brightness in the given color.
+     * channel.
+     * @param videoFile The file to examine.
+     * @param channel The color channel to evaluate.
+     * @param fileGenerator The filename generator which defines the names of
+     * sequential files to use when processing frames.
+     * @return The frames which have an outlier brightness in the given color.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public static List<Integer> findChannelSyncFrames(String videoFile, ApiFunctions.COLOR_CHANNELS channel, FilenameGenerator fileGenerator) throws IOException {
+        return Processing.findChannelSyncFrames(videoFile, channel, fileGenerator, null);
+    }
+
+    /**
+     * Builds a video from frames with overlaid histogram data.
+     * @param histograms The histograms for the frames.
+     * @param fileGenerator The filename generator which defines the names of
+     * sequential files to use when processing frames.
+     * @param overlayOutput The output video file.
+     */
+    private static void buildDiagOverlay(HistogramList histograms, FilenameGenerator fileGenerator, Path inputDir, Path overlayOutput,  double frameRate) throws IOException {
+        // build a temporary directory for images
+        Path tempDir = Files.createTempDirectory("vitempb");
         
-        // return synchronization frames
-        return outliers;
+        for (int item = 0; item < histograms.size(); item++){
+            Histogram histogram = histograms.get(item);
+            Path file = fileGenerator.getPath(item + 1);
+            DataOverlayBuilder builder = new DataOverlayBuilder(inputDir.resolve(file));
+            
+            // add text of the format: "R: ### G: ### B: ###"
+            StringBuilder rgbData = new StringBuilder();
+            rgbData.append("R: ");
+            rgbData.append(Math.round(histogram.getRedBrightness()));
+            rgbData.append(" G: ");
+            rgbData.append(Math.round(histogram.getGreenBrightness()));
+            rgbData.append(" B: ");
+            rgbData.append(Math.round(histogram.getBlueBrightness()));
+            builder.addText(rgbData.toString(), 5, 15);
+            
+            // save file
+            builder.saveImage(tempDir.resolve(file).toFile());
+        }
+        
+        // build the output video for the overlaid frames
+        Conversion.assembleFrames(tempDir, overlayOutput, fileGenerator, frameRate);
+        
+        // delete temporary files
+        Processing.deleteTree(tempDir);
     }
 }

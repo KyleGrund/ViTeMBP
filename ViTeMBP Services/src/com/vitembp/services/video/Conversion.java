@@ -92,8 +92,15 @@ public class Conversion {
      * @param nameGenerator A function which will generate a file name for a
      * given frame number.
      * @param framerate The frame rate of the target in frames per second.
+     * @throws java.io.IOException If an exception occurs reading or writing to
+     * files while assembly the frames.
      */
     public static void assembleFrames(Path source, Path destination, FilenameGenerator nameGenerator, double framerate) throws IOException {
+        // check that the output file doesn't already exist
+        if (destination.toFile().exists()) {
+            throw new IOException("Output file already exists.");
+        }
+        
         // build the FFmpeg process that will assemble the frames        
         ProcessBuilder pb = new ProcessBuilder(
             "ffmpeg",
@@ -112,8 +119,8 @@ public class Conversion {
             // execute and wait for the command
             BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
             String line = br.readLine();
-            while (line != null) {
-                LOGGER.error(line);
+            while (proc.isAlive() && line != null) {
+                LOGGER.trace(line);
                 line = br.readLine();
             }
             
