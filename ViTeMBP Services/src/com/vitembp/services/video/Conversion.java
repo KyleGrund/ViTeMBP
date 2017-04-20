@@ -19,6 +19,7 @@ package com.vitembp.services.video;
 
 import com.vitembp.services.FilenameGenerator;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
@@ -99,7 +100,7 @@ public class Conversion {
             "-framerate",
             Double.toString(framerate),
             "-i",
-            source.toString() + "\\" + nameGenerator.getFFmpegString(),
+            source.toString() + File.separator + nameGenerator.getFFmpegString(),
             destination.toString());
         
         LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));

@@ -125,8 +125,7 @@ public class ConversionTest {
         
         // recursively delete all files in temp directory and make sure the
         // appropriate number of files were deleted
-        filesCount = 0;        
-        DeleteTree(tempDirTwo);
+        filesCount = DeleteTree(tempDirTwo);
         Assert.assertEquals(1, filesCount);
     }
     
