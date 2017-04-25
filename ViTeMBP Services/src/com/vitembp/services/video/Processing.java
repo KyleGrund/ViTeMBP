@@ -92,6 +92,7 @@ public class Processing {
         // get stats for diagnostics
         double maxDev = histograms.getMaxDev(selector);
         double stdDev = histograms.getPosStdev(selector);
+        double average = histograms.getAverage(selector);
         
         System.out.println("Std deviation: " + Double.toString(stdDev));
         System.out.println("Max deviation: " + Double.toString(maxDev));
@@ -102,7 +103,7 @@ public class Processing {
         // if diagnostic data requested build it now
         if (overlayOutput != null) {
             VideoFileInfo info = new VideoFileInfo(videoFile);
-            Processing.buildDiagOverlay(histograms, fileGenerator, tempDir, overlayOutput, info.getFrameRate());
+            Processing.buildDiagOverlay(histograms, (OUTLIER_DEVIATIONS * stdDev) + average, outliers, fileGenerator, tempDir, overlayOutput, info);
             // uploadPublic to S3
             AmazonSimpleStorageService s3 = new AmazonSimpleStorageService("vitembp.kylegrund.com");
             s3.uploadPublic(overlayOutput.toFile(), "debug/" + overlayOutput.getFileName());
@@ -162,37 +163,18 @@ public class Processing {
     /**
      * Builds a video from frames with overlaid histogram data.
      * @param histograms The histograms for the frames.
+     * @param targetValue The target value of the channel to be considered a
+     * sync frame.
+     * @param syncFrames The list of sync frames that were found by the
+     * algorithm.
      * @param fileGenerator The filename generator which defines the names of
      * sequential files to use when processing frames.
      * @param overlayOutput The output video file.
      */
-    private static void buildDiagOverlay(HistogramList histograms, FilenameGenerator fileGenerator, Path inputDir, Path overlayOutput,  double frameRate) throws IOException {
-        // build a temporary directory for images
-        Path tempDir = Files.createTempDirectory("vitempb");
-        
-        for (int item = 0; item < histograms.size(); item++){
-            Histogram histogram = histograms.get(item);
-            Path file = fileGenerator.getPath(item + 1);
-            DataOverlayBuilder builder = new DataOverlayBuilder(inputDir.resolve(file));
-            
-            // add text of the format: "R: ### G: ### B: ###"
-            StringBuilder rgbData = new StringBuilder();
-            rgbData.append("R: ");
-            rgbData.append(Math.round(histogram.getRedBrightness()));
-            rgbData.append(" G: ");
-            rgbData.append(Math.round(histogram.getGreenBrightness()));
-            rgbData.append(" B: ");
-            rgbData.append(Math.round(histogram.getBlueBrightness()));
-            builder.addText(rgbData.toString(), 5, 20);
-            
-            // save file
-            builder.saveImage(tempDir.resolve(file).toFile());
-        }
+    private static void buildDiagOverlay(HistogramList histograms, double tagetValue, List<Integer> syncFrames, FilenameGenerator fileGenerator, Path inputDir, Path overlayOutput, VideoFileInfo inputFileInfo) throws IOException {
+        SyncDiagFrameProcessor.getFrameProcessor(syncFrames, tagetValue).buildDiagOverlay(histograms, fileGenerator, inputDir, inputFileInfo);
         
         // build the output video for the overlaid frames
-        Conversion.assembleFrames(tempDir, overlayOutput, fileGenerator, frameRate);
-        
-        // delete temporary files
-        Processing.deleteTree(tempDir);
+        Conversion.assembleFrames(inputDir, overlayOutput, fileGenerator, inputFileInfo.getFrameRate());
     }
 }
