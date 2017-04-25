@@ -71,16 +71,10 @@ public class CommandLine {
             }
             return true;
         } else if (args[0].toUpperCase().equals("-SQS")) {
-            // command: -fs <filename> [<color channel>]
-            if (args.length >= 4) {
+            // command: -sqs <queue_name>
+            if (args.length >= 2) {
                 // get the queue name
                 String name = args[1];
-                
-                // get the queue access key
-                String accessKey = args[2];
-                
-                // get the queue access key
-                String secretKey = args[3];
                 
                 //create callback consumer which processes commands on the queue
                 Consumer<String> callback = (str) -> {
@@ -139,9 +133,7 @@ public class CommandLine {
                 AmazonSimpleQueueService sqs = new AmazonSimpleQueueService(
                         functions,
                         callback,
-                        name,
-                        accessKey,
-                        secretKey);
+                        name);
                 return true;
             }
         }

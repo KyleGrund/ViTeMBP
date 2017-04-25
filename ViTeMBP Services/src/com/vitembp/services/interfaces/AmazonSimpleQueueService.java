@@ -17,9 +17,6 @@
  */
 package com.vitembp.services.interfaces;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
@@ -62,24 +59,17 @@ public class AmazonSimpleQueueService {
      * @param functions The API functions to provide an interface for.
      * @param callback
      * @param queueName The name of the queue to connect to.
-     * @param accessKey The access key for the queue.
-     * @param secretKey The secret key for the queue.
      */
     public AmazonSimpleQueueService(
             ApiFunctions functions,
             Consumer<String> callback,
-            String queueName,
-            String accessKey,
-            String secretKey) {
+            String queueName) {
         // save parameters
         this.queueName = queueName;
         this.callback = callback;
         
         // create the queue connection
-        this.queue = AmazonSQSClientBuilder.standard()
-                .withRegion(Regions.US_WEST_1)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-                .build();
+        this.queue = AmazonSQSClientBuilder.standard().build();
         this.queueUrl = this.queue.getQueueUrl(queueName).getQueueUrl();
         
         // creates processing thread

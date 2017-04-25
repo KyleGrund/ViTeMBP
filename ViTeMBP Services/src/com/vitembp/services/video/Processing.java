@@ -22,6 +22,7 @@ import com.vitembp.services.FilenameGenerator;
 import com.vitembp.services.imaging.DataOverlayBuilder;
 import com.vitembp.services.imaging.Histogram;
 import com.vitembp.services.imaging.HistogramList;
+import com.vitembp.services.interfaces.AmazonSimpleStorageService;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -101,7 +102,10 @@ public class Processing {
         // if diagnostic data requested build it now
         if (overlayOutput != null) {
             VideoFileInfo info = new VideoFileInfo(videoFile);
-            buildDiagOverlay(histograms, fileGenerator, tempDir, overlayOutput, info.getFrameRate());
+            Processing.buildDiagOverlay(histograms, fileGenerator, tempDir, overlayOutput, info.getFrameRate());
+            // uploadPublic to S3
+            AmazonSimpleStorageService s3 = new AmazonSimpleStorageService("vitembp.kylegrund.com");
+            s3.uploadPublic(overlayOutput.toFile(), "debug/" + overlayOutput.getFileName());
         }
         
         deleteTree(tempDir);
@@ -179,7 +183,7 @@ public class Processing {
             rgbData.append(Math.round(histogram.getGreenBrightness()));
             rgbData.append(" B: ");
             rgbData.append(Math.round(histogram.getBlueBrightness()));
-            builder.addText(rgbData.toString(), 5, 15);
+            builder.addText(rgbData.toString(), 5, 20);
             
             // save file
             builder.saveImage(tempDir.resolve(file).toFile());

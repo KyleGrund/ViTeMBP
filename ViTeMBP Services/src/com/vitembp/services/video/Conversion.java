@@ -98,7 +98,7 @@ public class Conversion {
     public static void assembleFrames(Path source, Path destination, FilenameGenerator nameGenerator, double framerate) throws IOException {
         // check that the output file doesn't already exist
         if (destination.toFile().exists()) {
-            throw new IOException("Output file already exists.");
+            throw new IOException("Output file already exists: " + destination.toString());
         }
         
         // build the FFmpeg process that will assemble the frames        

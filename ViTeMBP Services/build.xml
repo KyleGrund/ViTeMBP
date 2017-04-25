@@ -75,7 +75,7 @@
         a single jar that is larger but has no external dependencies. This is
         to facilitate simpler distribution.
     -->
-    <target name="-post-jar">
+    <target name="-post-jar" depends="-javadoc-build">
         <!-- Creates the staging jar with the project and library jars. -->
         <jar jarfile="dist/ViTeMBP_Full.jar">
             <zipfileset src="${dist.jar}" />

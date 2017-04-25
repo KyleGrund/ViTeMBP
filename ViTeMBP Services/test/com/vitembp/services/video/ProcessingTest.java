@@ -17,7 +17,6 @@
  */
 package com.vitembp.services.video;
 
-import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.ApiFunctions.COLOR_CHANNELS;
 import com.vitembp.services.FilenameGenerator;
 import java.io.File;

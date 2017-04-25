@@ -28,8 +28,12 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -84,6 +88,11 @@ public class Http {
                 }
             }
             
+            boolean outputDebug = false;
+            if (headers.containsKey("debug")) {
+                outputDebug = Boolean.parseBoolean(headers.getFirst("debug"));
+            }
+            
             StringBuilder request = new StringBuilder();
             InputStream requestStream = he.getRequestBody();
             int requestChar = requestStream.read();
@@ -96,14 +105,28 @@ public class Http {
             
             if (uri == null) {
                 URI req = he.getRequestURI();
-                String query = req.getQuery();
-                if (query.startsWith("path=")) {
-                    String pathStr = query.substring(5);
+                List<String> query = Arrays.asList(req.getQuery().split("&"));
+                Map<String, String> posts = new HashMap<>();
+                for (String qry : query) {
+                    String[] elms = qry.split("=");
+                    if (elms.length == 2) {
+                        posts.put(elms[0].toLowerCase(), elms[1]);
+                    }
+                }
+                
+                String path = null;
+                
+                if (posts.containsKey("path")) {
+                    String pathStr = posts.get("path");
                     try {
                         uri = new URI(pathStr);
                     } catch (URISyntaxException ex) {
                         LOGGER.warn("Bad path found in request: " + pathStr, ex);
                     }
+                }
+                
+                if (posts.containsKey("debug")) {
+                    outputDebug = Boolean.parseBoolean(posts.get("debug"));
                 }
             }
             
@@ -125,8 +148,21 @@ public class Http {
                 System.out.println("Request to process URI: " + uri.toString());
                 // call to functions
                 List<Integer> result = null;
+                Path debugOutFile = null;
                 try {
-                    result = functions.findChannelSyncFrames(uri.toString(), ApiFunctions.COLOR_CHANNELS.GREEN);
+                    if (outputDebug) {
+                        // create a temporary file name
+                        debugOutFile = Files.createTempFile("vitembp", ".mp4");
+                        Files.deleteIfExists(debugOutFile);
+                        
+                        result = functions.findChannelSyncFramesDiag(uri.toString(), ApiFunctions.COLOR_CHANNELS.GREEN, debugOutFile);
+                        
+                        if (!Files.deleteIfExists(debugOutFile)) {
+                            LOGGER.error("Could not delete temporary debug output video file.");
+                        }
+                    } else {
+                        result = functions.findChannelSyncFrames(uri.toString(), ApiFunctions.COLOR_CHANNELS.GREEN);
+                    }
                 } catch (Exception ex) {
                     LOGGER.error("IO error processing URI.", ex);
                     byte[] toSend = "Error processing request".getBytes();
@@ -140,7 +176,21 @@ public class Http {
                 System.out.println("Result: " + Arrays.toString(result.toArray()));
                 
                 //todo: Only sends success response, must send error resp as well.
-                byte[] toSend = ("Synchronization Frames: " + Arrays.toString(result.toArray())).getBytes();
+                StringBuilder toReturn = new StringBuilder();
+                
+                toReturn.append("<p>Synchronization Frames: ");
+                toReturn.append(Arrays.toString(result.toArray()));
+                toReturn.append("</p>");
+
+                if (debugOutFile != null) {
+                    toReturn.append("<p>Debug output: <a href=\"http://vitembp.kylegrund.com/debug/");
+                    toReturn.append(debugOutFile.getFileName().toString());
+                    toReturn.append("\">");
+                    toReturn.append(debugOutFile.getFileName().toString());
+                    toReturn.append("</a></p>");
+                }
+                
+                byte[] toSend = toReturn.toString().getBytes();
                 he.sendResponseHeaders(200, toSend.length);
                 try (OutputStream os = he.getResponseBody()){
                     os.write(toSend);

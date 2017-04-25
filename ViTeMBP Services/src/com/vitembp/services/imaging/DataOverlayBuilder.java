@@ -19,6 +19,7 @@ package com.vitembp.services.imaging;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -59,6 +60,7 @@ public class DataOverlayBuilder {
     /**
      * Creates an overlay from the specified image.
      * @param image The image to load 
+     * @throws java.io.IOException 
      */
     public DataOverlayBuilder(Path image) throws IOException {
         // load the bitmap data
@@ -74,6 +76,12 @@ public class DataOverlayBuilder {
     public void addText(String str, int x, int y) {
         Graphics2D graphics = frame.createGraphics();
         graphics.setColor(Color.white);
+        
+        // resize the font to 20pt, same as 20 pixels
+        Font currentFont = graphics.getFont();
+        graphics.setFont(currentFont.deriveFont(20.0f));
+        
+        // draw the text
         graphics.drawString(str, x, y);
     }
     
