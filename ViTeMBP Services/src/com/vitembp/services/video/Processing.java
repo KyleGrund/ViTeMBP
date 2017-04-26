@@ -19,7 +19,6 @@ package com.vitembp.services.video;
 
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.FilenameGenerator;
-import com.vitembp.services.imaging.DataOverlayBuilder;
 import com.vitembp.services.imaging.Histogram;
 import com.vitembp.services.imaging.HistogramList;
 import com.vitembp.services.interfaces.AmazonSimpleStorageService;
@@ -90,12 +89,8 @@ public class Processing {
         
         
         // get stats for diagnostics
-        double maxDev = histograms.getMaxDev(selector);
         double stdDev = histograms.getPosStdev(selector);
         double average = histograms.getAverage(selector);
-        
-        System.out.println("Std deviation: " + Double.toString(stdDev));
-        System.out.println("Max deviation: " + Double.toString(maxDev));
         
         // return outliers which are the sync frames
         List<Integer> outliers = histograms.getPositiveOutliers(selector, OUTLIER_DEVIATIONS);

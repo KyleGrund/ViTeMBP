@@ -60,7 +60,8 @@ public class DataOverlayBuilder {
     /**
      * Creates an overlay from the specified image.
      * @param image The image to load 
-     * @throws java.io.IOException 
+     * @throws java.io.IOException If there is an I/O exception loading the
+     * image.
      */
     public DataOverlayBuilder(Path image) throws IOException {
         // load the bitmap data

@@ -65,6 +65,7 @@ public class ProcessingTest {
 
     /**
      * Test of findChannelSyncFrames method, of class Processing.
+     * @throws java.lang.Exception
      */
     @Test
     public void testFindChannelSyncFrames_4args() throws Exception {
@@ -94,6 +95,7 @@ public class ProcessingTest {
 
     /**
      * Test of findChannelSyncFrames method, of class Processing.
+     * @throws java.lang.Exception
      */
     @Test
     public void testFindChannelSyncFrames_3args() throws Exception {

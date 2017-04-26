@@ -63,6 +63,7 @@ public class ConversionTest {
 
     /**
      * Test of extractFrames method, of class Conversion.
+     * @throws java.lang.Exception
      */
     @Test
     public void testExtractFrames() throws Exception {
@@ -90,6 +91,7 @@ public class ConversionTest {
 
     /**
      * Test of assembleFrames method, of class Conversion.
+     * @throws java.lang.Exception
      */
     @Test
     public void testAssembleFrames() throws Exception {

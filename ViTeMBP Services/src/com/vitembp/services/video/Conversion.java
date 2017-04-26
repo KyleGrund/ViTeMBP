@@ -103,12 +103,14 @@ public class Conversion {
         
         // build the FFmpeg process that will assemble the frames        
         ProcessBuilder pb = new ProcessBuilder(
-            "ffmpeg",
-            "-framerate",
-            Double.toString(framerate),
-            "-i",
-            source.toString() + File.separator + nameGenerator.getFFmpegString(),
-            destination.toString());
+                "ffmpeg",
+                "-framerate",
+                Double.toString(framerate),
+                "-i",
+                source.toString() + File.separator + nameGenerator.getFFmpegString(),
+                "-vf",
+                "format=yuvj420p",
+                destination.toString());
         
         LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
         

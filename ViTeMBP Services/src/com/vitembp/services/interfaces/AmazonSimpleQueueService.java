@@ -57,7 +57,7 @@ public class AmazonSimpleQueueService {
     /**
      * Initializes a new instance of the AmazonSQS class.
      * @param functions The API functions to provide an interface for.
-     * @param callback
+     * @param callback The callback that can process messages from the queue.
      * @param queueName The name of the queue to connect to.
      */
     public AmazonSimpleQueueService(
