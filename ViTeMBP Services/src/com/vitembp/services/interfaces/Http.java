@@ -183,7 +183,7 @@ public class Http {
                 toReturn.append("</p>");
 
                 if (debugOutFile != null) {
-                    toReturn.append("<p>Debug output: <a href=\"http://vitembp.kylegrund.com/debug/");
+                    toReturn.append("<p>Debug output: <a href=\"http://www.vitembp.com/debug/");
                     toReturn.append(debugOutFile.getFileName().toString());
                     toReturn.append("\">");
                     toReturn.append(debugOutFile.getFileName().toString());

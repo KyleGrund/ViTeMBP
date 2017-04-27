@@ -67,7 +67,7 @@ public class AmazonSimpleStorageServiceTest {
         final int FILE_SIZE_BYTES = 32767 + rnd.nextInt(32767);
         
         // test bucket access keys (never production)
-        String testBucketName = "vitembp.kylegrund.com";
+        String testBucketName = "www-vitembp-com";
         
         try {
             // write data out to a temp file for uploadPublic

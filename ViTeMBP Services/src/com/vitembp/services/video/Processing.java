@@ -100,7 +100,7 @@ public class Processing {
             VideoFileInfo info = new VideoFileInfo(videoFile);
             Processing.buildDiagOverlay(histograms, (OUTLIER_DEVIATIONS * stdDev) + average, outliers, fileGenerator, tempDir, overlayOutput, info);
             // uploadPublic to S3
-            AmazonSimpleStorageService s3 = new AmazonSimpleStorageService("vitembp.kylegrund.com");
+            AmazonSimpleStorageService s3 = new AmazonSimpleStorageService("www-vitembp-com");
             s3.uploadPublic(overlayOutput.toFile(), "debug/" + overlayOutput.getFileName());
         }
         
