@@ -70,4 +70,24 @@
     nbproject/build-impl.xml file. 
 
     -->
+        <!--
+        This target will put the external libraries into the jar file to create
+        a single jar that is larger but has no external dependencies. This is
+        to facilitate simpler distribution.
+    -->
+    <target name="-post-jar" depends="-javadoc-build">
+        <!-- Creates the staging jar with the project and library jars. -->
+        <jar jarfile="dist/ViTeMBP_Firmware.jar">
+            <zipfileset src="${dist.jar}" />
+            <zipgroupfileset dir="dist/lib" includes="*.jar"/>
+            <manifest>
+                <attribute name="Main-Class" value="com.vitembp.embedded.ViTeMBPEmbedded"/>
+            </manifest>
+        </jar>
+        <!-- Delete the original project and library jars. -->
+        <delete file="${dist.jar}"/>
+        <delete dir="dist/lib"/>
+        <!-- Rename the staging jar to the project output jar. -->
+        <move file="dist/ViTeMBP_Firmware.jar" tofile="${dist.jar}"/>
+    </target>
 </project>
