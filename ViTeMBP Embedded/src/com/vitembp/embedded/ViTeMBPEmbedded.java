@@ -5,6 +5,8 @@
  */
 package com.vitembp.embedded;
 
+import com.vitembp.embedded.hardware.Platform;
+
 /**
  * Class containing the main entry point for program.
  */
@@ -14,7 +16,8 @@ public class ViTeMBPEmbedded {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        // initialize platform
+        Platform.getPlatform();
     }
     
 }
