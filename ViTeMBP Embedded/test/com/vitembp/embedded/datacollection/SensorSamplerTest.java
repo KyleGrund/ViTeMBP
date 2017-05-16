@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.vitembp.embedded.data;
+package com.vitembp.embedded.datacollection;
 
-import com.vitembp.embedded.data.SensorSampler;
+import com.vitembp.embedded.datacollection.SensorSampler;
 import com.vitembp.embedded.hardware.Platform;
 import com.vitembp.embedded.hardware.Sensor;
 import java.util.Arrays;
