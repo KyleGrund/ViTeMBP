@@ -12,10 +12,33 @@ import java.util.UUID;
  */
 public abstract class Sensor {
     /**
-     * Gets the UUID which defines the type of sensor.
+     * The name of this sensor instance.
+     */
+    private final String name;
+    
+    /**
+     * Initializes a new instance of the Sensor class.
+     * @param name The name of this sensor instance as used in the system.
+     */
+    protected Sensor(String name) {
+        this.name = name;
+    }
+    
+    /**
+     * Gets the UUID which defines the type of sensor. This type can be used to
+     * determine the format of the sample data that is created.
      * @return The UUID which defines the type of sensor.
      */
     public abstract UUID getType();
+    
+    /**
+     * Gets the name of the sensor as used in the system. This defines the use
+     * of the sensor, i.e. "Front Wheel Speed Sensor".
+     * @return The name of the sensor as used in the system.
+     */
+    public String getName() {
+        return this.name;
+    }
     
     /**
      * The initialize function will be called when the system first starts.

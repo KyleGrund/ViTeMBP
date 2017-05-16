@@ -39,7 +39,9 @@ public class MockPlatform extends Platform{
 
     @Override
     public Map<UUID, Sensor> getSensorMap() {
-        return new HashMap<>();
+        HashMap<UUID, Sensor> toReturn = new HashMap<>();
+        toReturn.put(UUID.randomUUID(), new MockAccelerometer("Mock Accelerometer"));
+        return toReturn;
     }
     
 }
