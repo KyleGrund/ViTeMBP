@@ -1,7 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Video Telemetry for Mountain Bike Platform back-end services.
+ * Copyright (C) 2017 Kyle Grund
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.vitembp.embedded.datacollection;
 
@@ -40,7 +52,7 @@ public class SensorSampler {
     /**
      * This function is called after a sample has been taken.
      */
-    private final Consumer<Map<String, String>> sampleCallback;
+    private final Consumer<Map<Sensor, String>> sampleCallback;
     
     /**
      * Boolean value indicating  whether the data logger is running.
@@ -58,7 +70,7 @@ public class SensorSampler {
      * @param sensors The sensors to collect data from.
      * @param callback The 
      */
-    public SensorSampler(double frequency, List<Sensor> sensors, Consumer<Map<String,String>> callback) {
+    public SensorSampler(double frequency, List<Sensor> sensors, Consumer<Map<Sensor, String>> callback) {
         this.sampleFrequency = frequency;
         this.sensors = sensors;
         this.sampleCallback  = callback;
@@ -102,11 +114,10 @@ public class SensorSampler {
             nextStart += this.nanoSecondInterval;
             
             // take data
-            HashMap<String, String> data = new HashMap<>();
+            HashMap<Sensor, String> data = new HashMap<>();
             for (Sensor sensor : this.sensors) {
                 String sample = sensor.readSample();
-                String name = sensor.getName();
-                data.put(name, sample);
+                data.put(sensor, sample);
                 LOGGER.debug("Sensor " + sensor.getName() + ": " + sample);
             }
             

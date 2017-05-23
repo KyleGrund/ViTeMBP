@@ -15,20 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.vitembp.embedded.hardware;
+package com.vitembp.embedded.datacollection;
+
+import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.hardware.Sensor;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Class providing an interface to embedded system boards.
+ * A class that uses a SensorSampler to create a Capture.
  */
-public abstract class SystemBoard {
-    /**
-     * Detects the current board the system is operating on and creates the
-     * appropriate singleton instance.
-     * @return The board instance for the system that the program is currently
-     * executing on. If the system is executing on an unknown board a mock
-     * simulation will be returned.
-     */
-    public static SystemBoard getBoard() {
-        throw new UnsupportedOperationException();
+public class CaptureSession {
+    private final SensorSampler sampler;
+    private final Capture data;
+    
+    public CaptureSession(double frequency, List<Sensor> sensors, Capture session) {
+        this.sampler = new SensorSampler(frequency, sensors, this::callback);
+        this.data = session;
+    }
+    
+    public void start() {
+        this.sampler.start();
+    }
+    
+    public void stop() {
+        this.sampler.stop();
+    }
+    
+    private void callback(Map<Sensor, String> data) {
+        this.data.addSample(data);
     }
 }
