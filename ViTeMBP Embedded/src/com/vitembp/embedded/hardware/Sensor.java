@@ -59,7 +59,7 @@ public abstract class Sensor {
     
     /**
      * This function will read a sample from the sensor and return a UTF-8
-     * String represenation of the data.
+     * String representation of the data.
      * @return A UTF-8 String representation of the data.
      */
     public abstract String readSample();
