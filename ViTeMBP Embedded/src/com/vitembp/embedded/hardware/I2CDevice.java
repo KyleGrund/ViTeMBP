@@ -36,7 +36,7 @@ public class I2CDevice {
      * @param deviceAddress The address of the device on the bus.
      * @param bus The bus the device is connected to.
      */
-    private I2CDevice(int deviceAddress, I2CBus bus) {
+    I2CDevice(int deviceAddress, I2CBus bus) {
         this.bus = bus;
         this.deviceAddress = deviceAddress;
     }

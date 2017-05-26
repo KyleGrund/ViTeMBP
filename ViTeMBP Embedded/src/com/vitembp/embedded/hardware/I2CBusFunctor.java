@@ -17,7 +17,13 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * A class that implements the I2CBus using a functor style.
@@ -29,11 +35,22 @@ class I2CBusFunctor extends I2CBus {
     private final Function<I2CBusTransaction, byte[]> busCallback;
     
     /**
+     * The callback which will list enumerable I2C devices.
+     */
+    private final Supplier<List<Integer>> deviceIDCallback;
+    
+    /**
+     * A map of integer bus IDs to I2CDevice control objects.
+     */
+    private final Map<Integer, I2CDevice> devices = new HashMap<>();
+    
+    /**
      * Initializes a new instance of the I2CBusFunctor class.
      * @param busCallback 
      */
-    I2CBusFunctor(Function<I2CBusTransaction, byte[]> busCallback) {
+    I2CBusFunctor(Function<I2CBusTransaction, byte[]> busCallback, Supplier<List<Integer>> deviceIDCallback) {
         this.busCallback = busCallback;
+        this.deviceIDCallback = deviceIDCallback;
     }
     
     @Override
@@ -49,5 +66,32 @@ class I2CBusFunctor extends I2CBus {
     @Override
     public byte[] writeRead(int address, byte[] toWrite, int readCount) {
         return busCallback.apply(new I2CBusTransaction(address, toWrite, readCount));
+    }
+
+    @Override
+    public Iterable<I2CDevice> getDevices() {
+        List<I2CDevice> toReturn = new ArrayList<>();
+        
+        List<Integer> deviceIDs = this.deviceIDCallback.get();
+        
+        // make new device control objects as needed
+        for (int dev : this.deviceIDCallback.get()) {
+            if (!this.devices.containsKey(dev)) {
+                toReturn.add(new I2CDevice(dev, this));
+            }
+        }
+        
+        // remove any device control objects as needed
+        List<Integer> toRemove = new ArrayList<>();
+        for (int dev : this.devices.keySet()) {
+            if (!deviceIDs.contains(dev)) {
+                toRemove.add(dev);
+            }
+        }
+        
+        // remove any devices that were found to no longer be on the bus
+        toRemove.stream().forEach((dev) -> { this.devices.remove(dev); });
+        
+        return toReturn;
     }
 }

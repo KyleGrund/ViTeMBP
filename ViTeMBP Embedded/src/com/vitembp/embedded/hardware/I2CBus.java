@@ -44,4 +44,11 @@ abstract class I2CBus {
      * @return The bytes read from the device.
      */
     public abstract byte[] writeRead(int address, byte[] toWrite, int readCount);
+    
+    /**
+     * Gets an I2CDevice object for all devices which can be enumerated on this
+     * bus.
+     * @return I2CDevice objects for all enumerated devices.
+     */
+    public abstract Iterable<I2CDevice> getDevices();
 }
