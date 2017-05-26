@@ -22,7 +22,7 @@ import java.util.ArrayList;
 /**
  * A SystemBoard implementation for the UDOO NEO.
  */
-public class SystemBoardUdooNeo extends SystemBoard{
+class SystemBoardUdooNeo extends SystemBoard{
 
     @Override
     public Iterable<I2CBus> getI2CBusses() {
