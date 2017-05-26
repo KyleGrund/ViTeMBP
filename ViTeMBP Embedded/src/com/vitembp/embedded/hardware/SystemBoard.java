@@ -17,10 +17,44 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import org.apache.logging.log4j.LogManager;
+
 /**
  * Class providing an interface to embedded system boards.
  */
-public abstract class SystemBoard {
+abstract class SystemBoard {
+    /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    
+    /**
+     * Lock object for singleton creation critical section.
+     */
+    private static final Object SINGLETON_CREATE_LOCK = new Object();
+    
+    /**
+     * The system board singleton.
+     */
+    private static SystemBoard singletonInstance = null;
+    
+    /**
+     * Gets the available I2C system busses.
+     * @return The available I2C system busses.
+     */
+    public abstract Iterable<I2CBus> getI2CBusses();
+    
+    /**
+     * Gets the available system board GPIO ports.
+     * @return The available system board GPIO ports.
+     */
+    public abstract Iterable<GPIOPort> getGPIOPorts();
+    
     /**
      * Detects the current board the system is operating on and creates the
      * appropriate singleton instance.
@@ -29,6 +63,33 @@ public abstract class SystemBoard {
      * simulation will be returned.
      */
     public static SystemBoard getBoard() {
-        throw new UnsupportedOperationException();
+        synchronized (SystemBoard.SINGLETON_CREATE_LOCK) {
+            // create the singleton instance if it doesn't already exist
+            if (SystemBoard.singletonInstance == null) {
+                // linux distrobutions have a version file used to access distro info
+                Path versionFile = Paths.get("/proc/version");
+
+                // if the version file contains udooneo we are running on a UDOO NEO board
+                if (versionFile.toFile().exists()) {
+                    try {
+                        List<String> versionLines = Files.readAllLines(versionFile);
+                        if (versionLines.size() > 0) {
+                            if (versionLines.get(0).contains("udooneo")) {
+                                // return a udoo neo system board instance
+                                SystemBoard.singletonInstance = new SystemBoardUdooNeo();
+                            }
+                        }
+                    } catch (IOException ex) {
+                        LOGGER.error("Version file exists but could not be read.", ex);
+                    }
+                }
+
+                // we are not running on a compatible system board, so return a mock
+                SystemBoard.singletonInstance = new SystemBoardMock();
+            }
+        }
+        
+        // return the singleton instance
+        return SystemBoard.singletonInstance;
     }
 }
