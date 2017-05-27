@@ -33,6 +33,16 @@ public abstract class Platform {
     private static final Logger LOGGER = LogManager.getLogger();
     
     /**
+     * Lock object for singleton creation critical section.
+     */
+    private static final Object SINGLETON_CREATE_LOCK = new Object();
+    
+    /**
+     * The system board singleton.
+     */
+    private static Platform singletonInstance = null;
+    
+    /**
      * Gets a Consumer which takes a Boolean value and sets the state of the
      * synchroniation light to on if it is true, or off if it is false.
      * @return A Consumer which can be used to set the state of the
@@ -60,7 +70,25 @@ public abstract class Platform {
      * is currently executing on.
      */
     public static Platform getPlatform() {
-        LOGGER.info("Using mock system platform.");
-        return new MockPlatform();
+        // synchronize singleton creation check critical section
+        synchronized (Platform.SINGLETON_CREATE_LOCK) {
+            // create the singleton instance if it doesn't already exist
+            if (Platform.singletonInstance == null) {
+                // first get the system board
+                SystemBoard board = SystemBoard.getBoard();
+                if (board instanceof SystemBoardUdooNeo) {
+                    // use system board to query for platform version
+                } else if (board instanceof SystemBoardMock) {
+                    LOGGER.info("Using mock system platform for mock system board.");
+                    Platform.singletonInstance = new PlatformMock();
+                } else {
+                    LOGGER.info("Unknown system board, using mock system platform.");
+                    Platform.singletonInstance = new PlatformMock();
+                }
+            }
+        }
+        
+        // return singleton
+        return Platform.singletonInstance;
     }
 }

@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * A mock Sensor implementation which generates random vector data.
  */
-public class MockAccelerometer extends Sensor {
+public class AccelerometerMock extends Sensor {
     /**
      * Class logger instance.
      */
@@ -50,29 +50,29 @@ public class MockAccelerometer extends Sensor {
      * Initializes a new instance of the MockAccelerometer class.
      * @param name The name of the sensor as used in the system.
      */
-    public MockAccelerometer(String name) {
+    public AccelerometerMock(String name) {
         super(name);
     }
     
     @Override
     public UUID getType() {
-        return MockAccelerometer.TYPE_UUID;
+        return AccelerometerMock.TYPE_UUID;
     }
 
     @Override
     public void initialize() {
-        LOGGER.debug("Initialized sensor type: " + MockAccelerometer.TYPE_UUID.toString() + ".");
+        LOGGER.debug("Initialized sensor type: " + AccelerometerMock.TYPE_UUID.toString() + ".");
     }
 
     @Override
     public String readSample() {
         StringBuilder toReturn = new StringBuilder();
         toReturn.append("(");
-        toReturn.append(this.randomGenerator.nextGaussian() * MockAccelerometer.MAX_SENSOR_VALUE);
+        toReturn.append(this.randomGenerator.nextGaussian() * AccelerometerMock.MAX_SENSOR_VALUE);
         toReturn.append(",");
-        toReturn.append(this.randomGenerator.nextGaussian() * MockAccelerometer.MAX_SENSOR_VALUE);
+        toReturn.append(this.randomGenerator.nextGaussian() * AccelerometerMock.MAX_SENSOR_VALUE);
         toReturn.append(",");
-        toReturn.append(this.randomGenerator.nextGaussian() * MockAccelerometer.MAX_SENSOR_VALUE);
+        toReturn.append(this.randomGenerator.nextGaussian() * AccelerometerMock.MAX_SENSOR_VALUE);
         toReturn.append(")");
         
         return toReturn.toString();

@@ -25,9 +25,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Creates a mock implementeation of the Platform class.
+ * Creates a mock implementation of the Platform class.
  */
-public class MockPlatform extends Platform{
+public class PlatformMock extends Platform{
     /**
      * Class logger instance.
      */
@@ -52,7 +52,7 @@ public class MockPlatform extends Platform{
     @Override
     public Map<UUID, Sensor> getSensorMap() {
         HashMap<UUID, Sensor> toReturn = new HashMap<>();
-        toReturn.put(UUID.randomUUID(), new MockAccelerometer("Mock Accelerometer"));
+        toReturn.put(UUID.randomUUID(), new AccelerometerMock("Mock Accelerometer"));
         return toReturn;
     }
 }

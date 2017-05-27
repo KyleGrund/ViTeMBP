@@ -26,7 +26,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for the MockAccelerometer class.
+ * Unit tests for the AccelerometerMock class.
  */
 public class MockAccelerometerTest {
     
@@ -50,34 +50,34 @@ public class MockAccelerometerTest {
     }
 
     /**
-     * Test of getType method, of class MockAccelerometer.
+     * Test of getType method, of class AccelerometerMock.
      */
     @Test
     public void testGetType() {
         System.out.println("getType");
-        MockAccelerometer instance = new MockAccelerometer("Mock Acccelerometer");
+        AccelerometerMock instance = new AccelerometerMock("Mock Acccelerometer");
         UUID expResult = UUID.fromString("3906c164-82c8-48f8-a154-a39a9d0269fa");
         UUID result = instance.getType();
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of initialize method, of class MockAccelerometer.
+     * Test of initialize method, of class AccelerometerMock.
      */
     @Test
     public void testInitialize() {
         System.out.println("initialize");
-        MockAccelerometer instance = new MockAccelerometer("Mock Acccelerometer");
+        AccelerometerMock instance = new AccelerometerMock("Mock Acccelerometer");
         instance.initialize();
     }
 
     /**
-     * Test of readSample method, of class MockAccelerometer.
+     * Test of readSample method, of class AccelerometerMock.
      */
     @Test
     public void testReadSample() {
         System.out.println("readSample");
-        MockAccelerometer instance = new MockAccelerometer("Mock Acccelerometer");
+        AccelerometerMock instance = new AccelerometerMock("Mock Acccelerometer");
         String result = instance.readSample().replace("(", "").replace(")", "");
         String[] values = result.split(",");
         assertEquals(3, values.length);

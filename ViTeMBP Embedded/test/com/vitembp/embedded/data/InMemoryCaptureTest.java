@@ -17,7 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
-import com.vitembp.embedded.hardware.MockAccelerometer;
+import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -75,8 +75,8 @@ public class InMemoryCaptureTest {
     @Before
     public void setUp() {
         // create some sensor data to use during tests
-        Sensor sensorOne = new MockAccelerometer(SENSOR_NAMES[0]);
-        Sensor sensorTwo = new MockAccelerometer(SENSOR_NAMES[1]);
+        Sensor sensorOne = new AccelerometerMock(SENSOR_NAMES[0]);
+        Sensor sensorTwo = new AccelerometerMock(SENSOR_NAMES[1]);
         
         // add some sensor data
         for (int i = 0; i < NUM_OF_SAMPLES; i++) {

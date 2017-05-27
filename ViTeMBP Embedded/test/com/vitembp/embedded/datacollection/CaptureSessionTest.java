@@ -20,7 +20,7 @@ package com.vitembp.embedded.datacollection;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.data.InMemoryCapture;
 import com.vitembp.embedded.data.Sample;
-import com.vitembp.embedded.hardware.MockAccelerometer;
+import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,8 +65,8 @@ public class CaptureSessionTest {
         CaptureSession toTest;
         Capture capturedData = new InMemoryCapture();
         List<Sensor> sensors = new ArrayList<>();
-        sensors.add(new MockAccelerometer("Accelerometer 1"));
-        sensors.add(new MockAccelerometer("Accelerometer 2"));
+        sensors.add(new AccelerometerMock("Accelerometer 1"));
+        sensors.add(new AccelerometerMock("Accelerometer 2"));
         toTest = new CaptureSession(29.97, sensors, capturedData);
         
         // take test data for 1 second
