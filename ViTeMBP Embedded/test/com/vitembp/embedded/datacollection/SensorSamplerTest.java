@@ -65,7 +65,7 @@ public class SensorSamplerTest {
         
         SensorSampler instance = new SensorSampler(
                 29.97,
-                Arrays.asList(Platform.getPlatform().getSensorMap().values().toArray(new Sensor[] {})),
+                Arrays.asList(Platform.getPlatform().getSensors().toArray(new Sensor[] {})),
                 (data) -> { counter.put("samples", counter.get("samples") + 1); });
         instance.start();
         Thread.sleep(1000);

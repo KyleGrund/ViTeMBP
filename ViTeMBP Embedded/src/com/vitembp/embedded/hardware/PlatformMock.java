@@ -17,9 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,9 +49,9 @@ public class PlatformMock extends Platform{
     }
 
     @Override
-    public Map<UUID, Sensor> getSensorMap() {
-        HashMap<UUID, Sensor> toReturn = new HashMap<>();
-        toReturn.put(UUID.randomUUID(), new AccelerometerMock("Mock Accelerometer"));
+    public Set<Sensor> getSensors() {
+        Set<Sensor> toReturn = new HashSet<>();
+        toReturn.add(new AccelerometerMock("Accelerometer"));
         return toReturn;
     }
 }

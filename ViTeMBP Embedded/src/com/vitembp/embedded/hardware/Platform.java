@@ -17,8 +17,7 @@
  */
 package com.vitembp.embedded.hardware;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,24 +43,24 @@ public abstract class Platform {
     
     /**
      * Gets a Consumer which takes a Boolean value and sets the state of the
-     * synchroniation light to on if it is true, or off if it is false.
+     * synchronization light to on if it is true, or off if it is false.
      * @return A Consumer which can be used to set the state of the
-     * synchroniation light.
+     * synchronization light.
      */
     public abstract Consumer<Boolean> getSetSyncLightTarget();
     
     /**
-     * Sets the callback function which will process keypress events.
-     * @param callback The function which will process keypress events.
+     * Sets the callback function which will process key press events.
+     * @param callback The function which will process key press events.
      */
     public abstract void setKeypadCallback(Consumer<Character> callback);
     
     /**
-     * Gets a Map of UUID sensor types to their control interface object
+     * Gets the sensor control interface objects.
      * instance.
-     * @return A Map of UUID sensor types to their control interface object.
+     * @return A Map of String sensor names to their control interface object.
      */
-    public abstract Map<UUID, Sensor> getSensorMap();
+    public abstract Set<Sensor> getSensors();
     
     /**
      * Returns a platform object for the system hardware that the program 
@@ -77,7 +76,8 @@ public abstract class Platform {
                 // first get the system board
                 SystemBoard board = SystemBoard.getBoard();
                 if (board instanceof SystemBoardUdooNeo) {
-                    // use system board to query for platform version
+                    LOGGER.info("Using mock system platform for UDOO system board.");
+                    Platform.singletonInstance = new PlatformMock();
                 } else if (board instanceof SystemBoardMock) {
                     LOGGER.info("Using mock system platform for mock system board.");
                     Platform.singletonInstance = new PlatformMock();
