@@ -95,8 +95,11 @@ class PlatformFactory {
      * @return A Platform for a SystemBoardUdooNeo instance.
      */
     public static Platform create(SystemBoardUdooNeo board){
+        // get gpio4 which controls the sync light
+        GPIOPort lightPort = board.getGPIOPorts().stream().filter((p) -> p.getName().equals("gpio4")).findFirst().get();
+        
         return new PlatformFunctor(
-                (value) -> board.getGPIOPorts().stream().filter((p) -> p.getName().equals("gpio4")).findFirst().get().setValue(value),
+                lightPort::setValue,
                 (Consumer<Character> cb) -> {
                     LOGGER.info("Set keypad callback.");
                 },
