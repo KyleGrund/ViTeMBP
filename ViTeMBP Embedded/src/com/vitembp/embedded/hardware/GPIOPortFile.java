@@ -53,6 +53,10 @@ class GPIOPortFile extends GPIOPort {
      */
     private String portname;
     
+    private boolean hasDirectionBeenSet = false;
+    
+    private GpioDirection setDirection;
+    
     /**
      * Initializes a new instance of the GPIOPortFile class.
      * @param portDir The directory containing the GPIO interface files.
@@ -180,13 +184,17 @@ class GPIOPortFile extends GPIOPort {
         switch (direction) {
             case Input:
                 Files.write(valuePath, Arrays.asList(new String[] { "in" }), StandardOpenOption.WRITE);
+                this.setDirection = GpioDirection.Input;
                 break;
             case Output:
                 Files.write(valuePath, Arrays.asList(new String[] { "out" }), StandardOpenOption.WRITE);
+                this.setDirection = GpioDirection.Output;
                 break;
             default:
                 throw new IOException("Linux GPIO file interface only supports input or output modes.");
         }
+        
+        this.hasDirectionBeenSet = true;
     }
 
     @Override
@@ -218,6 +226,11 @@ class GPIOPortFile extends GPIOPort {
 
     @Override
     public void setValue(boolean value) throws IOException {
+        // make sure port is set to output
+        if (!this.hasDirectionBeenSet || this.setDirection != GpioDirection.Output) {
+            this.setDirection(GpioDirection.Output);
+        }
+        
         // write a 1 or 0 to the value file to set it to high or low respectively
         if (value) {
             Files.write(valuePath, Arrays.asList(new String[] { "1" }), StandardOpenOption.WRITE);
