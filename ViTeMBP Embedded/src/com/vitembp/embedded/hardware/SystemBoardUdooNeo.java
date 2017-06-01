@@ -17,21 +17,33 @@
  */
 package com.vitembp.embedded.hardware;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A SystemBoard implementation for the UDOO NEO.
  */
 class SystemBoardUdooNeo extends SystemBoard{
-
+    /**
+     * The GPIO ports available for this system board.
+     */
+    private final Set<GPIOPort> gpioPorts;
+    
+    SystemBoardUdooNeo() throws IOException {
+        // builds GPIO port interfaces
+        this.gpioPorts = GPIOPortFile.buildPortsForPath(Paths.get("/sys/class/gpio"));
+    }
+            
     @Override
-    public Iterable<I2CBus> getI2CBusses() {
-        return new ArrayList<>();
+    public Set<I2CBus> getI2CBusses() {
+        return new HashSet<>();
     }
 
     @Override
-    public Iterable<GPIOPort> getGPIOPorts() {
-        return new ArrayList<>();
+    public Set<GPIOPort> getGPIOPorts() {
+        return this.gpioPorts;
     }
     
 }

@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -47,13 +48,13 @@ abstract class SystemBoard {
      * Gets the available I2C system busses.
      * @return The available I2C system busses.
      */
-    public abstract Iterable<I2CBus> getI2CBusses();
+    public abstract Set<I2CBus> getI2CBusses();
     
     /**
      * Gets the available system board GPIO ports.
      * @return The available system board GPIO ports.
      */
-    public abstract Iterable<GPIOPort> getGPIOPorts();
+    public abstract Set<GPIOPort> getGPIOPorts();
     
     /**
      * Detects the current board the system is operating on and creates the
@@ -84,8 +85,10 @@ abstract class SystemBoard {
                     }
                 }
 
-                // we are not running on a compatible system board, so return a mock
-                SystemBoard.singletonInstance = new SystemBoardMock();
+                // no system board was able to be made, so return a mock
+                if (SystemBoard.singletonInstance == null) {
+                    SystemBoard.singletonInstance = new SystemBoardMock();
+                }
             }
         }
         

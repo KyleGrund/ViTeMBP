@@ -17,7 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A mock system bus to be used when not running on a compatible system board.
@@ -25,13 +26,13 @@ import java.util.ArrayList;
 class SystemBoardMock extends SystemBoard {
 
     @Override
-    public Iterable<I2CBus> getI2CBusses() {
-        return new ArrayList<>();
+    public Set<I2CBus> getI2CBusses() {
+        return new HashSet<>();
     }
 
     @Override
-    public Iterable<GPIOPort> getGPIOPorts() {
-        return new ArrayList<>();
+    public Set<GPIOPort> getGPIOPorts() {
+        return new HashSet<>();
     }
     
 }

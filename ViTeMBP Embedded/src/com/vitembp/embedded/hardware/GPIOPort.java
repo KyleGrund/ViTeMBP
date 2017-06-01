@@ -17,6 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.io.IOException;
+
 /**
  * An abstract class providing a logtical inteface GPIOPort.
  */
@@ -30,24 +32,28 @@ public abstract class GPIOPort {
     /**
      * Gets the direction of the GPIOPort port.
      * @return The direction of the GPIOPort port.
+     * @throws java.io.IOException
      */
-    public abstract GpioDirection getDirection();
+    public abstract GpioDirection getDirection() throws IOException;
     
     /**
      * Sets the direction of the GPIOPort port.
      * @param direction The direction to set the GPIOPort port to.
+     * @throws java.io.IOException
      */
-    public abstract void setDirection(GpioDirection direction);
+    public abstract void setDirection(GpioDirection direction) throws IOException;
     
     /**
-     * Returns the boolean value repres1enting the state of the port.
-     * @return The boolean value repres1enting the state of the port.
+     * Returns the boolean value representing the state of the port.
+     * @return The boolean value representing the state of the port.
+     * @throws java.io.IOException
      */
-    public abstract boolean getValue();
+    public abstract boolean getValue() throws IOException;
     
     /**
      * Sets the state of the port.
-     * @param value The boolean value repres1enting the state to set the port to.
+     * @param value The boolean value representing the state to set the port to.
+     * @throws java.io.IOException
      */
-    public abstract void setValue(boolean value);
+    public abstract void setValue(boolean value) throws IOException;
 }

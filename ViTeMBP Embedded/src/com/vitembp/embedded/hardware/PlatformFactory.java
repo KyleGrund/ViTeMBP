@@ -17,6 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -32,11 +34,43 @@ class PlatformFactory {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
+     * Builds an appropriate Platform object for the supplied SystemBoard.
+     * @param board The SystemBoard to build a platform for.
+     * @return The Platform object for the System board.
+     */
+    public static Platform build(SystemBoard board) {
+        try {
+            // reflect on this class to find a create method that takes the board type
+            Method buildMethod = PlatformFactory.class.getMethod("create", board.getClass());
+            
+            
+            // check that the return type is a Platform object
+            if (Platform.class.isAssignableFrom(buildMethod.getReturnType())) {            
+                // build the platform using the method found
+                try {
+                    LOGGER.info("Building Platform for: " + board.getClass().getTypeName() + ".");
+                    return (Platform)buildMethod.invoke(null, board);
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    LOGGER.error("Exception invoking the create Platform method for SystemBoard type: " + board.getClass().getTypeName() + ".", ex);
+                }
+            } else {
+                LOGGER.error("The return type for the create function for the SystemBoard type: " + board.getClass().getTypeName() + " is not a Platform.");
+            }
+        } catch (NoSuchMethodException ex) {
+            LOGGER.error("Could not find a Platform creator for SystemBoard type: " + board.getClass().getTypeName() + ".", ex);
+        } catch (SecurityException ex) {
+            LOGGER.error("Could not reflecct on SystemBoard to create Platform for type: " + board.getClass().getTypeName() + ".", ex);
+        }
+        
+        throw new IllegalArgumentException("Could not build a Platoform for: " + board.getClass().getTypeName() + ".");
+    }
+    
+    /**
      * Builds a Platform for a SystemBoardMock instance.
      * @param board The system board to build a Platform for.
      * @return A Platform for a SystemBoardMock instance.
      */
-    public static Platform build(SystemBoardMock board){
+    public static Platform create(SystemBoardMock board){
         return new PlatformFunctor(
                 (Boolean t) -> {
                     if (t) {
@@ -60,15 +94,9 @@ class PlatformFactory {
      * @param board The system board to build a Platform for.
      * @return A Platform for a SystemBoardUdooNeo instance.
      */
-    public static Platform build(SystemBoardUdooNeo board){
+    public static Platform create(SystemBoardUdooNeo board){
         return new PlatformFunctor(
-                (Boolean t) -> {
-                    if (t) {
-                        LOGGER.info("Enabled synchronization light.");
-                    } else {
-                        LOGGER.info("Disabled synchronization light.");
-                    }   
-                },
+                (value) -> board.getGPIOPorts().stream().filter((p) -> p.getName().equals("gpio4")).findFirst().get().setValue(value),
                 (Consumer<Character> cb) -> {
                     LOGGER.info("Set keypad callback.");
                 },

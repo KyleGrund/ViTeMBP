@@ -33,7 +33,7 @@ public class PlatformMock extends Platform{
     private static final Logger LOGGER = LogManager.getLogger();
     
     @Override
-    public Consumer<Boolean> getSetSyncLightTarget() {
+    public ConsumerIOException<Boolean> getSetSyncLightTarget() {
         return (Boolean t) -> {
             if (t) {
                 LOGGER.info("Enabled synchronization light.");

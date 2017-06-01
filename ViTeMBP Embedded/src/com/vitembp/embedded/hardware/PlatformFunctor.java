@@ -28,7 +28,7 @@ public class PlatformFunctor extends Platform {
     /**
      * The function which sets the state of the synchronization light.
      */
-    private final Consumer<Boolean> setSyncLightTarget;
+    private final ConsumerIOException<Boolean> setSyncLightTarget;
     
     /**
      * The callback used to set the keypad key press consumer.
@@ -47,7 +47,7 @@ public class PlatformFunctor extends Platform {
      * @param setKeypadCallback
      */
     public PlatformFunctor(
-            Consumer<Boolean> setSyncLightTarget,
+            ConsumerIOException<Boolean> setSyncLightTarget,
             Consumer<Consumer<Character>> setKeypadCallback,
             Supplier<Set<Sensor>> getSensorsTarget) {
         this.setSyncLightTarget = setSyncLightTarget;
@@ -56,7 +56,7 @@ public class PlatformFunctor extends Platform {
     }
     
     @Override
-    public Consumer<Boolean> getSetSyncLightTarget() {
+    public ConsumerIOException<Boolean> getSetSyncLightTarget() {
         return this.setSyncLightTarget;
     }
 

@@ -47,7 +47,7 @@ public abstract class Platform {
      * @return A Consumer which can be used to set the state of the
      * synchronization light.
      */
-    public abstract Consumer<Boolean> getSetSyncLightTarget();
+    public abstract ConsumerIOException<Boolean> getSetSyncLightTarget();
     
     /**
      * Sets the callback function which will process key press events.
@@ -73,18 +73,8 @@ public abstract class Platform {
         synchronized (Platform.SINGLETON_CREATE_LOCK) {
             // create the singleton instance if it doesn't already exist
             if (Platform.singletonInstance == null) {
-                // first get the system board
-                SystemBoard board = SystemBoard.getBoard();
-                if (board instanceof SystemBoardUdooNeo) {
-                    LOGGER.info("Using mock system platform for UDOO system board.");
-                    Platform.singletonInstance = new PlatformMock();
-                } else if (board instanceof SystemBoardMock) {
-                    LOGGER.info("Using mock system platform for mock system board.");
-                    Platform.singletonInstance = new PlatformMock();
-                } else {
-                    LOGGER.info("Unknown system board, using mock system platform.");
-                    Platform.singletonInstance = new PlatformMock();
-                }
+                // get the system board and use factory to build plaform
+                Platform.singletonInstance = PlatformFactory.build(SystemBoard.getBoard());
             }
         }
         
