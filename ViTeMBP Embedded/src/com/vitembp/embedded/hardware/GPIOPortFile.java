@@ -183,11 +183,11 @@ class GPIOPortFile extends GPIOPort {
         // write in or out to the direction file to set the port direction
         switch (direction) {
             case Input:
-                Files.write(valuePath, Arrays.asList(new String[] { "in" }), StandardOpenOption.WRITE);
+                Files.write(this.directionPath, Arrays.asList(new String[] { "in" }), StandardOpenOption.WRITE);
                 this.setDirection = GpioDirection.Input;
                 break;
             case Output:
-                Files.write(valuePath, Arrays.asList(new String[] { "out" }), StandardOpenOption.WRITE);
+                Files.write(this.directionPath, Arrays.asList(new String[] { "out" }), StandardOpenOption.WRITE);
                 this.setDirection = GpioDirection.Output;
                 break;
             default:
