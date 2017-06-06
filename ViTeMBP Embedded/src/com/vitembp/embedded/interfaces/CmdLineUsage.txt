@@ -1,0 +1,4 @@
+ViTeMPB embedded command line interface usage.
+Switches: 
+-http <port>
+    Starts an HTTP server.

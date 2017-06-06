@@ -18,6 +18,7 @@
 package com.vitembp.embedded;
 
 import com.vitembp.embedded.hardware.Platform;
+import com.vitembp.embedded.interfaces.CommandLine;
 
 /**
  * Class containing the main entry point for program.
@@ -29,7 +30,9 @@ public class ViTeMBPEmbedded {
      */
     public static void main(String[] args) {
         // initialize platform
-        Platform.getPlatform();
+        Platform system = Platform.getPlatform();
+        
+        // process command line arguments
+        CommandLine.acceptArgs(args, system);
     }
-    
 }

@@ -96,7 +96,7 @@ class PlatformFactory {
      */
     public static Platform create(SystemBoardUdooNeo board){
         // get gpio4 which controls the sync light
-        GPIOPort lightPort = board.getGPIOPorts().stream().filter((p) -> p.getName().equals("gpio4")).findFirst().get();
+        GPIOPort lightPort = board.getGPIOPorts().stream().filter((p) -> p.getName().equals("gpio182")).findFirst().get();
         
         return new PlatformFunctor(
                 lightPort::setValue,
