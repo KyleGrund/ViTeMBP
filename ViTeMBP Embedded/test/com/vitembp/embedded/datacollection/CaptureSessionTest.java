@@ -23,7 +23,10 @@ import com.vitembp.embedded.data.Sample;
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -57,16 +60,21 @@ public class CaptureSessionTest {
 
     /**
      * Tests creating and then starting and stopping a capture session using
-     * mock sensor objets.
+     * mock sensor objects.
      * @throws InterruptedException If the thread wait is interrupted.
      */
     @Test
     public void testStartAndStopSession() throws InterruptedException {
-        CaptureSession toTest;
-        Capture capturedData = new InMemoryCapture();
+        CaptureSession toTest;        
         List<Sensor> sensors = new ArrayList<>();
         sensors.add(new AccelerometerMock("Accelerometer 1"));
         sensors.add(new AccelerometerMock("Accelerometer 2"));
+        
+        // fill a hashmap with sensor types for crating capture
+        Map<String, UUID> sensorTypes = new HashMap<>();
+        sensors.forEach((s) -> sensorTypes.put(s.getName(), s.getType()));
+        
+        Capture capturedData = new InMemoryCapture(sensorTypes);
         toTest = new CaptureSession(29.97, sensors, capturedData);
         
         // take test data for 1 second
@@ -85,12 +93,6 @@ public class CaptureSessionTest {
         capturedData.getSamples().forEach((Sample sample) -> {
             // there should be two sensors in each sample
             Assert.assertEquals(2, sample.getSensorData().size());
-            Assert.assertEquals(2, sample.getSensorNames().size());
-            Assert.assertEquals(2, sample.getSensorTypes().size());
-            
-            // the names of the sensors should be different
-            String[] names = sample.getSensorNames().toArray(new String[] { });
-            Assert.assertNotSame(names[0], names[1]);
         });
     }
 }

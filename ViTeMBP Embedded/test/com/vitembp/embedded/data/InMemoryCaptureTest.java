@@ -19,12 +19,16 @@ package com.vitembp.embedded.data;
 
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -59,7 +63,7 @@ public class InMemoryCaptureTest {
      */
     private final List<Sample> samples = new ArrayList<>();
     
-    private final List<Map<Sensor, String>> data = new ArrayList<>();
+    private final List<Map<String, String>> data = new ArrayList<>();
     
     public InMemoryCaptureTest() {
     }
@@ -81,13 +85,13 @@ public class InMemoryCaptureTest {
         // add some sensor data
         for (int i = 0; i < NUM_OF_SAMPLES; i++) {
             // create some sensor data
-            Map<Sensor, String> sensorData = new HashMap<>();
-            sensorData.put(sensorOne, sensorOne.readSample());
-            sensorData.put(sensorTwo, sensorTwo.readSample());
+            Map<String, String> sensorData = new HashMap<>();
+            sensorData.put(sensorOne.getName(), sensorOne.readSample());
+            sensorData.put(sensorTwo.getName(), sensorTwo.readSample());
             data.add(sensorData);
             
             // create sample from data and add to samples
-            samples.add(new InMemorySample(i, Instant.now(), sensorData));
+            samples.add(new Sample(i, Instant.now(), sensorData));
         }
     }
     
@@ -101,13 +105,21 @@ public class InMemoryCaptureTest {
     @Test
     public void testGetSamples() {
         System.out.println("getSamples");
-        InMemoryCapture instance = new InMemoryCapture();
+        
+        // build a map of sensor types for the capture
+        HashMap<String, UUID> sensorTypes = new HashMap<>();
+        sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        
+        // create the capture
+        InMemoryCapture instance = new InMemoryCapture(sensorTypes);
+        
         this.data.forEach(instance::addSample);
 
         // convert samples to list
         List<Sample> found = new ArrayList();
         instance.getSamples().forEach(found::add);
-        
+
         // check each element matches
         for (int i = 0; i < NUM_OF_SAMPLES; i++) {
             Sample a = found.get(i);
@@ -115,8 +127,6 @@ public class InMemoryCaptureTest {
             assertEquals(i, a.getIndex());
             assertEquals(a.getIndex(), b.getIndex());
             assertEquals(a.getSensorData(), b.getSensorData());
-            assertEquals(a.getSensorNames(), b.getSensorNames());
-            assertEquals(a.getSensorTypes(), b.getSensorTypes());
             
             // sanity check times are within a second of the current time
             long aDiff = Instant.now().getEpochSecond() - a.getTime().getEpochSecond();
@@ -132,7 +142,14 @@ public class InMemoryCaptureTest {
     @Test
     public void testAddSample() {
         System.out.println("addSample");
-        InMemoryCapture instance = new InMemoryCapture();
+        
+        // build a map of sensor types for the capture
+        HashMap<String, UUID> sensorTypes = new HashMap<>();
+        sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        
+        // create the capture
+        InMemoryCapture instance = new InMemoryCapture(sensorTypes);
         data.forEach(instance::addSample);
         
         // count samples to make sure all data were added
@@ -147,7 +164,13 @@ public class InMemoryCaptureTest {
     @Test
     public void testSave() {
         System.out.println("save");
-        InMemoryCapture instance = new InMemoryCapture();
+        
+        // build a map of sensor types for the capture
+        HashMap<String, UUID> sensorTypes = new HashMap<>();
+        sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        
+        InMemoryCapture instance = new InMemoryCapture(sensorTypes);
         instance.save();
         
         this.data.forEach(instance::addSample);
@@ -160,11 +183,63 @@ public class InMemoryCaptureTest {
     @Test
     public void testLoad() {
         System.out.println("load");
-        InMemoryCapture instance = new InMemoryCapture();
+        
+        // build a map of sensor types for the capture
+        HashMap<String, UUID> sensorTypes = new HashMap<>();
+        sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        
+        InMemoryCapture instance = new InMemoryCapture(sensorTypes);
         instance.load();
         
         this.data.forEach(instance::addSample);
         instance.load();
     }
     
+    /**
+     * Test of load method, of class InMemoryCapture.
+     */
+    @Test
+    public void testToXml() {
+        System.out.println("toXml");
+        
+        // build a map of sensor types for the capture
+        HashMap<String, UUID> sensorTypes = new HashMap<>();
+        sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        
+        InMemoryCapture instance = new InMemoryCapture(sensorTypes);
+        
+        this.data.forEach(instance::addSample);
+        
+        String xmlValue = instance.toXml();
+    }
+    
+    /**
+     * Test of writeTo method, of class InMemoryCapture.
+     */
+    @Test
+    public void testWriteTo() {
+        try {
+            System.out.println("toXml");
+            
+            // build a map of sensor types for the capture
+            HashMap<String, UUID> sensorTypes = new HashMap<>();
+            sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+            sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+            
+            InMemoryCapture instance = new InMemoryCapture(sensorTypes);
+            
+            this.data.forEach(instance::addSample);
+            
+            StringWriter sw = new StringWriter();
+            XMLStreamWriter toWriteTo = XMLOutputFactory.newFactory().createXMLStreamWriter(sw);
+            
+            instance.writeTo(toWriteTo);
+            
+            String xmlValue = sw.toString();
+        } catch (XMLStreamException ex) {
+            fail();
+        }
+    }
 }

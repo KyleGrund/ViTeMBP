@@ -19,14 +19,29 @@ package com.vitembp.embedded.data;
 
 import com.vitembp.embedded.hardware.Sensor;
 import java.time.Instant;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * An implementation of Capture using in-memory collection classes.
  */
 public class InMemoryCapture extends Capture {
+    /**
+     * The names of the sensors whose data is represented by this sample.
+     */
+    private final Set<String> names;
+    
+    /**
+     * The map of sensor names to their UUID type.
+     */
+    private final Map<String, UUID> types;
+    
     /**
      * The set of samples.
      */
@@ -34,9 +49,13 @@ public class InMemoryCapture extends Capture {
     
     /**
      * Initializes a new instance of the InMemoryCapture class.
+     * @param nameToIds A map of sensor names to type UUIDs.
      */
-    public InMemoryCapture() {
+    public InMemoryCapture(Map<String, UUID> nameToIds) {
         this.samples = new ArrayList<>();
+        
+        this.names = new HashSet<>(nameToIds.keySet());
+        this.types = new HashMap<>(nameToIds);
     }
     
     @Override
@@ -45,9 +64,9 @@ public class InMemoryCapture extends Capture {
     }
 
     @Override
-    public void addSample(Map<Sensor, String> data) {
+    public void addSample(Map<String, String> data) {        
         // create a new sample and add it to the samples array list
-        this.samples.add(new InMemorySample(this.samples.size(), Instant.now(), data));
+        this.samples.add(new Sample(this.samples.size(), Instant.now(), data));
     }
     
     @Override
@@ -58,5 +77,15 @@ public class InMemoryCapture extends Capture {
     @Override
     public void load() {
         // nothing to do to load an in-memory capture
+    }
+
+    @Override
+    public Set<String> getSensorNames() {
+        return Collections.unmodifiableSet(this.names);
+    }
+
+    @Override
+    public Map<String, UUID> getSensorTypes() {
+        return Collections.unmodifiableMap(this.types);
     }
 }

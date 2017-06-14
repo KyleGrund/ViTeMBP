@@ -19,6 +19,7 @@ package com.vitembp.embedded.datacollection;
 
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.hardware.Sensor;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,8 @@ public class CaptureSession {
     }
     
     private void callback(Map<Sensor, String> data) {
-        this.data.addSample(data);
+        Map<String, String> toAdd = new HashMap<>();
+        data.forEach((sensor, dataString) -> toAdd.put(sensor.getName(), dataString));
+        this.data.addSample(toAdd);
     }
 }
