@@ -32,28 +32,28 @@ public abstract class GPIOPort {
     /**
      * Gets the direction of the GPIOPort port.
      * @return The direction of the GPIOPort port.
-     * @throws java.io.IOException
+     * @throws java.io.IOException If an exception occurs getting the port direction.
      */
     public abstract GpioDirection getDirection() throws IOException;
     
     /**
      * Sets the direction of the GPIOPort port.
      * @param direction The direction to set the GPIOPort port to.
-     * @throws java.io.IOException
+     * @throws java.io.IOException If an exception occurs setting the port direction.
      */
     public abstract void setDirection(GpioDirection direction) throws IOException;
     
     /**
      * Returns the boolean value representing the state of the port.
      * @return The boolean value representing the state of the port.
-     * @throws java.io.IOException
+     * @throws java.io.IOException If an exception occurs getting the port value.
      */
     public abstract boolean getValue() throws IOException;
     
     /**
      * Sets the state of the port.
      * @param value The boolean value representing the state to set the port to.
-     * @throws java.io.IOException
+     * @throws java.io.IOException If an exception occurs setting the port value.
      */
     public abstract void setValue(boolean value) throws IOException;
 }

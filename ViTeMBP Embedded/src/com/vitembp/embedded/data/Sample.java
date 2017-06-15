@@ -17,7 +17,6 @@
  */
 package com.vitembp.embedded.data;
 
-import com.vitembp.embedded.hardware.Sensor;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.util.Collections;
@@ -68,6 +67,18 @@ public class Sample {
         
         // create read only data structure to hold data
         this.data = Collections.unmodifiableMap(data);
+    }
+    
+    /**
+     * Initializes a new instance of the InMemorySample class.
+     * @param index The index of this sample instance.
+     * @param time The time this sample was created.
+     * @param dataStream The XMLStreamReader to read data from for this sample.
+     * @throws javax.xml.stream.XMLStreamException If there is an exception
+     * loading capture from the XMLStreamReader.
+     */
+    public Sample(int index, Instant time, XMLStreamReader dataStream) throws XMLStreamException {
+        this(index, time, Sample.readFrom(dataStream));
     }
     
     /**
@@ -141,8 +152,8 @@ public class Sample {
      * @return Map containing loaded data.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
-    protected Map<String, String> readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
-        Map<String, String> data = new HashMap<>();
+    private static Map<String, String> readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
+        Map<String, String> readData = new HashMap<>();
         
         // read sample element
         if (!"sample".equals(toReadFrom.getLocalName())) {
@@ -153,7 +164,7 @@ public class Sample {
         // add a sensor element for each data entry
         while ("sensor".equals(toReadFrom.getLocalName())) {
             // a sensor element must have a name attribute
-            if (toReadFrom.getAttributeCount() != 1 || "name".equals(toReadFrom.getAttributeName(0))) {
+            if (toReadFrom.getAttributeCount() != 1 || !"name".equals(toReadFrom.getAttributeLocalName(0))) {
                 throw new XMLStreamException("Expected name attribute not found.", toReadFrom.getLocation());
             }
             String name = toReadFrom.getAttributeValue(0);
@@ -163,7 +174,7 @@ public class Sample {
             }
             
             // store the sensor data
-            data.put(name, toReadFrom.getText());
+            readData.put(name, toReadFrom.getText());
             
             if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"sensor".equals(toReadFrom.getLocalName())) {
                 throw new XMLStreamException("Expected </sensor> not found.", toReadFrom.getLocation());
@@ -178,6 +189,6 @@ public class Sample {
         // read past close element
         toReadFrom.next();
         
-        return data;
+        return readData;
     }
 }

@@ -139,8 +139,11 @@ public class SampleTest {
         String sampleString = instance.toXmlFragment();
         XMLStreamReader toReadFrom = XMLInputFactory.newFactory().createXMLStreamReader(new StringReader(sampleString));
         toReadFrom.next();
-        Map<String, String> expResult = this.sensorData;
-        Map<String, String> result = instance.readFrom(toReadFrom);
-        assertEquals(expResult, result);
+        Sample expResult = new Sample(0, Instant.EPOCH, this.sensorData);
+        Sample result = new Sample(0, Instant.EPOCH, toReadFrom);
+        assertEquals(expResult.getIndex(), result.getIndex());
+        assertTrue(expResult.getTime().equals(result.getTime()));
+        assertEquals(expResult.getSensorData().size(), result.getSensorData().size());
+        expResult.getSensorData().forEach((key, value) -> { assertTrue(expResult.getSensorData().get(key).equals(value)); });
     }
 }

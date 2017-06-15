@@ -39,7 +39,7 @@ public interface ConsumerIOException<T> {
      * Performs this operation on the given argument.
      *
      * @param t the input argument
-     * @throws java.io.IOException
+     * @throws java.io.IOException If an exception occurs during execution of the target call.
      */
     void accept(T t) throws IOException;
 }

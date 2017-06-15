@@ -22,6 +22,7 @@ import com.vitembp.embedded.data.InMemoryCapture;
 import com.vitembp.embedded.data.Sample;
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,7 +75,7 @@ public class CaptureSessionTest {
         Map<String, UUID> sensorTypes = new HashMap<>();
         sensors.forEach((s) -> sensorTypes.put(s.getName(), s.getType()));
         
-        Capture capturedData = new InMemoryCapture(sensorTypes);
+        Capture capturedData = new InMemoryCapture(Instant.EPOCH, 29.97, sensorTypes);
         toTest = new CaptureSession(29.97, sensors, capturedData);
         
         // take test data for 1 second

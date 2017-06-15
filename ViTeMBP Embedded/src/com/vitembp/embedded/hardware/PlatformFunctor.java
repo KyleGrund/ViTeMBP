@@ -42,9 +42,9 @@ public class PlatformFunctor extends Platform {
     
     /**
      * Initializes a new instance of the PlatformFunctor class.
-     * @param setSyncLightTarget
-     * @param getSensorsTarget
-     * @param setKeypadCallback
+     * @param setSyncLightTarget Callback that controls the synchronization light.
+     * @param getSensorsTarget Callback that provides a list of sensors.
+     * @param setKeypadCallback Callback to set a key press listener.
      */
     public PlatformFunctor(
             ConsumerIOException<Boolean> setSyncLightTarget,
