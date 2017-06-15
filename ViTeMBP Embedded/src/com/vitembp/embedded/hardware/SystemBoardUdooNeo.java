@@ -45,5 +45,4 @@ class SystemBoardUdooNeo extends SystemBoard{
     public Set<GPIOPort> getGPIOPorts() {
         return this.gpioPorts;
     }
-    
 }

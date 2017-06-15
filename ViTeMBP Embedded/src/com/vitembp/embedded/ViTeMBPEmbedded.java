@@ -31,7 +31,7 @@ public class ViTeMBPEmbedded {
     public static void main(String[] args) {
         // initialize platform
         Platform system = Platform.getPlatform();
-        
+        system.setKeypadCallback((key) -> System.out.println(key));
         // process command line arguments
         CommandLine.acceptArgs(args, system);
     }
