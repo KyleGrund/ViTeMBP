@@ -109,16 +109,54 @@ class PlatformFactory {
                 .findFirst()
                 .get();
         
+        // get gpio107 which controls button 2
+        GPIOPort buttonTwo = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio107"))
+                .findFirst()
+                .get();
+        
+        // get gpio180 which controls button 3
+        GPIOPort buttonThree = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio180"))
+                .findFirst()
+                .get();
+        
+        // get gpio181 which controls button 4
+        GPIOPort buttonFour = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio181"))
+                .findFirst()
+                .get();
+        
         return new PlatformFunctor(
                 lightPort::setValue,
                 (Consumer<Character> cb) -> {
-                    GPIOPolledEvent buttonOneEvent = new GPIOPolledEvent(
+                    new GPIOPolledEvent(
                             buttonOne,
                             10,
                             (Boolean released) -> {
                                 if (!released) cb.accept('1');
-                            });
-                    buttonOneEvent.start();
+                            }).start();
+                    new GPIOPolledEvent(
+                            buttonTwo,
+                            10,
+                            (Boolean released) -> {
+                                if (!released) cb.accept('2');
+                            }).start();
+                    new GPIOPolledEvent(
+                            buttonThree,
+                            10,
+                            (Boolean released) -> {
+                                if (!released) cb.accept('3');
+                            }).start();
+                    new GPIOPolledEvent(
+                            buttonFour,
+                            10,
+                            (Boolean released) -> {
+                                if (!released) cb.accept('4');
+                            }).start();
                 },
                 () -> {
                     Set<Sensor> toReturn = new HashSet<>();
