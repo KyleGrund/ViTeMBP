@@ -133,6 +133,7 @@ class PlatformFactory {
         return new PlatformFunctor(
                 lightPort::setValue,
                 (Consumer<Character> cb) -> {
+                    // add polled event listeners to supply button press events
                     new GPIOPolledEvent(
                             buttonOne,
                             10,
