@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -27,13 +28,17 @@ public interface UuidStringStore {
      * Reads a String value for the supplied key.
      * @param key The key of the value to read.
      * @return The value specified by the key.
+     * @throws java.io.IOException If an exception occurs while writing to the
+     * persistent store.
      */
-    public abstract String read(UUID key);
+    public abstract String read(UUID key) throws IOException;
     
     /**
      * Writes a value to the location specified by the key.
      * @param key The location to write the data to.
      * @param value The value to write.
+     * @throws java.io.IOException If an exception occurs while writing to the
+     * persistent store.
      */
-    public abstract void write(UUID key, String value);
+    public abstract void write(UUID key, String value) throws IOException;
 }
