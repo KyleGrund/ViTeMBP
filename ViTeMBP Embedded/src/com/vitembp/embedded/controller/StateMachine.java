@@ -20,11 +20,17 @@ package com.vitembp.embedded.controller;
 import com.vitembp.embedded.hardware.Platform;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Controller state machine implementation.
  */
 public class StateMachine {
+    /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    
     /**
      * The thread the state machine executes on.
      */
@@ -57,7 +63,10 @@ public class StateMachine {
         
         // build states
         this.states = new HashMap<>();
+        this.states.put(EndCapture.class, new EndCapture());
         this.states.put(New.class, new New());
+        this.states.put(StartCapture.class, new StartCapture());
+        this.states.put(WaitForEnd.class, new WaitForEnd());
         this.states.put(WaitForStart.class, new WaitForStart());
     }
     
@@ -83,6 +92,7 @@ public class StateMachine {
         Class nextState = New.class;
         
         while (this.isRunning) {
+            LOGGER.info("Executing: " + nextState.getSimpleName());
             nextState = this.states.get(nextState).execute(this.context);
         }
     }
