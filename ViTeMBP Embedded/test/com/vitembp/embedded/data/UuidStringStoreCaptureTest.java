@@ -19,6 +19,7 @@ package com.vitembp.embedded.data;
 
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.xml.stream.XMLStreamReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -155,7 +155,7 @@ public class UuidStringStoreCaptureTest {
      * Test of save method, of class UuidStringStoreCapture.
      */
     @Test
-    public void testSave() {
+    public void testSave() throws Exception {
         System.out.println("save");
         UuidStringStoreCapture instance = this.createInstance();
         instance.save();

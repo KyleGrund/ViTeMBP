@@ -17,11 +17,9 @@
  */
 package com.vitembp.embedded;
 
+import com.vitembp.embedded.controller.StateMachine;
 import com.vitembp.embedded.hardware.Platform;
 import com.vitembp.embedded.interfaces.CommandLine;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class containing the main entry point for program.
@@ -34,40 +32,11 @@ public class ViTeMBPEmbedded {
     public static void main(String[] args) {
         // initialize platform
         Platform system = Platform.getPlatform();
-        system.setKeypadCallback((key) -> {
-                    System.out.println(key);
-                    int flashes = 0;
-                    if (key == '4') {
-                        flashes = 4;
-                    } else if (key == '3') {
-                        flashes = 3;
-                    } else if (key == '2') {
-                        flashes = 2;
-                    } else if (key == '1') {
-                        flashes = 1;
-                    }
-                    
-                    for (int i = 0; i < flashes; i++) {
-                        try {
-                            system.getSetSyncLightTarget().accept(true);
-                            Thread.sleep(100);
-                            system.getSetSyncLightTarget().accept(false);
-                            Thread.sleep(100);
-                        } catch (IOException | InterruptedException ex) {
-                            System.out.println(ex.getMessage());
-                        }
-                    }
-                });
+
         // process command line arguments
         CommandLine.acceptArgs(args, system);
         
-        // flash sync light to indicate startup
-        try {
-            system.getSetSyncLightTarget().accept(true);
-            Thread.sleep(500);
-            system.getSetSyncLightTarget().accept(false);
-        } catch (IOException | InterruptedException ex) {
-            System.out.println(ex.getMessage());
-        }
+        // start system state machine
+        new StateMachine(system).start();
     }
 }

@@ -100,7 +100,7 @@ public class UuidStringStoreCapture extends Capture {
     }
     
     @Override
-    public void save() {
+    public void save() throws IOException {
         this.store.write(this.captureLocation, this.toXml());
     }
 
