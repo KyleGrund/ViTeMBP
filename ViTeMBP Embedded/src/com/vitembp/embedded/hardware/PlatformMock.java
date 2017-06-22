@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Creates a mock implementation of the Platform class.
  */
-public class PlatformMock extends Platform{
+class PlatformMock extends Platform{
     /**
      * Class logger instance.
      */

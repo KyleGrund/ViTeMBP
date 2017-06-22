@@ -57,7 +57,6 @@ public abstract class Platform {
     
     /**
      * Gets the sensor control interface objects.
-     * instance.
      * @return A Map of String sensor names to their control interface object.
      */
     public abstract Set<Sensor> getSensors();

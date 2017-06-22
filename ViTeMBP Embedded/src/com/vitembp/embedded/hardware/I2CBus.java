@@ -46,6 +46,12 @@ abstract class I2CBus {
     public abstract byte[] writeRead(int address, byte[] toWrite, int readCount);
     
     /**
+     * Gets the unique name of the I2C bus in the system.
+     * @return The unique name of the I2C bus in the system.
+     */
+    public abstract String getName();
+    
+    /**
      * Gets an I2CDevice object for all devices which can be enumerated on this
      * bus.
      * @return I2CDevice objects for all enumerated devices.

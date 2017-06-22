@@ -44,10 +44,15 @@ class I2CBusFunctor extends I2CBus {
     private final Map<Integer, I2CDevice> devices = new HashMap<>();
     
     /**
-     * Initializes a new instance of the I2CBusFunctor class.
-     * @param busCallback 
+     * The unique name of this bus.
      */
-    I2CBusFunctor(Function<I2CBusTransaction, byte[]> busCallback, Supplier<List<Integer>> deviceIDCallback) {
+    private final String name;
+    
+    /**
+     * Initializes a new instance of the I2CBusFunctor class.
+     */
+    I2CBusFunctor(String name, Function<I2CBusTransaction, byte[]> busCallback, Supplier<List<Integer>> deviceIDCallback) {
+        this.name = name;
         this.busCallback = busCallback;
         this.deviceIDCallback = deviceIDCallback;
     }
@@ -92,5 +97,10 @@ class I2CBusFunctor extends I2CBus {
         toRemove.stream().forEach((dev) -> { this.devices.remove(dev); });
         
         return toReturn;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
     }
 }

@@ -118,7 +118,7 @@ public class SensorSampler {
             for (Sensor sensor : this.sensors) {
                 String sample = sensor.readSample();
                 data.put(sensor, sample);
-                LOGGER.debug("Sensor " + sensor.getName() + ": " + sample);
+                LOGGER.debug("Sensor " + sensor.getBinding() + ": " + sample);
             }
             
             // notify listeners

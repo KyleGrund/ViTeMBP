@@ -73,10 +73,10 @@ public class CaptureSessionTest {
         
         // fill a hashmap with sensor types for crating capture
         Map<String, UUID> sensorTypes = new HashMap<>();
-        sensors.forEach((s) -> sensorTypes.put(s.getName(), s.getType()));
+        sensors.forEach((s) -> sensorTypes.put(s.getBinding(), s.getType()));
         
         Capture capturedData = new InMemoryCapture(Instant.EPOCH, 29.97, sensorTypes);
-        toTest = new CaptureSession(29.97, sensors, capturedData);
+        toTest = new CaptureSession(sensors, capturedData);
         
         // take test data for 1 second
         toTest.start();

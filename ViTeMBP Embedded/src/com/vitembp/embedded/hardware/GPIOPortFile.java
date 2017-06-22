@@ -53,8 +53,15 @@ class GPIOPortFile extends GPIOPort {
      */
     private String portname;
     
+    /**
+     * A boolean value indicating whether the direction of the port has been set
+     * and thus whether setDirection member is valid.
+     */
     private boolean hasDirectionBeenSet = false;
     
+    /**
+     * A GpioDirection indicating what the direction of the port has been set to.
+     */
     private GpioDirection setDirection;
     
     /**

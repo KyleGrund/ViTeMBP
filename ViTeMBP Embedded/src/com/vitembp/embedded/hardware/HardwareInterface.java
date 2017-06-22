@@ -20,16 +20,13 @@ package com.vitembp.embedded.hardware;
 /**
  * This class provides an abstraction for peripheral interface board.
  */
-public abstract class PeripheralInterface {
+public class HardwareInterface {
     /**
-     * Gets an instance of the PeripheralInterface class for the given
-     * SystemBoard.
-     * @param board The SystemBoard interface to build the PeripheralInterface
-     * instance for.
-     * @return An instance of the PeripheralInterface class for the given
-     * SystemBoard.
+     * Gets an instance of the HardwareInterface class for the given SystemBoard.
+     * @param board The SystemBoard interface to build the HardwareInterface instance for.
+     * @return An instance of the HardwareInterface class for the given SystemBoard.
      */
-    public static PeripheralInterface getInterface(SystemBoard board) {
+    public static HardwareInterface getInterface(Platform board) {
         throw new UnsupportedOperationException();
     }
 }

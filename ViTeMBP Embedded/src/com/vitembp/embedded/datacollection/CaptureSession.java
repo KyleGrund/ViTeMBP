@@ -30,8 +30,8 @@ public class CaptureSession {
     private final SensorSampler sampler;
     private final Capture data;
     
-    public CaptureSession(double frequency, List<Sensor> sensors, Capture session) {
-        this.sampler = new SensorSampler(frequency, sensors, this::callback);
+    public CaptureSession(List<Sensor> sensors, Capture session) {
+        this.sampler = new SensorSampler(session.getSampleFrequency(), sensors, this::callback);
         this.data = session;
     }
     
@@ -45,7 +45,7 @@ public class CaptureSession {
     
     private void callback(Map<Sensor, String> data) {
         Map<String, String> toAdd = new HashMap<>();
-        data.forEach((sensor, dataString) -> toAdd.put(sensor.getName(), dataString));
+        data.forEach((sensor, dataString) -> toAdd.put(sensor.getBinding(), dataString));
         this.data.addSample(toAdd);
     }
 }

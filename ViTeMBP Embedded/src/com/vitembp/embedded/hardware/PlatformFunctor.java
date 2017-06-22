@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 /**
  * An implementation of the Platform class using the functor pattern.
  */
-public class PlatformFunctor extends Platform {
+class PlatformFunctor extends Platform {
     /**
      * The function which sets the state of the synchronization light.
      */

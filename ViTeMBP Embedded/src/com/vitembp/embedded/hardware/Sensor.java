@@ -24,16 +24,16 @@ import java.util.UUID;
  */
 public abstract class Sensor {
     /**
-     * The name of this sensor instance.
+     * The binding of this sensor instance.
      */
-    private final String name;
+    private final String binding;
     
     /**
      * Initializes a new instance of the Sensor class.
-     * @param name The name of this sensor instance as used in the system.
+     * @param binding The binding of this sensor instance as used in the system.
      */
-    protected Sensor(String name) {
-        this.name = name;
+    protected Sensor(String binding) {
+        this.binding = binding;
     }
     
     /**
@@ -44,12 +44,13 @@ public abstract class Sensor {
     public abstract UUID getType();
     
     /**
-     * Gets the name of the sensor as used in the system. This defines the use
-     * of the sensor, i.e. "Front Wheel Speed Sensor".
-     * @return The name of the sensor as used in the system.
+     * Gets the binding of the sensor as used in the system. This defines the
+     * sensor uniquely to the system, similarly to how a URL identifies a 
+     * web server.
+     * @return The binding of the sensor as used in the system.
      */
-    public String getName() {
-        return this.name;
+    public String getBinding() {
+        return this.binding;
     }
     
     /**

@@ -161,7 +161,13 @@ class PlatformFactory {
                 },
                 () -> {
                     Set<Sensor> toReturn = new HashSet<>();
-                    toReturn.add(new AccelerometerMock("Accelerometer"));
+                    
+                    // todo: move to HardwareInterface class
+                    // use factory to build all devices
+                    board.getI2CBusses().forEach((bus) -> {
+                        toReturn.addAll(I2CSensorFactory.getI2CSensors(bus));
+                    });
+                    
                     return toReturn;
                 });
     }

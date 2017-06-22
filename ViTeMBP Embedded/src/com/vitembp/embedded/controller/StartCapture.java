@@ -17,6 +17,12 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.datacollection.CaptureSession;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -30,6 +36,23 @@ class StartCapture implements ControllerState {
     
     @Override
     public Class execute(ExecutionContext state) {
+        // this represents the time to enable the sync light for
+        List<Integer> syncLightDuration = Arrays.asList(new Integer[] { 2000 });
+        
+        try {
+            // create new capture
+            //CaptureSession cs = state.getNewCaptureSession();
+            
+            // start capture
+            //cs.start();
+            
+            // enable sync LED
+            state.flashSyncLight(syncLightDuration);
+        } catch (IOException ex) {
+            LOGGER.error("Error flashing sync light when starting new capture.", ex);
+        }
+        
+        // transition to wait for end class
         return WaitForEnd.class;
     }
 }

@@ -20,9 +20,15 @@ package com.vitembp.embedded.hardware;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,7 +48,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
     public I2CBusI2CDev(final int busID) {
         // create functor by using lambda functions calling local synchronous
         // static functions with this particular bus' ID curried.
-        super(
+        super("i2c" + Integer.toString(busID),
                 (transaction) -> I2CBusI2CDev.busCallback(busID, transaction),
                 () -> I2CBusI2CDev.deviceIDCallback(busID));
     }
@@ -161,5 +167,29 @@ class I2CBusI2CDev extends I2CBusFunctor {
         }
         
         return found;
+    }
+    
+    static Set<I2CBus> buildBusesForPath(Path busDir) throws IOException {
+        Set<I2CBus> toReturn = new HashSet<>();
+        
+        // make sure ports is a directory
+        if (!Files.isDirectory(busDir)) {
+            LOGGER.error("Cannot build I2C busses for a path which is not a directory.");
+            throw new IOException("The busDir parameter must be a directory.");
+        }
+        
+        // enumerate all paths from directory of format i2c-###
+        Stream<Integer> toBuild = Files.list(busDir)
+                .filter((p) -> p.getFileName().toString().startsWith("i2c-"))
+                .map((p) -> p.getFileName().toString().substring(4))
+                .map((num) -> Integer.parseUnsignedInt(num));
+                    
+            
+        // build GPIOPortFiles for matching files
+        toBuild.forEach((dir) -> {
+            toReturn.add(new I2CBusI2CDev(dir));
+        });
+        
+        return toReturn;
     }
 }

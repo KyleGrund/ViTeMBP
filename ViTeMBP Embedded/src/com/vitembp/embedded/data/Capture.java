@@ -124,6 +124,22 @@ public abstract class Capture {
     protected abstract void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException;
     
     /**
+     * Gets the sampling frequency of this capture.
+     * @return The sampling frequency of this capture.
+     */
+    public double getSampleFrequency() {
+        return this.sampleFrequency;
+    }
+    
+    /**
+     * Gets the Instant representing the time this capture was started.
+     * @return An Instant representing the time this capture was started.
+     */
+    public Instant getStartTime() {
+        return this.startTime;
+    }
+    
+    /**
      * Returns a representation of this class as an XML fragment.
      * @return A representation of this class as an XML fragment.
      */

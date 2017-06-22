@@ -17,11 +17,15 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.configuration.SystemConfig;
+import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.ConsumerIOException;
 import com.vitembp.embedded.hardware.Platform;
+import com.vitembp.embedded.hardware.Sensor;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 
@@ -82,5 +86,22 @@ class ExecutionContext {
      */
     public char getKeyPress() throws InterruptedException {
         return this.keyPresses.take();
+    }
+
+    /**
+     * Creates and returns a new capture session.
+     * @return A new capture session.
+     */
+    CaptureSession getNewCaptureSession() {
+        // collect params
+        SystemConfig config = SystemConfig.getConfig();
+        
+        
+        
+        double sampleFrequency = 29.97;
+        List<Sensor> sensors = Arrays.asList(this.hardwarePlatform.getSensors().toArray(new Sensor[] { }));
+        Capture dataStore = null;
+        
+        return new CaptureSession(sensors, dataStore);
     }
 }

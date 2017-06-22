@@ -90,8 +90,8 @@ public class InMemoryCaptureTest {
         for (int i = 0; i < NUM_OF_SAMPLES; i++) {
             // create some sensor data
             Map<String, String> sensorData = new HashMap<>();
-            sensorData.put(sensorOne.getName(), sensorOne.readSample());
-            sensorData.put(sensorTwo.getName(), sensorTwo.readSample());
+            sensorData.put(sensorOne.getBinding(), sensorOne.readSample());
+            sensorData.put(sensorTwo.getBinding(), sensorTwo.readSample());
             data.add(sensorData);
             
             // create sample from data and add to samples

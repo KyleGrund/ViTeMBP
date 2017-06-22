@@ -31,14 +31,27 @@ class SystemBoardUdooNeo extends SystemBoard{
      */
     private final Set<GPIOPort> gpioPorts;
     
+    /**
+     * The I2C busses for this system.
+     */
+    private final Set<I2CBus> i2cBusses;
+    
+    /**
+     * Initializes a new instance of the SystemBoardUdooNeo.
+     * @throws IOException If there is an IOException communicating with the
+     * system hardware.
+     */
     SystemBoardUdooNeo() throws IOException {
         // builds GPIO port interfaces
         this.gpioPorts = GPIOPortFile.buildPortsForPath(Paths.get("/sys/class/gpio"));
+        
+        // builds I2C bus interfaces.
+        this.i2cBusses = I2CBusI2CDev.buildBusesForPath(Paths.get("/sys/class/i2c-dev"));
     }
             
     @Override
     public Set<I2CBus> getI2CBusses() {
-        return new HashSet<>();
+        return this.i2cBusses;
     }
 
     @Override

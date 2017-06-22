@@ -42,6 +42,14 @@ public class I2CDevice {
     }
     
     /**
+     * Gets the address of this device on the bus.
+     * @return The address of this device on the bus.
+     */
+    int getAddress() {
+        return this.deviceAddress;
+    }
+    
+    /**
      * Reads the specified number of bytes from the device.
      * @param readCount The number of bytes to read from the device.
      * @return The bytes read from the device.
