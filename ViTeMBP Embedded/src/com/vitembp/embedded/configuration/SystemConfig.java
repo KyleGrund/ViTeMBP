@@ -84,18 +84,20 @@ public class SystemConfig {
     /**
      * Initializes a new instance of the SystemConfig class.
      */
-    private SystemConfig() {
-        LOGGER.info("Loading system configuration.");
-        
+    private SystemConfig() {       
         // try to load config from disk
         if (Files.exists(SystemConfig.CONFIG_FILE_PATH)) {
+            LOGGER.info("Found system config on filesystem.");
             try {
                 loadConfigFromPath(SystemConfig.CONFIG_FILE_PATH);
                 this.loadedConfigFromFile = true;
             } catch (IOException | XMLStreamException ex) {
                 LOGGER.error("Exception loading system config from file.", ex);
             }
+        } else {
+            LOGGER.info("System configuration not found on filesystem.");
         }
+        
     }
 
     /**
@@ -109,7 +111,7 @@ public class SystemConfig {
         // path may be in the filesystem or in the local assembly, try both
         // defaulting to the more commonly used filesystem
         if (Files.exists(configFile)) {
-            LOGGER.info("Loading default config from path: " + configFile.toString());
+            LOGGER.info("Loading config from path: " + configFile.toAbsolutePath().toString());
             
             // read in all lines in file and combine them to a single string
             config = Files
@@ -121,7 +123,7 @@ public class SystemConfig {
             // systems that use another character
             String pathToResource = configFile.toString().replace(File.separator, "/");
             
-            LOGGER.info("Loading default config from path: " + pathToResource);
+            LOGGER.info("Loading config from path: " + pathToResource);
             
             InputStream in = this.getClass().getResourceAsStream(pathToResource);
             config = new BufferedReader(new InputStreamReader(in))
@@ -172,6 +174,8 @@ public class SystemConfig {
             if (this.loadedConfigFromFile) {
                 throw new IllegalStateException("Cannot create default configuration when already initialized.");
             }
+            
+            LOGGER.info("Loading default configuration.");
             
             // load the config
             this.loadConfigFromPath(location);
