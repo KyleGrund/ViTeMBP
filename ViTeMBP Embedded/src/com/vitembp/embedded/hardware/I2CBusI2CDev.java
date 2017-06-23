@@ -102,15 +102,24 @@ class I2CBusI2CDev extends I2CBusFunctor {
             BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             
             // read past header line
-            br.readLine();
+            String nextLine = br.readLine();
+            LOGGER.trace("i2cdetect: " + nextLine);
+            if (nextLine == null) {
+                throw new Exception("Unexpected end of output reading i2cdetect header.");
+            }
             
             // read in and parse data lines for address 0x03 to 0x77
             for (int addr = 0; addr <= 7; addr++) {
-                foundDevices.addAll(parseDetectLine(Integer.toString(addr) + "0", br.readLine()));
+                nextLine = br.readLine();
+                LOGGER.trace("i2cdetect: " + nextLine);
+                if (nextLine == null) {
+                    throw new Exception("Unexpected end of output reading i2cdetect header.");
+                }
+                foundDevices.addAll(parseDetectLine(Integer.toString(addr) + "0", nextLine));
             }
 
-        } catch (IOException ex) {
-            LOGGER.error("Unexpected IO exception while enumerating I2C devices on bus: i2c" + Integer.toString(busID) + ".", ex);
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected exception while enumerating I2C devices on bus: i2c-" + Integer.toString(busID) + ".", ex);
         }
         
         return foundDevices;
@@ -142,7 +151,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
         }
         
         // the bus device address base for this line as determined by the header
-        int baseAddress = 16 * Integer.getInteger(address.substring(0, 1));
+        int baseAddress = 16 * Integer.parseInt(address.substring(0, 1));
         
         // list of addresses with a device
         List<Integer> found = new ArrayList<>();

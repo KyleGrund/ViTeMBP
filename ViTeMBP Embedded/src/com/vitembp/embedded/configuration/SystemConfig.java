@@ -365,7 +365,7 @@ public class SystemConfig {
         // add a name element for each name entry
         while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "sensorbinding".equals(toReadFrom.getLocalName())) {
             // read name element
-            if (toReadFrom.getEventType() != XMLStreamConstants.START_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
+            if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
                 throw new XMLStreamException("Expected <name> not found.", toReadFrom.getLocation());
             }
             
@@ -381,7 +381,7 @@ public class SystemConfig {
             }
             
             // read binding
-            if (toReadFrom.getEventType() != XMLStreamConstants.START_ELEMENT || !"binding".equals(toReadFrom.getLocalName())) {
+            if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"binding".equals(toReadFrom.getLocalName())) {
                 throw new XMLStreamException("Expected <binding> not found.", toReadFrom.getLocation());
             }
             
