@@ -39,12 +39,12 @@ public class SystemConfigTest {
     /**
      * An XML String when loaded sets the configuration to default values.
      */
-    private static final String DEFAULT = "<?xml version=\"1.0\" ?><configuration><samplingfrequency>29.97</samplingfrequency><sensornames></sensornames></configuration>";
+    private static final String DEFAULT = "<?xml version=\"1.0\" ?><configuration><samplingfrequency>29.97</samplingfrequency><sensornames></sensornames><sensorbindings></sensorbindings></configuration>";
     
     /**
      * An XML String when loaded sets the configuration to have two sensor names and 30 samples per second.
      */
-    private static final String TWO_NAMES_30SPS = "<?xml version=\"1.0\" ?><configuration><samplingfrequency>30</samplingfrequency><sensornames><name>Name 1</name><name>Name 2</name></sensornames></configuration>";
+    private static final String TWO_NAMES_30SPS = "<?xml version=\"1.0\" ?><configuration><samplingfrequency>30</samplingfrequency><sensornames><name>Name 1</name><name>Name 2</name></sensornames><sensorbindings></sensorbindings></configuration>";
     
     public SystemConfigTest() {
     }

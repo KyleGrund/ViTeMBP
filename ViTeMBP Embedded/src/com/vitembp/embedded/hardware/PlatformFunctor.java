@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -41,6 +42,11 @@ class PlatformFunctor extends Platform {
     private final Supplier<Set<Sensor>> getSensorsTarget;
     
     /**
+     * A supplier of a Path to the default configuration for the platform.
+     */
+    private final Supplier<Path> getDefaultConfigPath;
+    
+    /**
      * Initializes a new instance of the PlatformFunctor class.
      * @param setSyncLightTarget Callback that controls the synchronization light.
      * @param getSensorsTarget Callback that provides a list of sensors.
@@ -49,10 +55,12 @@ class PlatformFunctor extends Platform {
     public PlatformFunctor(
             ConsumerIOException<Boolean> setSyncLightTarget,
             Consumer<Consumer<Character>> setKeypadCallback,
-            Supplier<Set<Sensor>> getSensorsTarget) {
+            Supplier<Set<Sensor>> getSensorsTarget,
+            Supplier<Path> getDefaultConfigPath) {
         this.setSyncLightTarget = setSyncLightTarget;
         this.setKeypadCallback = setKeypadCallback;
         this.getSensorsTarget = getSensorsTarget;
+        this.getDefaultConfigPath = getDefaultConfigPath;
     }
     
     @Override
@@ -68,5 +76,10 @@ class PlatformFunctor extends Platform {
     @Override
     public Set<Sensor> getSensors() {
         return this.getSensorsTarget.get();
+    }
+
+    @Override
+    Path getDefaultConfigPath() {
+        return this.getDefaultConfigPath.get();
     }
 }

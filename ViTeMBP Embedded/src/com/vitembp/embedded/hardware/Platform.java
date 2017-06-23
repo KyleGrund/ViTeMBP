@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
@@ -60,6 +61,11 @@ abstract class Platform {
      * @return A Map of String sensor names to their control interface object.
      */
     public abstract Set<Sensor> getSensors();
+    
+    /**
+     * Gets the path to the default configuration file for the platform.
+     */
+    abstract Path getDefaultConfigPath();
     
     /**
      * Returns a platform object for the system hardware that the program 

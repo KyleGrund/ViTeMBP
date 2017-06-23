@@ -17,6 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -53,5 +55,10 @@ class PlatformMock extends Platform{
         Set<Sensor> toReturn = new HashSet<>();
         toReturn.add(new AccelerometerMock("Accelerometer"));
         return toReturn;
+    }
+
+    @Override
+    Path getDefaultConfigPath() {
+        return Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml");
     }
 }

@@ -124,6 +124,16 @@ public class HardwareInterface {
         this.platform = Platform.getPlatform();
         this.config = SystemConfig.getConfig();
         
+        // if the configuration was not loaded from disk,
+        // attempt to load defaults for the platform
+        if (!this.config.initializedFromFile()) {
+            try {
+                this.config.createDefaultConfigFrom(this.platform.getDefaultConfigPath());
+            } catch (IOException ex) {
+                LOGGER.error("Could not create platform specific default configuration.", ex);
+            }
+        }
+        
         // names to sensor bindings
         Map<String, Sensor> bindings = new HashMap<>();
         

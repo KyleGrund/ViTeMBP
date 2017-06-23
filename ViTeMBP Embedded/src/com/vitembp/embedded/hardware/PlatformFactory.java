@@ -19,6 +19,7 @@ package com.vitembp.embedded.hardware;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -86,7 +87,8 @@ class PlatformFactory {
                     Set<Sensor> toReturn = new HashSet<>();
                     toReturn.add(new AccelerometerMock("Accelerometer"));
                     return toReturn;
-                });
+                },
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"));
     }
     
     /**
@@ -169,6 +171,7 @@ class PlatformFactory {
                     });
                     
                     return toReturn;
-                });
+                },
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
     }
 }
