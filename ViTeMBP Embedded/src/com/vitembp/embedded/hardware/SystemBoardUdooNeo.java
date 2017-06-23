@@ -19,7 +19,6 @@ package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.Set;
 
 /**

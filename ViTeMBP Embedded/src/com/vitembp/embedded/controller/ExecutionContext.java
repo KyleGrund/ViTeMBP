@@ -21,9 +21,7 @@ import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
-import com.vitembp.embedded.hardware.Sensor;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 

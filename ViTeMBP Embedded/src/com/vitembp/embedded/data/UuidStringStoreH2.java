@@ -19,7 +19,6 @@ package com.vitembp.embedded.data;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
