@@ -18,6 +18,7 @@
 package com.vitembp.embedded.configuration;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -146,13 +146,18 @@ public class SystemConfig {
      * @param configFile The file to save to.
      */
     private void saveConfigToPath(Path configFile) throws IOException, XMLStreamException {
-        // create a stream to write to
-        XMLStreamWriter configOutputStream = XMLOutputFactory
-                .newFactory()
-                .createXMLStreamWriter(Files.newBufferedWriter(configFile));
-
-        // write config to the file
-        this.writeTo(configOutputStream);
+        // create a buffered writer to output the file to
+        try (BufferedWriter writer = Files.newBufferedWriter(configFile)) {
+            // create a stream to write config to
+            XMLStreamWriter configOutputStream = XMLOutputFactory
+                    .newFactory()
+                    .createXMLStreamWriter(writer);
+            
+            // write config to the file
+            this.writeTo(configOutputStream);
+            configOutputStream.flush();
+            configOutputStream.close();
+        }
     }
     
     /**
