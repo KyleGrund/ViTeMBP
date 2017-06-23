@@ -18,7 +18,6 @@
 package com.vitembp.embedded;
 
 import com.vitembp.embedded.controller.StateMachine;
-import com.vitembp.embedded.hardware.Platform;
 import com.vitembp.embedded.interfaces.CommandLine;
 
 /**
@@ -30,13 +29,10 @@ public class ViTeMBPEmbedded {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // initialize platform
-        Platform system = Platform.getPlatform();
-
         // process command line arguments
-        CommandLine.acceptArgs(args, system);
+        CommandLine.acceptArgs(args);
         
         // start system state machine
-        new StateMachine(system).start();
+        new StateMachine().start();
     }
 }

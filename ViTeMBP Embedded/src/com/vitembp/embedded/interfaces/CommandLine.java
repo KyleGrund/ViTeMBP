@@ -17,15 +17,9 @@
  */
 package com.vitembp.embedded.interfaces;
 
-import com.vitembp.embedded.hardware.Platform;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,16 +34,15 @@ public class CommandLine {
     
     /**
      * Accepts and appropriately displays command line arguments.
-     * @param args The command line arguments passed to the 
-     * @param platform The platform to provide an interface for.
+     * @param args The command line arguments passed to the .
      */
-    public static void acceptArgs(String[] args, Platform platform) {
+    public static void acceptArgs(String[] args) {
         // log call
         LOGGER.info("Processing command: " + Arrays.toString(args));
         
         // if there were any arguments passed to the jvm
         if (args.length > 0) {
-            if (processServerCommands(args, platform)) {
+            if (processServerCommands(args)) {
                 return;
             }
         }
@@ -58,7 +51,12 @@ public class CommandLine {
         printUsage();
     }
 
-    private static boolean processServerCommands(String[] args, Platform platform) {
+    /**
+     * Processes commands with additional parameters.
+     * @param args The command line arguments.
+     * @return A boolean value indicating whether the command was successfully parsed.
+     */
+    private static boolean processServerCommands(String[] args) {
         if (args[0].toUpperCase().equals("-HTTP")) {
             // command: -sqs <queue_name>
             if (args.length >= 2) {
@@ -67,7 +65,7 @@ public class CommandLine {
                     int port = Integer.parseInt(args[1]);
                     
                     System.out.println("Starting HTTP server.");
-                    Http server = new Http(8080, platform);
+                    Http server = new Http(8080);
                 } catch (IOException ex) {
                     LOGGER.error("Exception starting web server.", ex);
                 } catch (NumberFormatException ex) {

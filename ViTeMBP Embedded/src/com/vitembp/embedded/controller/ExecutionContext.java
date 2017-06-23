@@ -20,13 +20,11 @@ package com.vitembp.embedded.controller;
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.datacollection.CaptureSession;
-import com.vitembp.embedded.hardware.ConsumerIOException;
-import com.vitembp.embedded.hardware.Platform;
+import com.vitembp.embedded.hardware.HardwareInterface;
 import com.vitembp.embedded.hardware.Sensor;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -38,56 +36,35 @@ class ExecutionContext {
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
-    /**
-     * Hardware platform interface.
-     */
-    private final Platform hardwarePlatform;
-    
-    /**
-     * A queue for key press events.
-     */
-    private final LinkedBlockingQueue<Character> keyPresses;
+    private final HardwareInterface hardware;
     
     /**
      * Initializes a new instance of the ExecutionContext class.
      * @param hardware 
      */
-    ExecutionContext(Platform hardware) {
-        this.hardwarePlatform = hardware;
-        
-        // register key press listener to store presses into a queue
-        this.keyPresses = new LinkedBlockingQueue();
-        this.hardwarePlatform.setKeypadCallback(this.keyPresses::add);
+    ExecutionContext() {
+        this.hardware = HardwareInterface.getInterface();
     }
 
     /**
      * Flashes the sync light with the list of integers indicating the durations.
+     * @param durations The delays between turning the sync light on and off.
+     * @throws java.io.IOException If an error occurs accessing IO setting sync light state.
      */
     public void flashSyncLight(List<Integer> durations) throws IOException {
-        ConsumerIOException light = this.hardwarePlatform.getSetSyncLightTarget();
-        boolean lightState = false;
-        light.accept(false);
-        for (int wait : durations) {
-            lightState = !lightState;
-            light.accept(lightState);
-            try {
-                Thread.sleep(wait);
-            } catch (InterruptedException ex) {
-                LOGGER.error("Thread sleep interrupted flashing sync light.", ex);
-            }
-        }
-        
-        light.accept(false);
+        this.hardware.flashSyncLight(durations);
     }
     
     /**
      * Waits for and returns a key press.
      * @return The character corresponding to the key pressed.
+     * @throws java.lang.InterruptedException If a Thread wait for a key press
+     * is interrupted.
      */
     public char getKeyPress() throws InterruptedException {
-        return this.keyPresses.take();
+        return this.hardware.getKeyPress();
     }
-
+    
     /**
      * Creates and returns a new capture session.
      * @return A new capture session.
@@ -96,12 +73,9 @@ class ExecutionContext {
         // collect params
         SystemConfig config = SystemConfig.getConfig();
         
-        
-        
         double sampleFrequency = 29.97;
-        List<Sensor> sensors = Arrays.asList(this.hardwarePlatform.getSensors().toArray(new Sensor[] { }));
         Capture dataStore = null;
-        
-        return new CaptureSession(sensors, dataStore);
+
+        return new CaptureSession(this.hardware.getSensors(), dataStore);
     }
 }

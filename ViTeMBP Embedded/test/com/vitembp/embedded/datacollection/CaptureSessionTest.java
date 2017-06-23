@@ -67,13 +67,13 @@ public class CaptureSessionTest {
     @Test
     public void testStartAndStopSession() throws InterruptedException {
         CaptureSession toTest;        
-        List<Sensor> sensors = new ArrayList<>();
-        sensors.add(new AccelerometerMock("Accelerometer 1"));
-        sensors.add(new AccelerometerMock("Accelerometer 2"));
+        Map<String, Sensor> sensors = new HashMap<>();
+        sensors.put("Sensor 1", new AccelerometerMock("Accelerometer 1"));
+        sensors.put("Sensor 2", new AccelerometerMock("Accelerometer 2"));
         
         // fill a hashmap with sensor types for crating capture
         Map<String, UUID> sensorTypes = new HashMap<>();
-        sensors.forEach((s) -> sensorTypes.put(s.getBinding(), s.getType()));
+        sensors.values().forEach((s) -> sensorTypes.put(s.getBinding(), s.getType()));
         
         Capture capturedData = new InMemoryCapture(Instant.EPOCH, 29.97, sensorTypes);
         toTest = new CaptureSession(sensors, capturedData);

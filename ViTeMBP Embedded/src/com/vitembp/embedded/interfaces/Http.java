@@ -21,15 +21,12 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.vitembp.embedded.hardware.Platform;
+import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -53,12 +50,11 @@ public class Http {
     /**
      * Initializes a new instance of the Http class.
      * @param port The port to run the HTTP server on.
-     * @param functions The API functions to provide an interface for.
      * @throws IOException If there is an exception creating the HTTP server.
      */
-    public Http(int port, Platform functions) throws IOException {
+    public Http(int port) throws IOException {
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
-        this.server.createContext("/setsynclight", this.getHandler(functions));
+        this.server.createContext("/setsynclight", this.getHandler());
         this.server.start();
     }
     
@@ -67,7 +63,9 @@ public class Http {
      * @param functions 
      * @return 
      */
-    private HttpHandler getHandler(final Platform functions) {
+    private HttpHandler getHandler() {
+        final HardwareInterface hardware = HardwareInterface.getInterface();
+        
         return (HttpExchange he) -> {
             // get path url
             Headers headers = he.getRequestHeaders();
@@ -125,7 +123,7 @@ public class Http {
                 
                 try {
                     // set the sync light
-                    functions.getSetSyncLightTarget().accept(enabled);
+                    hardware.setSyncLight(enabled);
                 } catch (IOException ex) {
                     LOGGER.error("IO error setting sync light.", ex);
                     byte[] toSend = "Error processing request".getBytes();

@@ -18,7 +18,9 @@
 package com.vitembp.embedded.configuration;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -52,6 +54,11 @@ public class SystemConfig {
     private Set<String> sensorNames = new HashSet<>();
     
     /**
+     * The binding of sensor name to system resource.
+     */
+    private Map<String, String> sensorBindings = new HashMap();
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {
@@ -75,6 +82,14 @@ public class SystemConfig {
      */
     public Set<String> getSensorNames() {
         return Collections.unmodifiableSet(this.sensorNames);
+    }
+    
+    /**
+     * Gets a mapping of sensor names to their binding location.
+     * @return A mapping of sensor names to their binding location.
+     */
+    public Map<String, String> getSensorBindings() {
+        return Collections.unmodifiableMap(this.sensorBindings);
     }
     
     /**

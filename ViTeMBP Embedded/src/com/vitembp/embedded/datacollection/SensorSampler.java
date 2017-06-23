@@ -19,7 +19,6 @@ package com.vitembp.embedded.datacollection;
 
 import com.vitembp.embedded.hardware.Sensor;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
@@ -47,12 +46,12 @@ public class SensorSampler {
     /**
      * The sensors to collect data from.
      */
-    private final List<Sensor> sensors;
+    private final Map<String, Sensor> sensors;
     
     /**
      * This function is called after a sample has been taken.
      */
-    private final Consumer<Map<Sensor, String>> sampleCallback;
+    private final Consumer<Map<String, String>> sampleCallback;
     
     /**
      * Boolean value indicating  whether the data logger is running.
@@ -70,7 +69,7 @@ public class SensorSampler {
      * @param sensors The sensors to collect data from.
      * @param callback The 
      */
-    public SensorSampler(double frequency, List<Sensor> sensors, Consumer<Map<Sensor, String>> callback) {
+    public SensorSampler(double frequency, Map<String, Sensor> sensors, Consumer<Map<String, String>> callback) {
         this.sampleFrequency = frequency;
         this.sensors = sensors;
         this.sampleCallback  = callback;
@@ -101,9 +100,9 @@ public class SensorSampler {
      */
     private void collectData() {
         // initialize sensors
-        for (Sensor sensor : this.sensors) {
+        this.sensors.values().forEach((sensor) -> {
             sensor.initialize();
-        }
+        });
         
         Long nextStart = System.nanoTime();
         
@@ -114,11 +113,11 @@ public class SensorSampler {
             nextStart += this.nanoSecondInterval;
             
             // take data
-            HashMap<Sensor, String> data = new HashMap<>();
-            for (Sensor sensor : this.sensors) {
-                String sample = sensor.readSample();
-                data.put(sensor, sample);
-                LOGGER.debug("Sensor " + sensor.getBinding() + ": " + sample);
+            HashMap<String, String> data = new HashMap<>();
+            for (String sensorName : this.sensors.keySet()) {
+                String sample = sensors.get(sensorName).readSample();
+                data.put(sensorName, sample);
+                LOGGER.debug("Sensor " + sensorName + ": " + sample);
             }
             
             // notify listeners

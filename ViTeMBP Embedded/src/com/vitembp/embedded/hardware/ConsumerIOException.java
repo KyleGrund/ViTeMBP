@@ -18,7 +18,6 @@
 package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Represents an operation that accepts a single input argument and returns no

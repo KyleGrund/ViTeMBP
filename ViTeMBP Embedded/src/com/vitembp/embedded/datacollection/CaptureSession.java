@@ -19,33 +19,51 @@ package com.vitembp.embedded.datacollection;
 
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.hardware.Sensor;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * A class that uses a SensorSampler to create a Capture.
  */
 public class CaptureSession {
+    /**
+     * The sampler that is taking data from the sensors.
+     */
     private final SensorSampler sampler;
+    
+    /**
+     * The capture to save data to.
+     */
     private final Capture data;
     
-    public CaptureSession(List<Sensor> sensors, Capture session) {
+    /**
+     * Initializes a new instance of the CaptureSession class.
+     * @param sensors The sensors to sample data from.
+     * @param session The capture to save data to.
+     */
+    public CaptureSession(Map<String, Sensor> sensors, Capture session) {
         this.sampler = new SensorSampler(session.getSampleFrequency(), sensors, this::callback);
         this.data = session;
     }
     
+    /**
+     * Start capturing data.
+     */
     public void start() {
         this.sampler.start();
     }
     
+    /**
+     * Stops capturing data.
+     */
     public void stop() {
         this.sampler.stop();
     }
     
-    private void callback(Map<Sensor, String> data) {
-        Map<String, String> toAdd = new HashMap<>();
-        data.forEach((sensor, dataString) -> toAdd.put(sensor.getBinding(), dataString));
-        this.data.addSample(toAdd);
+    /**
+     * Callback target which stores data from the sampler.
+     * @param data 
+     */
+    private void callback(Map<String, String> data) {
+        this.data.addSample(data);
     }
 }

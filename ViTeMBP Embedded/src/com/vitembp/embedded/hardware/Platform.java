@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Class providing an interface to the ViTeMBP hardware platform.
  */
-public abstract class Platform {
+abstract class Platform {
     /**
      * Class logger instance.
      */

@@ -17,10 +17,12 @@
  */
 package com.vitembp.embedded.datacollection;
 
-import com.vitembp.embedded.hardware.Platform;
+import com.vitembp.embedded.hardware.AccelerometerMock;
+import com.vitembp.embedded.hardware.HardwareInterface;
 import com.vitembp.embedded.hardware.Sensor;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -60,12 +62,16 @@ public class SensorSamplerTest {
     @Test
     public void testStartStop() throws InterruptedException {
         System.out.println("start");
+        Map<String, Sensor> sensors = new HashMap<>();
+        sensors.put("Sensor 1", new AccelerometerMock("Accelerometer 1"));
+        sensors.put("Sensor 2", new AccelerometerMock("Accelerometer 2"));
+        
         final HashMap<String, Integer> counter = new HashMap<>();
         counter.put("samples", 0);
         
         SensorSampler instance = new SensorSampler(
                 29.97,
-                Arrays.asList(Platform.getPlatform().getSensors().toArray(new Sensor[] {})),
+                sensors,
                 (data) -> { counter.put("samples", counter.get("samples") + 1); });
         instance.start();
         Thread.sleep(1000);

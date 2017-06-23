@@ -17,7 +17,6 @@
  */
 package com.vitembp.embedded.controller;
 
-import com.vitembp.embedded.hardware.Platform;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -53,13 +52,12 @@ public class StateMachine {
     
     /**
      * Initializes a new instance of the StateMachine class.
-     * @param toControl The platform object interfacing with the hardware.
      */
-    public StateMachine(Platform toControl) {
+    public StateMachine() {
         this.executionThread = new Thread(this::executeMachine);
         
         // create execution context
-        this.context = new ExecutionContext(toControl);
+        this.context = new ExecutionContext();
         
         // build states
         this.states = new HashMap<>();
