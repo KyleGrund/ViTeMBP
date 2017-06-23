@@ -31,6 +31,12 @@ public class StateMachine {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
+     * The number of uncaught exceptions to allow before stopping state machine
+     * execution to prevent infinite loops.
+     */
+    private static final int EXCEPTION_LIMIT = 20;
+    
+    /**
      * The thread the state machine executes on.
      */
     private final Thread executionThread;
@@ -54,6 +60,8 @@ public class StateMachine {
      * Initializes a new instance of the StateMachine class.
      */
     public StateMachine() {
+        // create the thread that runs the executeMachine() function which
+        // runs the state machine
         this.executionThread = new Thread(this::executeMachine);
         
         // create execution context
@@ -87,11 +95,27 @@ public class StateMachine {
      * Machine executor function.
      */
     private void executeMachine() {
+        // the next state to execute
         Class nextState = New.class;
         
+        // a count of how many exceptions occurred to stop running the machine
+        // after too many exceptions have occurred
+        int exceptionCount = 0;
+        
+        // loop processing states until the isRunning signal is false
         while (this.isRunning) {
-            LOGGER.info("Executing: " + nextState.getSimpleName());
-            nextState = this.states.get(nextState).execute(this.context);
+            try {
+                LOGGER.info("Executing: " + nextState.getSimpleName());
+                nextState = this.states.get(nextState).execute(this.context);
+            } catch (Exception ex) {
+                LOGGER.error("Exception occurred running controller state: " + nextState.getSimpleName(), ex);
+                
+                // increment exceptoin count and if count is above limit stop execution
+                exceptionCount++;
+                if (exceptionCount > EXCEPTION_LIMIT) {
+                    this.stop();
+                }
+            }
         }
     }
 }

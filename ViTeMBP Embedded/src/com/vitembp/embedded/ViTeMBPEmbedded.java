@@ -32,7 +32,7 @@ public class ViTeMBPEmbedded {
         // process command line arguments
         CommandLine.acceptArgs(args);
         
-        // start system state machine
+        // start system controller state machine
         new StateMachine().start();
     }
 }
