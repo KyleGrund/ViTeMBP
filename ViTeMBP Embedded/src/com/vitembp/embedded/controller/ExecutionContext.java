@@ -19,10 +19,15 @@ package com.vitembp.embedded.controller;
 
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.data.InMemoryCapture;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -71,9 +76,17 @@ class ExecutionContext {
         // collect params
         SystemConfig config = SystemConfig.getConfig();
         
-        double sampleFrequency = 29.97;
-        Capture dataStore = null;
+        // make map of sensor names to types
+        Map<String, UUID> sensorTypes = new HashMap<>();
+        this.hardware.getSensors().forEach((n, s) -> sensorTypes.put(n, s.getType()));
+        
+        // create the capture data store
+        Capture dataStore = new InMemoryCapture(
+                Instant.now(),
+                config.getSamplingFrequency(),
+                sensorTypes);
 
+        // build and return a new capture session
         return new CaptureSession(this.hardware.getSensors(), dataStore);
     }
 }

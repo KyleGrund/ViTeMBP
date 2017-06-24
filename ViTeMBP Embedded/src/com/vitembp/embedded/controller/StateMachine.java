@@ -113,6 +113,7 @@ public class StateMachine {
                 // increment exceptoin count and if count is above limit stop execution
                 exceptionCount++;
                 if (exceptionCount > EXCEPTION_LIMIT) {
+                    LOGGER.error("Unhandled exception limit exceeded, stopping state mcahince execution.");
                     this.stop();
                 }
             }

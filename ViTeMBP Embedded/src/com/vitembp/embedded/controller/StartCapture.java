@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.datacollection.CaptureSession;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -38,10 +39,10 @@ class StartCapture implements ControllerState {
         
         try {
             // create new capture
-            //CaptureSession cs = state.getNewCaptureSession();
+            CaptureSession cs = state.getNewCaptureSession();
             
             // start capture
-            //cs.start();
+            cs.start();
             
             // enable sync LED
             state.flashSyncLight(syncLightDuration);
