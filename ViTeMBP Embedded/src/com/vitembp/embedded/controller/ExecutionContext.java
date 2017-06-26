@@ -78,7 +78,13 @@ class ExecutionContext {
         
         // make map of sensor names to types
         Map<String, UUID> sensorTypes = new HashMap<>();
-        this.hardware.getSensors().forEach((n, s) -> sensorTypes.put(n, s.getType()));
+        this.hardware.getSensors().forEach((n, s) -> {
+            if (s == null) {
+                LOGGER.error("Sensor \"" + n + "\" not bound.");
+            } else {
+                sensorTypes.put(n, s.getType());
+            }
+        });
         
         // create the capture data store
         Capture dataStore = new InMemoryCapture(

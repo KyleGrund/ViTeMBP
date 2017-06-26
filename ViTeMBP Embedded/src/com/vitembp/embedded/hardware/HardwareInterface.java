@@ -161,6 +161,9 @@ public class HardwareInterface {
         
         // register key press listener to store presses into a queue
         this.platform.setKeypadCallback(this.keyPresses::add);
+        
+        // save updated bindings
+        this.sensors = bindings;
     }
     
     /**
