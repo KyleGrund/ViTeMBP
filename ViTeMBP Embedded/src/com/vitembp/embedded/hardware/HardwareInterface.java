@@ -64,6 +64,7 @@ public class HardwareInterface {
      */
     private HardwareInterface() {
         this.keyPresses = new LinkedBlockingQueue<>();
+        this.sensors  = new HashMap<>();
         this.initializeResources();
     }
     
