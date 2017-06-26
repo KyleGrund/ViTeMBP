@@ -47,7 +47,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
     public I2CBusI2CDev(final int busID) {
         // create functor by using lambda functions calling local synchronous
         // static functions with this particular bus' ID curried.
-        super("i2c" + Integer.toString(busID),
+        super("i2c-" + Integer.toString(busID),
                 (transaction) -> I2CBusI2CDev.busCallback(busID, transaction),
                 () -> I2CBusI2CDev.deviceIDCallback(busID));
     }

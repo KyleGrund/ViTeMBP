@@ -39,12 +39,15 @@ class I2CSensorFactory {
         Set<Sensor> found = new HashSet<>();
         // go through all devices on the bus
         for (I2CDevice dev : bus.getDevices()) {
-            LOGGER.info("Enumerating bus: " + bus.getName());
+            LOGGER.info("Enumerating device: " + dev.getAddress());
             
             // create sensor interface objects based on device addresses
             if (dev.getAddress() == 32) {
-                LOGGER.info("Adding AccelerometerFXOS8700CQ at address 32.");
-                found.add(new AccelerometerFXOS8700CQ(bus.getName() + ":" + dev.getAddress(), dev));
+                Sensor toAdd = new AccelerometerFXOS8700CQ(
+                        bus.getName() + ":" + dev.getAddress(),
+                        dev);
+                found.add(toAdd);
+                LOGGER.info("Added AccelerometerFXOS8700CQ at address: \"" + toAdd.getBinding() + "\"");
             }
         }   
         
