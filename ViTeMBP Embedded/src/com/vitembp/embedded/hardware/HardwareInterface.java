@@ -63,7 +63,7 @@ public class HardwareInterface {
      * Initializes a new instance of the HardwareInterface class.
      */
     private HardwareInterface() {
-        this.keyPresses = new LinkedBlockingQueue();
+        this.keyPresses = new LinkedBlockingQueue<>();
         this.initializeResources();
     }
     
@@ -90,7 +90,7 @@ public class HardwareInterface {
      * @throws java.io.IOException If an error occurs accessing IO setting sync light state.
      */
     public void flashSyncLight(List<Integer> durations) throws IOException {
-        ConsumerIOException light = this.platform.getSetSyncLightTarget();
+        ConsumerIOException<Boolean> light = this.platform.getSetSyncLightTarget();
         boolean lightState = false;
         light.accept(false);
         for (int wait : durations) {
@@ -121,6 +121,7 @@ public class HardwareInterface {
      * interface.
      */
     private void initializeResources() {
+        LOGGER.info("Initializing hardware resoureces.");
         this.platform = Platform.getPlatform();
         this.config = SystemConfig.getConfig();
         
@@ -147,6 +148,12 @@ public class HardwareInterface {
                     .filter((d) -> d.getBinding().equals(bindingAddress))
                     .findFirst()
                     .orElse(null);
+            
+            if (match == null) {
+                LOGGER.info("Could not bind sensor \"" + name + "\" to \"" + bindingAddress + "\".");
+            } else {
+                LOGGER.info("Sensor \"" + name + "\" bound to \"" + bindingAddress + "\"");
+            }
             
             // add sensor to bindings
             bindings.put(name, match);

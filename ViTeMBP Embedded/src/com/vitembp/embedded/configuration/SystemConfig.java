@@ -73,7 +73,7 @@ public class SystemConfig {
     /**
      * The binding of sensor name to system resource.
      */
-    private Map<String, String> sensorBindings = new HashMap();
+    private Map<String, String> sensorBindings = new HashMap<>();
     
     /**
      * A boolean value indicating whether we loaded the configuration from
