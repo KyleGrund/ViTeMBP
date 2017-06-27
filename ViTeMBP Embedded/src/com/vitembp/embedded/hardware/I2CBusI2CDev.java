@@ -71,51 +71,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
         if (toWrite.length > 1) {
             // catch any IOExceptions occuring during the execution of the command
             try {
-                // run command: "i2gset -f -y I2CBUS DEVID data_0 [data_2 ... data_n] [i]"
-                List<String> processArgs = new ArrayList<>();
-                processArgs.add("i2cset");
-                // force use even though kernel driver has control
-                processArgs.add("-f");
-                // diable interactive mode
-                processArgs.add("-y");
-                // id of the data bus
-                processArgs.add(Integer.toString(busID));
-                // the IC specific address
-                processArgs.add(Integer.toString(devID));
-                // the data bytes
-                for (int byteIndex = 0; byteIndex < toWrite.length; byteIndex++) {
-                    processArgs.add(Integer.toString(toWrite[byteIndex]));
-                }
-                // write in I2C block mode as there is more than one byte
-                // to send, otherwise the 'chip-address' will contain
-                // the data byte
-                processArgs.add("i");
-                ProcessBuilder pb = new ProcessBuilder(processArgs);
-
-                LOGGER.trace("Executing command: " + Arrays.toString(pb.command().toArray()));
-
-                // execute the command
-                Process proc = pb.start();
-
-                try {
-                    // execute and wait for the command
-                    int result = proc.waitFor();
-                    if (result != 0) {
-                        // result is exit level, log anything > 0 as an error
-                        LOGGER.error("The i2cset command exited with level: " + Integer.toString(result));
-                        BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-                        String line = br.readLine();
-                        while (line != null) {
-                            LOGGER.error(line);
-                            line = br.readLine();
-                        }
-                    }
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Interrupted while waiting for i2cset completion.", ex);
-                }
-
-                // no need to parse output of set, return code is sufficient
-                // begin the read phase of the transaction
+                writeBlockData(busID, devID, toWrite);
                 
 
             } catch (Exception ex) {
@@ -126,72 +82,169 @@ class I2CBusI2CDev extends I2CBusFunctor {
         // read any bytes as needed
         int[] readBytes = new int[transaction.getBytesToRead()];
         
-        for (int byteIndex = 0; byteIndex < readBytes.length; byteIndex++) {
+        // the single byte to send on the first read to address the target device
+        Integer singleByte = null;
+        if (toWrite.length == 1) {
+            singleByte = toWrite[0];
+        }
+        
+        int byteIndex = 0;
+        while (byteIndex < readBytes.length) {
             // read a byte
             // catch any IOExceptions occuring during the execution of the command
             try {
-                // run command: "i2get -f -y I2CBUS DEVID location"
-                List<String> processArgs = new ArrayList<>();
-                processArgs.add("i2cget");
-                // force use even though kernel driver has control
-                processArgs.add("-f");
-                // diable interactive mode
-                processArgs.add("-y");
-                // id of the data bus
-                processArgs.add(Integer.toString(busID));
-                // the IC specific address
-                processArgs.add(Integer.toString(devID));
-                // if we were sending a single data byte include it when reading
-                // the first data element
-                if (toWrite.length == 1 && byteIndex == 0) {
-                    processArgs.add(Integer.toString(toWrite[0]));
+                if (byteIndex + 1 < readBytes.length) {
+                    // read a word
+                    String resp = readData(busID, devID, singleByte, true);
+                    int readVal = Integer.parseInt(resp, 16);
+                    readBytes[byteIndex] = readVal & 0xff;
+                    readBytes[byteIndex + 1] = readVal >> 8;
+                    byteIndex += 2;
+                } else {
+                    // read a byte
+                    String resp = readData(busID, devID, singleByte, false);
+                    readBytes[byteIndex] = Integer.parseInt(resp, 16);
+                    byteIndex++;
                 }
-                ProcessBuilder pb = new ProcessBuilder(processArgs);
-
-                LOGGER.trace("Executing command: " + Arrays.toString(pb.command().toArray()));
-
-                // execute the command
-                Process proc = pb.start();
-
-                try {
-                    // execute and wait for the command
-                    int result = proc.waitFor();
-                    if (result != 0) {
-                        // result is exit level, log anything > 0 as an error
-                        LOGGER.error("The i2cget command exited with level: " + Integer.toString(result));
-                        BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-                        String line = br.readLine();
-                        while (line != null) {
-                            LOGGER.error(line);
-                            line = br.readLine();
-                        }
-                    }
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Interrupted while waiting for i2cget completion.", ex);
-                }
-
-                // parse output
-                BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-                // read data byte
-                String nextLine = br.readLine();
-                LOGGER.trace("i2cget: " + nextLine);
-                if (nextLine == null) {
-                    throw new Exception("Unexpected end of output reading i2cget result.");
-                }
-                
-                if (!nextLine.startsWith("0x")) {
-                    throw new Exception("The i2cget response did not start with \"0x\".");
-                }
-                
-                // parse the result
-                readBytes[byteIndex] = Integer.parseInt(nextLine.substring(2), 16);
+                // only send byte on the first iteration
+                singleByte = null;
             } catch (Exception ex) {
                 LOGGER.error("Unexpected exception while reading from device \"i2c-" + Integer.toString(busID) + ":" + Integer.toString(devID) +"\".", ex);
             }
         }
         
         return readBytes;
+    }
+
+    /**
+     * Reads a byte or word, and optionally sends a character to device before
+     * reading.
+     * @param busID The bus to communicate on.
+     * @param devID The ID of the device on the bus.
+     * @param singleByte If not null, a byte to send before reading.
+     * @return The read byte.
+     * @throws NumberFormatException If response cannot be parsed.
+     * @throws Exception If an unexpected exception occurs.
+     * @throws IOException If there is an IO error.
+     */
+    private static String readData(int busID, int devID, Integer singleByte, boolean readWord) throws NumberFormatException, Exception, IOException {
+        // run command: "i2get -f -y I2CBUS DEVID location"
+        List<String> processArgs = new ArrayList<>();
+        processArgs.add("i2cget");
+        // force use even though kernel driver has control
+        processArgs.add("-f");
+        // diable interactive mode
+        processArgs.add("-y");
+        // id of the data bus
+        processArgs.add(Integer.toString(busID));
+        // the IC specific address
+        processArgs.add(Integer.toString(devID));
+        // send single byte here if needed
+        if (singleByte != null) {
+            processArgs.add(Integer.toString(singleByte));
+        }
+        // add a w to the end of the command to read word
+        if (readWord) {
+            processArgs.add("w");
+        }
+        return runGetProcess(processArgs);
+    }
+
+    /**
+     * Processes a transaction by running the i2cget program.
+     * @param processArgs The arguments to send to the program.
+     * @return The response from the program.
+     * @throws IOException If there is an IO exception running process.
+     * @throws Exception If there is an unexpected exception running process.
+     */
+    private static String runGetProcess(List<String> processArgs) throws IOException, Exception {
+        ProcessBuilder pb = new ProcessBuilder(processArgs);
+        LOGGER.trace("Executing command: " + Arrays.toString(pb.command().toArray()));
+        // execute the command
+        Process proc = pb.start();
+        try {
+            // execute and wait for the command
+            int result = proc.waitFor();
+            if (result != 0) {
+                // result is exit level, log anything > 0 as an error
+                LOGGER.error("The i2cget command exited with level: " + Integer.toString(result));
+                BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                String line = br.readLine();
+                while (line != null) {
+                    LOGGER.error(line);
+                    line = br.readLine();
+                }
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while waiting for i2cget completion.", ex);
+        }
+        // parse output
+        BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        // read data byte
+        String nextLine = br.readLine();
+        LOGGER.trace("i2cget: " + nextLine);
+        if (nextLine == null) {
+            throw new Exception("Unexpected end of output reading i2cget result.");
+        }
+        if (!nextLine.startsWith("0x")) {
+            throw new Exception("The i2cget response did not start with \"0x\".");
+        }
+        return nextLine.substring(2);
+    }
+
+    /**
+     * Writes block data to I2C bus.
+     * @param busID The bus to write to.
+     * @param devID The device to write to on the bus.
+     * @param toWrite The data to write.
+     * @throws IOException If an IO exception occurs writing the data.
+     */
+    private static void writeBlockData(int busID, int devID, int[] toWrite) throws IOException {
+        // run command: "i2gset -f -y I2CBUS DEVID data_0 [data_2 ... data_n] [i]"
+        List<String> processArgs = new ArrayList<>();
+        processArgs.add("i2cset");
+        // force use even though kernel driver has control
+        processArgs.add("-f");
+        // diable interactive mode
+        processArgs.add("-y");
+        // id of the data bus
+        processArgs.add(Integer.toString(busID));
+        // the IC specific address
+        processArgs.add(Integer.toString(devID));
+        // the data bytes
+        for (int byteIndex = 0; byteIndex < toWrite.length; byteIndex++) {
+            processArgs.add(Integer.toString(toWrite[byteIndex]));
+        }
+        // write in I2C block mode as there is more than one byte
+        // to send, otherwise the 'chip-address' will contain
+        // the data byte
+        processArgs.add("i");
+        ProcessBuilder pb = new ProcessBuilder(processArgs);
+        
+        LOGGER.trace("Executing command: " + Arrays.toString(pb.command().toArray()));
+        
+        // execute the command
+        Process proc = pb.start();
+        
+        try {
+            // execute and wait for the command
+            int result = proc.waitFor();
+            if (result != 0) {
+                // result is exit level, log anything > 0 as an error
+                LOGGER.error("The i2cset command exited with level: " + Integer.toString(result));
+                BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                String line = br.readLine();
+                while (line != null) {
+                    LOGGER.error(line);
+                    line = br.readLine();
+                }
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while waiting for i2cset completion.", ex);
+        }
+        
+        // no need to parse output of set, return code is sufficient
+        // begin the read phase of the transaction
     }
     
     /**

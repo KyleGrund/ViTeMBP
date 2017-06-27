@@ -75,12 +75,15 @@ class AccelerometerFXOS8700CQ extends Sensor {
     @Override
     public String readSample() {
         // read data (x, y, z) from sensor
-        int xh = this.device.writeRead(new int[] { 0x01 }, 1)[0];
-        int xl = this.device.writeRead(new int[] { 0x02 }, 1)[0];
-        int yh = this.device.writeRead(new int[] { 0x03 }, 1)[0];
-        int yl = this.device.writeRead(new int[] { 0x04 }, 1)[0];
-        int zh = this.device.writeRead(new int[] { 0x05 }, 1)[0];
-        int zl = this.device.writeRead(new int[] { 0x06 }, 1)[0];
+        int[] xd = this.device.writeRead(new int[] { 0x01 }, 2);
+        int[] yd = this.device.writeRead(new int[] { 0x03 }, 2);
+        int[] zd = this.device.writeRead(new int[] { 0x05 }, 2);
+        int xh = xd[0];
+        int xl = xd[1];
+        int yh = yd[0];
+        int yl = yd[1];
+        int zh = zd[0];
+        int zl = zd[1];
         
         // interpret bytes as signed 14bit values
         int signx = (xh & 0x20) == 0x20 ? -1 : 1;
