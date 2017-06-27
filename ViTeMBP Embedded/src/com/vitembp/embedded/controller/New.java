@@ -32,17 +32,8 @@ class New implements ControllerState {
     
     @Override
     public Class execute(ExecutionContext state) {      
-        try {
-            state.flashSyncLight(Arrays.asList(new Integer[] { 100, 500, 100 }));
-        } catch (IOException ex) {
-            LOGGER.error("IOException flashing sync light.", ex);
-        }
-        
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-            LOGGER.error("IOException flashing sync light.", ex);
-        }
+        // initialize all sensors
+        state.initializeSensors();
         
         return WaitForStart.class;
     }

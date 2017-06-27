@@ -30,6 +30,11 @@ class EndCapture implements ControllerState {
     
     @Override
     public Class execute(ExecutionContext state) {
+        // stop the current capture
+        state.getCaptureSession().stop();
+        
+        // signal capture has stopped as needed
+        
         return WaitForStart.class;
     }
 }

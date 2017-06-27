@@ -41,6 +41,8 @@ class ExecutionContext {
     
     private final HardwareInterface hardware;
     
+    private CaptureSession captureSession;
+    
     /**
      * Initializes a new instance of the ExecutionContext class.
      * @param hardware 
@@ -68,11 +70,18 @@ class ExecutionContext {
         return this.hardware.getKeyPress();
     }
     
-    /**
-     * Creates and returns a new capture session.
-     * @return A new capture session.
-     */
-    CaptureSession getNewCaptureSession() {
+    void initializeSensors() {
+        this.hardware.getSensors().forEach((name, sensor) -> {
+            LOGGER.debug("Initializing sensor \"" + name + "\".");
+            sensor.initialize();
+        });
+    }
+
+    CaptureSession getCaptureSession() {
+        return this.captureSession;
+    }
+
+    void createNewCaptureSession() {
         // collect params
         SystemConfig config = SystemConfig.getConfig();
         
@@ -93,6 +102,6 @@ class ExecutionContext {
                 sensorTypes);
 
         // build and return a new capture session
-        return new CaptureSession(this.hardware.getSensors(), dataStore);
+        this.captureSession = new CaptureSession(this.hardware.getSensors(), dataStore);
     }
 }

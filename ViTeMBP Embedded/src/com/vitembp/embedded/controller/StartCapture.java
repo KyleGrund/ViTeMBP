@@ -39,10 +39,10 @@ class StartCapture implements ControllerState {
         
         try {
             // create new capture
-            CaptureSession cs = state.getNewCaptureSession();
+            state.createNewCaptureSession();
             
             // start capture
-            cs.start();
+            state.getCaptureSession().start();
             
             // enable sync LED
             state.flashSyncLight(syncLightDuration);
