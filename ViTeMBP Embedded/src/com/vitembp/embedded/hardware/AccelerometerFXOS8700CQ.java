@@ -60,32 +60,35 @@ class AccelerometerFXOS8700CQ extends Sensor {
     public void initialize() {
         // initialize the accelerometer
         // set chip to standby write 0x00 to 0x2a
-        this.device.write(new byte[] { 0x2a, 0x00 });
+        this.device.write(new int[] { 0x2a, 0x00 });
         
         // set mode to 8g scale write 0x02 to 0x0e
-        this.device.write(new byte[] { 0x0e, 0x02 });
+        this.device.write(new int[] { 0x0e, 0x02 });
         
         // set chip to ready mode write 0x01 to 0x2a
-        this.device.write(new byte[] { 0x2a, 0x01 });
+        this.device.write(new int[] { 0x2a, 0x01 });
         
         // enable accel/magnatometer write 0x03 to 0x5b
-        this.device.write(new byte[] { 0x5b, 0x03 });
+        this.device.write(new int[] { 0x5b, 0x03 });
     }
 
     @Override
     public String readSample() {
         // read data (x, y, z) from sensor
-        int xh = this.device.writeRead(new byte[] { 0x01 }, 1)[0];
-        int xl = this.device.writeRead(new byte[] { 0x02 }, 1)[0];
-        int yh = this.device.writeRead(new byte[] { 0x03 }, 1)[0];
-        int yl = this.device.writeRead(new byte[] { 0x04 }, 1)[0];
-        int zh = this.device.writeRead(new byte[] { 0x05 }, 1)[0];
-        int zl = this.device.writeRead(new byte[] { 0x06 }, 1)[0];
+        int xh = this.device.writeRead(new int[] { 0x01 }, 1)[0];
+        int xl = this.device.writeRead(new int[] { 0x02 }, 1)[0];
+        int yh = this.device.writeRead(new int[] { 0x03 }, 1)[0];
+        int yl = this.device.writeRead(new int[] { 0x04 }, 1)[0];
+        int zh = this.device.writeRead(new int[] { 0x05 }, 1)[0];
+        int zl = this.device.writeRead(new int[] { 0x06 }, 1)[0];
         
         // interpret bytes as signed 14bit values
-        int x = ((xh << 8) & xl) / 4;
-        int y = ((yh << 8) & yl) / 4;
-        int z = ((zh << 8) & zl) / 4;
+        int signx = (xh & 0x20) == 0x20 ? -1 : 1;
+        int signy = (yh & 0x20) == 0x20 ? -1 : 1;
+        int signz = (zh & 0x20) == 0x20 ? -1 : 1;
+        int x = signx * (((xh & 0x1F) << 8) | xl) / 4;
+        int y = signy * (((yh & 0x1F) << 8) | yl) / 4;
+        int z = signz * (((zh & 0x1F) << 8) | zl) / 4;
         
         // return values as a string
         return 

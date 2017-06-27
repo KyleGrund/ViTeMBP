@@ -31,7 +31,7 @@ class I2CBusFunctor extends I2CBus {
     /**
      * The callback providing access to the I2C bus.
      */
-    private final Function<I2CBusTransaction, byte[]> busCallback;
+    private final Function<I2CBusTransaction, int[]> busCallback;
     
     /**
      * The callback which will list enumerable I2C devices.
@@ -51,24 +51,24 @@ class I2CBusFunctor extends I2CBus {
     /**
      * Initializes a new instance of the I2CBusFunctor class.
      */
-    I2CBusFunctor(String name, Function<I2CBusTransaction, byte[]> busCallback, Supplier<List<Integer>> deviceIDCallback) {
+    I2CBusFunctor(String name, Function<I2CBusTransaction, int[]> busCallback, Supplier<List<Integer>> deviceIDCallback) {
         this.name = name;
         this.busCallback = busCallback;
         this.deviceIDCallback = deviceIDCallback;
     }
     
     @Override
-    public byte[] read(int address, int readCount) {
-        return busCallback.apply(new I2CBusTransaction(address, new byte[] { }, readCount));
+    public int[] read(int address, int readCount) {
+        return busCallback.apply(new I2CBusTransaction(address, new int[] { }, readCount));
     }
 
     @Override
-    public void write(int address, byte[] toWrite) {
-        busCallback.apply(new I2CBusTransaction(address, new byte[] { }, 0));
+    public void write(int address, int[] toWrite) {
+        busCallback.apply(new I2CBusTransaction(address, new int[] { }, 0));
     }
 
     @Override
-    public byte[] writeRead(int address, byte[] toWrite, int readCount) {
+    public int[] writeRead(int address, int[] toWrite, int readCount) {
         return busCallback.apply(new I2CBusTransaction(address, toWrite, readCount));
     }
 

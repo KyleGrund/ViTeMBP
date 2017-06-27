@@ -27,14 +27,14 @@ abstract class I2CBus {
      * @param readCount The number of bytes to read from the device.
      * @return The bytes read from the device.
      */
-    public abstract byte[] read(int address, int readCount);
+    public abstract int[] read(int address, int readCount);
         
     /**
      * Writes the specified bytes to the device.
      * @param address The address of the device to write to.
      * @param toWrite The bytes to write to the device.
      */
-    public abstract void write(int address, byte[] toWrite);
+    public abstract void write(int address, int[] toWrite);
     
     /**
      * Writes bytes to and then reads bytes from the device.
@@ -43,7 +43,7 @@ abstract class I2CBus {
      * @param readCount The number of bytes to read.
      * @return The bytes read from the device.
      */
-    public abstract byte[] writeRead(int address, byte[] toWrite, int readCount);
+    public abstract int[] writeRead(int address, int[] toWrite, int readCount);
     
     /**
      * Gets the unique name of the I2C bus in the system.

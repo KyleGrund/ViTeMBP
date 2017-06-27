@@ -136,6 +136,7 @@ public class SensorSampler {
                 }
             } else {
                 LOGGER.error("Sample time missed.");
+                this.sampleCallback.accept(new HashMap<String, String>());
             }
         }
     }

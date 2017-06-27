@@ -54,7 +54,7 @@ public class I2CDevice {
      * @param readCount The number of bytes to read from the device.
      * @return The bytes read from the device.
      */
-    public byte[] read(int readCount) {
+    public int[] read(int readCount) {
         return this.bus.read(this.deviceAddress, readCount);
     }
         
@@ -62,7 +62,7 @@ public class I2CDevice {
      * Writes the specified bytes to the device.
      * @param toWrite The bytes to write to the device.
      */
-    public void write(byte[] toWrite) {
+    public void write(int[] toWrite) {
         this.bus.write(this.deviceAddress, toWrite);
     }
     
@@ -72,7 +72,7 @@ public class I2CDevice {
      * @param readCount The number of bytes to read.
      * @return The bytes read from the device.
      */
-    public byte[] writeRead(byte[] toWrite, int readCount) {
+    public int[] writeRead(int[] toWrite, int readCount) {
         return this.bus.writeRead(this.deviceAddress, toWrite, readCount);
     }
 }

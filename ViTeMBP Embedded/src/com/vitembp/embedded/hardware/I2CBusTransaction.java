@@ -29,7 +29,7 @@ class I2CBusTransaction {
     /**
      * The bytes to write to the device.
      */
-    private final byte[] toWrite;
+    private final int[] toWrite;
     
     /**
      * The bytes to read from the device.
@@ -42,7 +42,7 @@ class I2CBusTransaction {
      * @param toWrite The bytes to write to the device.
      * @param bytesToRead The bytes to read from the device.
      */
-    public I2CBusTransaction(int deviceAddress, byte[] toWrite, int bytesToRead) {
+    public I2CBusTransaction(int deviceAddress, int[] toWrite, int bytesToRead) {
         this.deviceAddress = deviceAddress;
         this.toWrite = toWrite;
         this.bytesToRead = bytesToRead;
@@ -60,7 +60,7 @@ class I2CBusTransaction {
      * Gets the bytes to write to the device.
      * @return The bytes to write to the device.
      */
-    public byte[] getBytesToWrite() {
+    public int[] getBytesToWrite() {
         return this.toWrite;
     }
     

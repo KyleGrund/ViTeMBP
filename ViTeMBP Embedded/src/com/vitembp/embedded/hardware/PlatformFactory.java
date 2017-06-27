@@ -138,25 +138,25 @@ class PlatformFactory {
                     // add polled event listeners to supply button press events
                     new GPIOPolledEvent(
                             buttonOne,
-                            10,
+                            8,
                             (Boolean released) -> {
                                 if (!released) cb.accept('1');
                             }).start();
-                    new GPIOPolledEvent(
-                            buttonTwo,
-                            10,
-                            (Boolean released) -> {
-                                if (!released) cb.accept('2');
-                            }).start();
-                    new GPIOPolledEvent(
-                            buttonThree,
-                            10,
-                            (Boolean released) -> {
-                                if (!released) cb.accept('3');
-                            }).start();
+//                    new GPIOPolledEvent(
+//                            buttonTwo,
+//                            10,
+//                            (Boolean released) -> {
+//                                if (!released) cb.accept('2');
+//                            }).start();
+//                    new GPIOPolledEvent(
+//                            buttonThree,
+//                            10,
+//                            (Boolean released) -> {
+//                                if (!released) cb.accept('3');
+//                            }).start();
                     new GPIOPolledEvent(
                             buttonFour,
-                            10,
+                            8,
                             (Boolean released) -> {
                                 if (!released) cb.accept('4');
                             }).start();

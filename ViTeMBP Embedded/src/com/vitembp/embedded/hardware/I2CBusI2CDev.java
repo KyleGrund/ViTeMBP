@@ -55,7 +55,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
     /**
      * The callback providing access to the I2C bus.
      */
-    private static synchronized byte[] busCallback(int busID, I2CBusTransaction transaction) {
+    private static synchronized int[] busCallback(int busID, I2CBusTransaction transaction) {
         // use i2cget and i2cset to perform transaction
         // first phase of the transaction is the write
         
@@ -63,7 +63,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
         int devID = transaction.getDeviceAddress();
         
         // retrieve the data to write
-        byte[] toWrite = transaction.getBytesToWrite();
+        int[] toWrite = transaction.getBytesToWrite();
         
         // only execute this phase seperately if there is more than one byte
         // to send, otherwise use the 'data-address' of the i2cget to send the
@@ -92,7 +92,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
                 processArgs.add("i");
                 ProcessBuilder pb = new ProcessBuilder(processArgs);
 
-                LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+                LOGGER.trace("Executing command: " + Arrays.toString(pb.command().toArray()));
 
                 // execute the command
                 Process proc = pb.start();
@@ -119,12 +119,12 @@ class I2CBusI2CDev extends I2CBusFunctor {
                 
 
             } catch (Exception ex) {
-                LOGGER.error("Unexpected exception while enumerating I2C devices on bus: i2c-" + Integer.toString(busID) + ".", ex);
+                LOGGER.error("Unexpected exception while writing to device \"i2c-" + Integer.toString(busID) + ":" + Integer.toString(devID) +"\".", ex);
             }
         }
         
         // read any bytes as needed
-        byte[] readBytes = new byte[transaction.getBytesToRead()];
+        int[] readBytes = new int[transaction.getBytesToRead()];
         
         for (int byteIndex = 0; byteIndex < readBytes.length; byteIndex++) {
             // read a byte
@@ -148,7 +148,7 @@ class I2CBusI2CDev extends I2CBusFunctor {
                 }
                 ProcessBuilder pb = new ProcessBuilder(processArgs);
 
-                LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+                LOGGER.trace("Executing command: " + Arrays.toString(pb.command().toArray()));
 
                 // execute the command
                 Process proc = pb.start();
@@ -173,17 +173,21 @@ class I2CBusI2CDev extends I2CBusFunctor {
                 // parse output
                 BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
-                // read past header line
+                // read data byte
                 String nextLine = br.readLine();
                 LOGGER.trace("i2cget: " + nextLine);
                 if (nextLine == null) {
                     throw new Exception("Unexpected end of output reading i2cget result.");
                 }
-
+                
+                if (!nextLine.startsWith("0x")) {
+                    throw new Exception("The i2cget response did not start with \"0x\".");
+                }
+                
                 // parse the result
-                readBytes[byteIndex] = Byte.parseByte(nextLine, 16);
+                readBytes[byteIndex] = Integer.parseInt(nextLine.substring(2), 16);
             } catch (Exception ex) {
-                LOGGER.error("Unexpected exception while enumerating I2C devices on bus: i2c-" + Integer.toString(busID) + ".", ex);
+                LOGGER.error("Unexpected exception while reading from device \"i2c-" + Integer.toString(busID) + ":" + Integer.toString(devID) +"\".", ex);
             }
         }
         
