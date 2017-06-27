@@ -101,6 +101,7 @@ public class SensorSampler {
     private void collectData() {
         // hashmap for storing data
         HashMap<String, String> data = new HashMap<>();
+        HashMap<String, String> skippedData = new HashMap<>();
         
         // calculate the start time of the next data collection interval
         Long nextStart = System.nanoTime() + this.nanoSecondInterval;
@@ -108,7 +109,6 @@ public class SensorSampler {
         
         // collect data
         while (this.isRunning) {            
-            
             // take data
             data.clear();
             this.sensors.forEach((sensorName, sensor) -> {
@@ -127,17 +127,20 @@ public class SensorSampler {
             nextStart += this.nanoSecondInterval;
             
             // wait as needed
-            if (toWait > 0) {
-                Long millis = toWait / 1000000;
-                int nanos = (int)(toWait % 1000000);
-                try {
-                    LOGGER.debug("Waiting " + millis + "ms, " + nanos + "ns for next sample.");
-                    Thread.sleep(millis, nanos);
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Thread sleep was interrupted.", ex);
-                }
-            } else {
+            while (toWait < 0) {
                 LOGGER.error("Sample time missed by: " + Long.toString(toWait) + " ns.");
+                this.sampleCallback.accept(skippedData);
+                toWait = nextStart - System.nanoTime();
+                nextStart += this.nanoSecondInterval;
+            }
+            
+            Long millis = toWait / 1000000;
+            int nanos = (int)(toWait % 1000000);
+            try {
+                // LOGGER.debug("Waiting " + millis + "ms, " + nanos + "ns for next sample.");
+                Thread.sleep(millis, nanos);
+            } catch (InterruptedException ex) {
+                LOGGER.error("Thread sleep was interrupted.", ex);
             }
         }
     }
