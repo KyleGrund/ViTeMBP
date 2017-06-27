@@ -99,32 +99,34 @@ public class SensorSampler {
      * The function which is run by the thread which collects data from the  sensors.
      */
     private void collectData() {
-        // initialize sensors
-        this.sensors.values().forEach((sensor) -> {
-            sensor.initialize();
-        });
+        // hashmap for storing data
+        HashMap<String, String> data = new HashMap<>();
         
-        Long nextStart = System.nanoTime();
+        // calculate the start time of the next data collection interval
+        Long nextStart = System.nanoTime() + this.nanoSecondInterval;
+        Long toWait = 0l;
         
         // collect data
-        while (this.isRunning) {
-            // calculate the time which the next data collection interval
-            // should start
-            nextStart += this.nanoSecondInterval;
+        while (this.isRunning) {            
             
             // take data
-            HashMap<String, String> data = new HashMap<>();
-            for (String sensorName : this.sensors.keySet()) {
-                String sample = sensors.get(sensorName).readSample();
+            data.clear();
+            this.sensors.forEach((sensorName, sensor) -> {
+                String sample = sensor.readSample();
                 data.put(sensorName, sample);
                 LOGGER.debug("Sensor " + sensorName + ": " + sample);
-            }
+            });
             
             // notify listeners
             this.sampleCallback.accept(data);
             
             // wait for next data collection interval
-            Long toWait = nextStart - System.nanoTime();
+            toWait = nextStart - System.nanoTime();
+            
+            // calculate the start time of the next data collection interval
+            nextStart += this.nanoSecondInterval;
+            
+            // wait as needed
             if (toWait > 0) {
                 Long millis = toWait / 1000000;
                 int nanos = (int)(toWait % 1000000);
@@ -135,8 +137,7 @@ public class SensorSampler {
                     LOGGER.error("Thread sleep was interrupted.", ex);
                 }
             } else {
-                LOGGER.error("Sample time missed.");
-                this.sampleCallback.accept(new HashMap<String, String>());
+                LOGGER.error("Sample time missed by: " + Long.toString(toWait) + " ns.");
             }
         }
     }
