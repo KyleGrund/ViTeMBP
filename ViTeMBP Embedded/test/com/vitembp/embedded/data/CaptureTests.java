@@ -49,7 +49,7 @@ public class CaptureTests {
     
     public static void testGetSamples(Capture instance, List<Sample> expected, BiConsumer<Object, Object> assertEquals, Consumer<Boolean> assertTrue) {
         // convert samples to list
-        List<Sample> found = new ArrayList();
+        List<Sample> found = new ArrayList<>();
         instance.getSamples().forEach(found::add);
         assertEquals(found.size(), expected.size());
 
