@@ -72,8 +72,12 @@ class ExecutionContext {
     
     void initializeSensors() {
         this.hardware.getSensors().forEach((name, sensor) -> {
-            LOGGER.debug("Initializing sensor \"" + name + "\".");
-            sensor.initialize();
+            if (sensor != null) {
+                LOGGER.debug("Initializing sensor \"" + name + "\".");
+                sensor.initialize();
+            } else {
+                LOGGER.error("Configured sensor: \"" + name + "\" not bound to hardware.");
+            }
         });
     }
 

@@ -17,8 +17,6 @@
  */
 package com.vitembp.embedded.controller;
 
-import java.io.IOException;
-import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 
 /**
