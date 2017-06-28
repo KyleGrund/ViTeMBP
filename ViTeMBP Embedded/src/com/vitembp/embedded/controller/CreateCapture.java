@@ -54,14 +54,15 @@ class CreateCapture implements ControllerState {
         });
 
         // create the capture data store
-        Class type = config.getCaptureType();
+        Class<?> type = config.getCaptureType();
         Capture dataStore = null;
 
         try {
             if (!Capture.class.isAssignableFrom(type)) {
                 throw new Exception("Configured capture type is not a subclass of Capture.");
             } else {
-                dataStore = (Capture)type.getConstructor(Instant.class, double.class).newInstance(Instant.now(), config.getSamplingFrequency());
+                Class<?>[] paramTypes = new Class<?>[] { Instant.class, double.class };
+                dataStore = (Capture)type.getConstructor(paramTypes).newInstance(Instant.now(), config.getSamplingFrequency());
             }
         } catch (Exception ex) {
             LOGGER.error("Could not create capture for configured type \"" + config.getCaptureType().getCanonicalName() + "\".", ex);
