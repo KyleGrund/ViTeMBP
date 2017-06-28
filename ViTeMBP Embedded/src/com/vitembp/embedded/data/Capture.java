@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +46,7 @@ public abstract class Capture {
     /**
      * The time of the first sample.
      */
-    protected Instant startTime;
+    protected Instant startTime = null;
     
     /**
      * The frequency to take samples in hertz.
@@ -59,11 +60,9 @@ public abstract class Capture {
     
     /**
      * Initializes a new instance of the Capture class.
-     * @param startTime The time of the initial sample.
      * @param sampleFrequency The frequency at which samples were taken.
      */
-    Capture(Instant startTime, double sampleFrequency) {
-        this.startTime = startTime;
+    Capture(double sampleFrequency) {
         this.sampleFrequency = sampleFrequency;
         
         // calculate the update interval from the sample frequency
@@ -82,7 +81,28 @@ public abstract class Capture {
      * @param data A map of sensors names to the data that was taken from them
      * for this sample.
      */
-    public abstract void addSample(Map<String, String> data);
+    public void addSample(Map<String, String> data) {
+        // if this is the first sample save the start time
+        if (this.startTime == null) {
+            this.startTime = Instant.now();
+        }
+        
+        // create a new sample and add it to the samples array list
+        // the index of the new sample is the count of the old samples
+        int count = this.getSampleCount();
+        
+        // calculate the time of the sample
+        Instant sampleTime = this.startTime.plus((long)((count / this.sampleFrequency) / 1000d), ChronoUnit.MILLIS);
+        
+        // add sample to the data store
+        this.addSample(new Sample(this.getSampleCount(), sampleTime, data));
+    }
+    
+    /**
+     * Gets the number of samples in the capture.
+     * @return The number of samples in the capture.
+     */
+    protected abstract int getSampleCount();
     
     /**
      * Adds a new sample to the sample set.
@@ -136,6 +156,10 @@ public abstract class Capture {
      * @return An Instant representing the time this capture was started.
      */
     public Instant getStartTime() {
+        // return the epoch if there is no start time
+        if (this.startTime == null) {
+            return Instant.EPOCH;
+        }
         return this.startTime;
     }
     
@@ -168,7 +192,7 @@ public abstract class Capture {
         
         toWriteTo.writeStartElement("capture");
         toWriteTo.writeStartElement("starttime");
-        toWriteTo.writeCharacters(this.startTime.toString());
+        toWriteTo.writeCharacters(this.getStartTime().toString());
         toWriteTo.writeEndElement();
         toWriteTo.writeStartElement("samplefrequency");
         toWriteTo.writeCharacters(Double.toString(this.sampleFrequency));

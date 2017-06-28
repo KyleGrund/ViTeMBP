@@ -19,7 +19,6 @@ package com.vitembp.embedded.data;
 
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,7 +125,7 @@ public class UuidStringStoreCaptureTest {
                 this.dataStore.put(key, value);
             }
         };
-        UuidStringStoreCapture instance = new UuidStringStoreCapture(Instant.EPOCH, 29.97, hashMapStore, sensorTypes);
+        UuidStringStoreCapture instance = new UuidStringStoreCapture(29.97, hashMapStore, sensorTypes);
         this.data.forEach(instance::addSample);
         return instance;
     }

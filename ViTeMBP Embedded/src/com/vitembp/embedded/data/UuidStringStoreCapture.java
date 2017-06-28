@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
 /**
  * An implementation of Capture using in-memory collection classes.
  */
-public class UuidStringStoreCapture extends Capture {
+class UuidStringStoreCapture extends Capture {
     /**
      * Class logger instance.
      */
@@ -69,13 +69,12 @@ public class UuidStringStoreCapture extends Capture {
     /**
      * Initializes a new instance of the InMemoryCapture class and stores it to
      * the persistent storage.
-     * @param start The time of the initial sample.
      * @param frequency The frequency at which samples were taken.
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    public UuidStringStoreCapture(Instant start, double frequency, UuidStringStore store, Map<String, UUID> nameToIds) {
-        super(start, frequency);
+    public UuidStringStoreCapture(double frequency, UuidStringStore store, Map<String, UUID> nameToIds) {
+        super(frequency);
         
         // save refrences to parameters        
         this.store = store;
@@ -140,5 +139,10 @@ public class UuidStringStoreCapture extends Capture {
             Instant time = this.startTime.plusNanos(this.nanoSecondInterval * index);
             this.samples.add(new Sample(this.samples.size(), time, toReadFrom));
         }
+    }
+
+    @Override
+    protected int getSampleCount() {
+        return this.samples.size();
     }
 }

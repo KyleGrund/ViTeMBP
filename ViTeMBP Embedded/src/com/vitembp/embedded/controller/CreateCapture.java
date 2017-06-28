@@ -19,7 +19,8 @@ package com.vitembp.embedded.controller;
 
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.InMemoryCapture;
+import com.vitembp.embedded.data.CaptureFactory;
+import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.time.Instant;
@@ -54,25 +55,24 @@ class CreateCapture implements ControllerState {
         });
 
         // create the capture data store
-        Class<?> type = config.getCaptureType();
         Capture dataStore = null;
-
+        
         try {
-            if (!Capture.class.isAssignableFrom(type)) {
-                throw new Exception("Configured capture type is not a subclass of Capture.");
-            } else {
-                Class<?>[] paramTypes = new Class<?>[] { Instant.class, double.class };
-                dataStore = (Capture)type.getConstructor(paramTypes).newInstance(Instant.now(), config.getSamplingFrequency());
-            }
-        } catch (Exception ex) {
-            LOGGER.error("Could not create capture for configured type \"" + config.getCaptureType().getCanonicalName() + "\".", ex);
+            dataStore = CaptureFactory.buildCapture(config.getCaptureType(), config.getSamplingFrequency(), sensorTypes);
+        } catch (InstantiationException ex) {
+            LOGGER.error("Could not create capture for configured type \"" + config.getCaptureType().toString() + "\".", ex);
         }
 
         if (dataStore == null) {
-            dataStore = new InMemoryCapture(
-                    Instant.now(),
-                    config.getSamplingFrequency(),
-                    sensorTypes);
+            try {
+                dataStore = CaptureFactory.buildCapture(
+                        CaptureTypes.InMemory,
+                        config.getSamplingFrequency(),
+                        sensorTypes);
+            } catch (InstantiationException ex) {
+                LOGGER.error("Could not create a data Capture target.", ex);
+                throw new IllegalStateException("Could not create a data Capture target.", ex);
+            }
         }
 
         // build and return a new capture session

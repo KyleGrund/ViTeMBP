@@ -112,7 +112,7 @@ public class InMemoryCaptureTest {
         HashMap<String, UUID> sensorTypes = new HashMap<>();
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
-        InMemoryCapture instance = new InMemoryCapture(Instant.EPOCH, 29.97, sensorTypes);
+        InMemoryCapture instance = new InMemoryCapture(29.97, sensorTypes);
         this.data.forEach(instance::addSample);
         return instance;
     }
@@ -171,7 +171,7 @@ public class InMemoryCaptureTest {
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         
-        InMemoryCapture instance = new InMemoryCapture(Instant.EPOCH, 29.97, sensorTypes);
+        InMemoryCapture instance = new InMemoryCapture(29.97, sensorTypes);
         instance.load();
         
         this.data.forEach(instance::addSample);

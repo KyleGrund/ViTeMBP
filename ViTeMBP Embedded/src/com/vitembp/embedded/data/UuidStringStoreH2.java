@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager;
 /**
      * Creates a UuidStringStore for the H2 embedded database.
  */
-public class UuidStringStoreH2 implements UuidStringStore {
+class UuidStringStoreH2 implements UuidStringStore {
     /**
      * Class logger instance.
      */

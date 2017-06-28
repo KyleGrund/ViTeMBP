@@ -23,7 +23,7 @@ import java.util.UUID;
 /**
  * Provides an interface to a UUID keyed String value store.
  */
-public interface UuidStringStore {
+interface UuidStringStore {
     /**
      * Reads a String value for the supplied key.
      * @param key The key of the value to read.

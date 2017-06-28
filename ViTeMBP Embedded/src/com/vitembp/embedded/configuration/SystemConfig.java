@@ -17,7 +17,7 @@
  */
 package com.vitembp.embedded.configuration;
 
-import com.vitembp.embedded.data.InMemoryCapture;
+import com.vitembp.embedded.data.CaptureTypes;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -85,7 +85,7 @@ public class SystemConfig {
     /**
      * The type of capture to use to store captured data.
      */
-    private Class<?> captureType = InMemoryCapture.class;
+    private CaptureTypes captureType = CaptureTypes.InMemory;
     
     /**
      * Initializes a new instance of the SystemConfig class.
@@ -154,7 +154,7 @@ public class SystemConfig {
      * Gets the type of Capture to use to store sensor data.
      * @return The type of Capture to use to store sensor data.
      */
-    public Class getCaptureType() {
+    public CaptureTypes getCaptureType() {
         return this.captureType;
     }
     
@@ -296,7 +296,7 @@ public class SystemConfig {
         
         // save capture type
         toWriteTo.writeStartElement("capturetype");
-        toWriteTo.writeCharacters(this.captureType.getCanonicalName());
+        toWriteTo.writeCharacters(this.captureType.name());
         toWriteTo.writeEndElement();
         
         // close configuration
@@ -440,12 +440,7 @@ public class SystemConfig {
             throw new XMLStreamException("Expected capture type string not found.", toReadFrom.getLocation());
         }
         
-        try {
-            this.captureType = Class.forName(toReadFrom.getText());
-        } catch (ClassNotFoundException ex) {
-            LOGGER.error("Error resolving capture type when loading Capture from XML.", ex);
-            throw new XMLStreamException("Error resolving capture type when loading Capture from XML.", toReadFrom.getLocation(), ex);
-        }
+        this.captureType = Enum.valueOf(CaptureTypes.class, toReadFrom.getText());
         
         // read into close capture type element
         if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"capturetype".equals(toReadFrom.getLocalName())) {

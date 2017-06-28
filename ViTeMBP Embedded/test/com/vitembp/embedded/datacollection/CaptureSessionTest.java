@@ -18,11 +18,11 @@
 package com.vitembp.embedded.datacollection;
 
 import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.InMemoryCapture;
+import com.vitembp.embedded.data.CaptureFactory;
+import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.data.Sample;
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -63,7 +63,7 @@ public class CaptureSessionTest {
      * @throws InterruptedException If the thread wait is interrupted.
      */
     @Test
-    public void testStartAndStopSession() throws InterruptedException {
+    public void testStartAndStopSession() throws InterruptedException, InstantiationException {
         CaptureSession toTest;        
         Map<String, Sensor> sensors = new HashMap<>();
         sensors.put("Sensor 1", new AccelerometerMock("Accelerometer 1"));
@@ -73,7 +73,7 @@ public class CaptureSessionTest {
         Map<String, UUID> sensorTypes = new HashMap<>();
         sensors.values().forEach((s) -> sensorTypes.put(s.getBinding(), s.getType()));
         
-        Capture capturedData = new InMemoryCapture(Instant.EPOCH, 29.97, sensorTypes);
+        Capture capturedData = CaptureFactory.buildCapture(CaptureTypes.InMemory, 29.97, sensorTypes);
         toTest = new CaptureSession(sensors, capturedData);
         
         // take test data for 1 second

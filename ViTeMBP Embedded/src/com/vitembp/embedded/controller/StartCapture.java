@@ -17,18 +17,11 @@
  */
 package com.vitembp.embedded.controller;
 
-import com.vitembp.embedded.configuration.SystemConfig;
-import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.InMemoryCapture;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
 /**

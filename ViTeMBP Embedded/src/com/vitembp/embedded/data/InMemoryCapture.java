@@ -31,7 +31,7 @@ import javax.xml.stream.XMLStreamReader;
 /**
  * An implementation of Capture using in-memory collection classes.
  */
-public class InMemoryCapture extends Capture {
+class InMemoryCapture extends Capture {
     /**
      * The names of the sensors whose data is represented by this sample.
      */
@@ -49,12 +49,11 @@ public class InMemoryCapture extends Capture {
     
     /**
      * Initializes a new instance of the InMemoryCapture class.
-     * @param start The time of the first data sample.
      * @param frequency The frequency of the data samples.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    public InMemoryCapture(Instant start, double frequency, Map<String, UUID> nameToIds) {
-        super(start, frequency);
+    public InMemoryCapture(double frequency, Map<String, UUID> nameToIds) {
+        super(frequency);
         
         this.samples = new ArrayList<>();
         
@@ -65,12 +64,6 @@ public class InMemoryCapture extends Capture {
     @Override
     public Iterable<Sample> getSamples() {
         return Collections.unmodifiableList(this.samples);
-    }
-
-    @Override
-    public void addSample(Map<String, String> data) {        
-        // create a new sample and add it to the samples array list
-        this.samples.add(new Sample(this.samples.size(), Instant.now(), data));
     }
     
     @Override
@@ -106,5 +99,10 @@ public class InMemoryCapture extends Capture {
             Instant time = this.startTime.plusNanos(this.nanoSecondInterval * index);
             this.samples.add(new Sample(this.samples.size(), time, toReadFrom));
         }
+    }
+
+    @Override
+    protected int getSampleCount() {
+        return this.samples.size();
     }
 }
