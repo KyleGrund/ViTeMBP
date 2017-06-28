@@ -10,5 +10,5 @@
             <binding>i2c-3:32</binding>
         </sensorbinding>
     </sensorbindings>
-    <capturetype>com.vitembp.embedded.data.InMemoryCapture</capturetype>
+    <capturetype>InMemory</capturetype>
 </configuration>
