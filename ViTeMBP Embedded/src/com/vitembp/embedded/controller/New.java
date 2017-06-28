@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.hardware.HardwareInterface;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -31,9 +32,15 @@ class New implements ControllerState {
     @Override
     public Class execute(ExecutionContext state) {      
         // initialize all sensors
-        state.initializeSensors();
+        HardwareInterface.getInterface().getSensors().forEach((name, sensor) -> {
+            if (sensor != null) {
+                LOGGER.debug("Initializing sensor \"" + name + "\".");
+                sensor.initialize();
+            } else {
+                LOGGER.error("Configured sensor: \"" + name + "\" not bound to hardware.");
+            }
+        });
         
         return WaitForStart.class;
     }
-    
 }

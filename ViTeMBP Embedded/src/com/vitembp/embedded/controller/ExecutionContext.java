@@ -18,94 +18,48 @@
 package com.vitembp.embedded.controller;
 
 import com.vitembp.embedded.configuration.SystemConfig;
-import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.InMemoryCapture;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
 
 /**
  * State variable for state machine states.
  */
-class ExecutionContext {
+class ExecutionContext {  
     /**
-     * Class logger instance.
+     * The capture session currently in use.
      */
-    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
-    
-    private final HardwareInterface hardware;
-    
     private CaptureSession captureSession;
     
     /**
      * Initializes a new instance of the ExecutionContext class.
-     * @param hardware 
      */
     ExecutionContext() {
-        this.hardware = HardwareInterface.getInterface();
     }
 
     /**
-     * Flashes the sync light with the list of integers indicating the durations.
-     * @param durations The delays between turning the sync light on and off.
-     * @throws java.io.IOException If an error occurs accessing IO setting sync light state.
+     * Gets the system configuration object.
+     * @return The system configuration object.
      */
-    public void flashSyncLight(List<Integer> durations) throws IOException {
-        this.hardware.flashSyncLight(durations);
+    public SystemConfig getConfig() {
+        return SystemConfig.getConfig();
     }
     
     /**
-     * Waits for and returns a key press.
-     * @return The character corresponding to the key pressed.
-     * @throws java.lang.InterruptedException If a Thread wait for a key press
-     * is interrupted.
+     * Gets the capture session to use in the controller state machine.
+     * @return 
      */
-    public char getKeyPress() throws InterruptedException {
-        return this.hardware.getKeyPress();
-    }
-    
-    void initializeSensors() {
-        this.hardware.getSensors().forEach((name, sensor) -> {
-            if (sensor != null) {
-                LOGGER.debug("Initializing sensor \"" + name + "\".");
-                sensor.initialize();
-            } else {
-                LOGGER.error("Configured sensor: \"" + name + "\" not bound to hardware.");
-            }
-        });
-    }
-
     CaptureSession getCaptureSession() {
         return this.captureSession;
     }
 
-    void createNewCaptureSession() {
-        // collect params
-        SystemConfig config = SystemConfig.getConfig();
-        
-        // make map of sensor names to types
-        Map<String, UUID> sensorTypes = new HashMap<>();
-        this.hardware.getSensors().forEach((n, s) -> {
-            if (s == null) {
-                LOGGER.error("Sensor \"" + n + "\" not bound.");
-            } else {
-                sensorTypes.put(n, s.getType());
-            }
-        });
-        
-        // create the capture data store
-        Capture dataStore = new InMemoryCapture(
-                Instant.now(),
-                config.getSamplingFrequency(),
-                sensorTypes);
-
-        // build and return a new capture session
-        this.captureSession = new CaptureSession(this.hardware.getSensors(), dataStore);
+    /**
+     * Creates a new capture session.
+     */
+    void setCaptureSession(CaptureSession session) {
+        this.captureSession = session;
+    }
+    
+    HardwareInterface getHardware() {
+        return HardwareInterface.getInterface();
     }
 }

@@ -22,11 +22,8 @@ import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.data.InMemoryCapture;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
-import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 /**
  * The class containing the implementation for the StartCapture state.
  */
-class StartCapture implements ControllerState {
+class CreateCapture implements ControllerState {
     /**
      * Class logger instance.
      */
@@ -43,22 +40,46 @@ class StartCapture implements ControllerState {
     @Override
     public Class execute(ExecutionContext state) {
         HardwareInterface hardware = state.getHardware();
-        CaptureSession session = state.getCaptureSession();
+        SystemConfig config = state.getConfig();
         
-        // this represents the time to enable the sync light for
-        List<Integer> syncLightDuration = Arrays.asList(new Integer[] { 2000 });
+        // create new capture
+        // make map of sensor names to types
+        Map<String, UUID> sensorTypes = new HashMap<>();
+        hardware.getSensors().forEach((n, s) -> {
+            if (s == null) {
+                LOGGER.error("Sensor \"" + n + "\" not bound.");
+            } else {
+                sensorTypes.put(n, s.getType());
+            }
+        });
 
-        // start capture
-        session.start();
-        
+        // create the capture data store
+        Class type = config.getCaptureType();
+        Capture dataStore = null;
+
         try {
-            // flash sync LED
-            hardware.flashSyncLight(syncLightDuration);
-        } catch (IOException ex) {
-            LOGGER.error("Error flashing sync light when starting new capture.", ex);
+            if (!Capture.class.isAssignableFrom(type)) {
+                throw new Exception("Configured capture type is not a subclass of Capture.");
+            } else {
+                dataStore = (Capture)type.getConstructor(Instant.class, double.class).newInstance(Instant.now(), config.getSamplingFrequency());
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Could not create capture for configured type \"" + config.getCaptureType().getCanonicalName() + "\".", ex);
         }
+
+        if (dataStore == null) {
+            dataStore = new InMemoryCapture(
+                    Instant.now(),
+                    config.getSamplingFrequency(),
+                    sensorTypes);
+        }
+
+        // build and return a new capture session
+        CaptureSession captureSession = new CaptureSession(hardware.getSensors(), dataStore);
+
+        state.setCaptureSession(captureSession);
         
         // transition to wait for end class
-        return WaitForEnd.class;
+        return StartCapture.class;
     }
 }

@@ -34,7 +34,7 @@ class WaitForStart implements ControllerState {
     public Class execute(ExecutionContext state) {
         // flash the sync light to indicate that we are ready to start
         try {
-            state.flashSyncLight(Arrays.asList(new Integer[] { 100, 200, 100 }));
+            state.getHardware().flashSyncLight(Arrays.asList(new Integer[] { 100, 200, 100 }));
         } catch (IOException ex) {
             LOGGER.error("IOException flashing sync light.", ex);
         }
@@ -49,14 +49,14 @@ class WaitForStart implements ControllerState {
         // wait for a keypress
         char key = '\0';
         try {
-            key = state.getKeyPress();
+            key = state.getHardware().getKeyPress();
         } catch (InterruptedException ex) {
             LOGGER.error("Interrupted waiting for key press.", ex);
         }
         
         // the 1 key triggers starting the capture
         if (key == '1') {
-            return StartCapture.class;
+            return CreateCapture.class;
         }
         
         // no valid key was pressed, return to this wait state

@@ -5,4 +5,5 @@
     </sensornames>
     <sensorbindings>
     </sensorbindings>
+    <capturetype>com.vitembp.embedded.data.InMemoryCapture</capturetype>
 </configuration>

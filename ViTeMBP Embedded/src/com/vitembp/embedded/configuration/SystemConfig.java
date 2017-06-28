@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.configuration;
 
+import com.vitembp.embedded.data.InMemoryCapture;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -82,6 +83,11 @@ public class SystemConfig {
     private boolean loadedConfigFromFile = false;
     
     /**
+     * The type of capture to use to store captured data.
+     */
+    private Class<?> captureType = InMemoryCapture.class;
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {       
@@ -100,6 +106,58 @@ public class SystemConfig {
         
     }
 
+    /**
+     * Gets the sampling frequency to use when polling data from the sensors.
+     * @return The sampling frequency to use when polling data from the sensors.
+     */
+    public double getSamplingFrequency() {
+        return this.samplingFrequency;
+    }
+    
+    /**
+     * Gets the names of the sensors configured for use in the system.
+     * @return The names of the sensors configured for use in the system.
+     */
+    public Set<String> getSensorNames() {
+        return Collections.unmodifiableSet(this.sensorNames);
+    }
+    
+    /**
+     * Gets a mapping of sensor names to their binding location.
+     * @return A mapping of sensor names to their binding location.
+     */
+    public Map<String, String> getSensorBindings() {
+        return Collections.unmodifiableMap(this.sensorBindings);
+    }
+    
+    /**
+     * Gets the SystemConfig singleton instance.
+     * @return The SystemConfig singleton instance.
+     */
+    public static SystemConfig getConfig() {
+        return SystemConfig.SINGLETON;
+    }
+    
+    /**
+     * Returns a boolean value indicating whether the SystemConfig object was
+     * initialized from the settings save to the default location in the
+     * file system.
+     * @return A boolean value indicating whether the SystemConfig object was
+     * initialized from the settings save to the default location in the
+     * file system.
+     */
+    public boolean initializedFromFile() {
+        return this.loadedConfigFromFile;
+    }
+    
+    /**
+     * Gets the type of Capture to use to store sensor data.
+     * @return The type of Capture to use to store sensor data.
+     */
+    public Class getCaptureType() {
+        return this.captureType;
+    }
+    
     /**
      * Loads the configuration from a file.
      * @param configFile The file to load from.
@@ -194,50 +252,6 @@ public class SystemConfig {
     }
     
     /**
-     * Gets the sampling frequency to use when polling data from the sensors.
-     * @return The sampling frequency to use when polling data from the sensors.
-     */
-    public double getSamplingFrequency() {
-        return this.samplingFrequency;
-    }
-    
-    /**
-     * Gets the names of the sensors configured for use in the system.
-     * @return The names of the sensors configured for use in the system.
-     */
-    public Set<String> getSensorNames() {
-        return Collections.unmodifiableSet(this.sensorNames);
-    }
-    
-    /**
-     * Gets a mapping of sensor names to their binding location.
-     * @return A mapping of sensor names to their binding location.
-     */
-    public Map<String, String> getSensorBindings() {
-        return Collections.unmodifiableMap(this.sensorBindings);
-    }
-    
-    /**
-     * Gets the SystemConfig singleton instance.
-     * @return The SystemConfig singleton instance.
-     */
-    public static SystemConfig getConfig() {
-        return SystemConfig.SINGLETON;
-    }
-    
-    /**
-     * Returns a boolean value indicating whether the SystemConfig object was
-     * initialized from the settings save to the default location in the
-     * file system.
-     * @return A boolean value indicating whether the SystemConfig object was
-     * initialized from the settings save to the default location in the
-     * file system.
-     */
-    public boolean initializedFromFile() {
-        return this.loadedConfigFromFile;
-    }
-    
-    /**
      * Writes configuration to an XMLStreamWriter.
      * @param toWriteTo The XMLStreamWriter to write to.
      * @throws XMLStreamException If an exception occurs writing to the stream.
@@ -278,6 +292,11 @@ public class SystemConfig {
             
             toWriteTo.writeEndElement();
         }
+        toWriteTo.writeEndElement();
+        
+        // save capture type
+        toWriteTo.writeStartElement("capturetype");
+        toWriteTo.writeCharacters(this.captureType.getCanonicalName());
         toWriteTo.writeEndElement();
         
         // close configuration
@@ -330,7 +349,7 @@ public class SystemConfig {
         }
         
         // set of sensor names
-        Set<String> sensorNames = new HashSet<>();
+        Set<String> readSensorNames = new HashSet<>();
         
         // add a name element for each name entry
         while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "name".equals(toReadFrom.getLocalName())) {
@@ -346,7 +365,7 @@ public class SystemConfig {
             }
             
             // successfully found a sensor name, save it
-            sensorNames.add(sensorName);
+            readSensorNames.add(sensorName);
         }
         
         // read into close element
@@ -360,7 +379,7 @@ public class SystemConfig {
         }
         
         // map of sensor name to bindings
-        Map<String, String> sensorBindings = new HashMap<>();
+        Map<String, String> readSensorBindings = new HashMap<>();
         
         // add a name element for each name entry
         while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "sensorbinding".equals(toReadFrom.getLocalName())) {
@@ -402,12 +421,35 @@ public class SystemConfig {
             }
             
             // successfully found a sensor name, save it
-            sensorBindings.put(sensorName, sensorBinding);
+            readSensorBindings.put(sensorName, sensorBinding);
         }
         
         // read into close element
         if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensorbindings".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </sensorbindings> not found.", toReadFrom.getLocation());
+        }
+        
+        // read capture type
+        // read into capture type element
+        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"capturetype".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <samplingfrequency> not found.", toReadFrom.getLocation());
+        }
+        
+        // read and parse sampling frequency
+        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
+            throw new XMLStreamException("Expected capture type string not found.", toReadFrom.getLocation());
+        }
+        
+        try {
+            this.captureType = Class.forName(toReadFrom.getText());
+        } catch (ClassNotFoundException ex) {
+            LOGGER.error("Error resolving capture type when loading Capture from XML.", ex);
+            throw new XMLStreamException("Error resolving capture type when loading Capture from XML.", toReadFrom.getLocation(), ex);
+        }
+        
+        // read into close capture type element
+        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"capturetype".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </capturetype> not found.", toReadFrom.getLocation());
         }
         
         // read into close configuration
@@ -421,7 +463,7 @@ public class SystemConfig {
         }
         
         // configuration successfully read, safe to update settings
-        this.sensorNames = sensorNames;
-        this.sensorBindings = sensorBindings;
+        this.sensorNames = readSensorNames;
+        this.sensorBindings = readSensorBindings;
     }
 }

@@ -33,7 +33,7 @@ class WaitForEnd implements ControllerState {
         // wait for a keypress
         char key = '\0';
         try {
-            key = state.getKeyPress();
+            key = state.getHardware().getKeyPress();
         } catch (InterruptedException ex) {
             LOGGER.error("Interrupted waiting for key press.", ex);
         }

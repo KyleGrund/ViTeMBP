@@ -28,7 +28,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * Creates a UuidStringStore for the H2 embedded database.
+     * Creates a UuidStringStore for the H2 embedded database.
  */
 public class UuidStringStoreH2 implements UuidStringStore {
     /**
