@@ -17,8 +17,12 @@
  */
 package com.vitembp.embedded.data;
 
+import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A factory class that creates Capture instances.
@@ -29,7 +33,13 @@ public class CaptureFactory {
             case InMemory:
                 return new InMemoryCapture(frequency, nameToIds);
             case EmbeddedH2:
-                break;
+                UuidStringStoreH2 store;
+                try {
+                    store = new UuidStringStoreH2(Paths.get("capturedata"));
+                    return new UuidStringStoreCapture(frequency, store, nameToIds);
+                } catch (SQLException ex) {
+                    throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
+                }
         }
         
         throw new InstantiationException("Could not build a Capture instance for the given parameters.");
