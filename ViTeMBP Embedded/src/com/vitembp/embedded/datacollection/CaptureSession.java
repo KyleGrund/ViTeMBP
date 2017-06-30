@@ -19,6 +19,7 @@ package com.vitembp.embedded.datacollection;
 
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.hardware.Sensor;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -57,6 +58,14 @@ public class CaptureSession {
      */
     public void stop() {
         this.sampler.stop();
+    }
+    
+    /**
+     * Saves the current capture.
+     * @throws IOException If an IOException occurs while saving the capture.
+     */
+    public void saveCapture() throws IOException {
+        this.data.save();
     }
     
     /**

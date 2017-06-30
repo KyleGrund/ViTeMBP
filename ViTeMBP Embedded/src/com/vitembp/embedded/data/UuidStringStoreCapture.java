@@ -84,6 +84,7 @@ class UuidStringStoreCapture extends Capture {
         // create store for any added samples
         this.samples = new ArrayList<>();
         
+        // the location to store this capture in the UUID store
         captureLocation = UUID.randomUUID();
     }
     

@@ -17,6 +17,8 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.datacollection.CaptureSession;
+import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -30,8 +32,18 @@ class EndCapture implements ControllerState {
     
     @Override
     public Class execute(ExecutionContext state) {
-        // stop the current capture
-        state.getCaptureSession().stop();
+        // get the current capture session
+        CaptureSession session = state.getCaptureSession();
+        
+        // stop the current capture session
+        session.stop();
+        
+        try {
+            // save the capture data
+            session.saveCapture();
+        } catch (IOException ex) {
+            LOGGER.error("Error while saving data at end of capture.", ex);
+        }
         
         // signal capture has stopped as needed
         
