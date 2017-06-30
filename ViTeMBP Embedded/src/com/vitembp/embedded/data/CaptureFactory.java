@@ -21,8 +21,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A factory class that creates Capture instances.
@@ -31,11 +29,12 @@ public class CaptureFactory {
     public static Capture buildCapture(CaptureTypes type, double frequency, Map<String, UUID> nameToIds) throws InstantiationException {
         switch (type) { 
             case InMemory:
-                return new InMemoryCapture(frequency, nameToIds);
+                UuidStringStoreHashMap hashMapStore;
+                hashMapStore = new UuidStringStoreHashMap();
+                return new UuidStringStoreCapture(frequency, hashMapStore, nameToIds);
             case EmbeddedH2:
-                UuidStringStoreH2 store;
                 try {
-                    store = new UuidStringStoreH2(Paths.get("capturedata"));
+                    UuidStringStoreH2 store = new UuidStringStoreH2(Paths.get("capturedata"));
                     return new UuidStringStoreCapture(frequency, store, nameToIds);
                 } catch (SQLException ex) {
                     throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());

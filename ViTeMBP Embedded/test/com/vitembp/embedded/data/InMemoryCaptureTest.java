@@ -19,6 +19,7 @@ package com.vitembp.embedded.data;
 
 import com.vitembp.embedded.hardware.AccelerometerMock;
 import com.vitembp.embedded.hardware.Sensor;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,12 +108,15 @@ public class InMemoryCaptureTest {
      * Builds an instance to test.
      * @return An instance to test.
      */
-    private InMemoryCapture createInstance() {
+    private Capture createInstance() throws InstantiationException {
         // build a map of sensor types for the capture
         HashMap<String, UUID> sensorTypes = new HashMap<>();
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
-        InMemoryCapture instance = new InMemoryCapture(29.97, sensorTypes);
+        Capture instance = CaptureFactory.buildCapture(
+                CaptureTypes.InMemory, 
+                29.97,
+                sensorTypes);
         this.data.forEach(instance::addSample);
         return instance;
     }
@@ -121,11 +125,11 @@ public class InMemoryCaptureTest {
      * Test of getSamples method, of class InMemoryCapture.
      */
     @Test
-    public void testGetSamples() {
+    public void testGetSamples() throws InstantiationException {
         System.out.println("getSamples");
         
         // build a map of sensor types for the capture
-        InMemoryCapture instance = createInstance();
+        Capture instance = createInstance();
 
         CaptureTests.testGetSamples(instance, this.samples, org.junit.Assert::assertEquals, org.junit.Assert::assertTrue);
     }
@@ -134,11 +138,11 @@ public class InMemoryCaptureTest {
      * Test of addSample method, of class InMemoryCapture.
      */
     @Test
-    public void testAddSample() {
+    public void testAddSample() throws InstantiationException {
         System.out.println("addSample");
         
         // build a map of sensor types for the capture
-        InMemoryCapture instance = createInstance();
+        Capture instance = createInstance();
         
         // count samples to make sure all data were added
         List<Sample> samples = new ArrayList<>();
@@ -150,11 +154,11 @@ public class InMemoryCaptureTest {
      * Test of save method, of class InMemoryCapture.
      */
     @Test
-    public void testSave() {
+    public void testSave() throws InstantiationException, IOException {
         System.out.println("save");
         
         // build a map of sensor types for the capture
-        InMemoryCapture instance = createInstance();
+        Capture instance = createInstance();
         
         instance.save();
     }
@@ -163,7 +167,7 @@ public class InMemoryCaptureTest {
      * Test of load method, of class InMemoryCapture.
      */
     @Test
-    public void testLoad() {
+    public void testLoad() throws InstantiationException, IOException {
         System.out.println("load");
         
         // build a map of sensor types for the capture
@@ -171,10 +175,12 @@ public class InMemoryCaptureTest {
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         
-        InMemoryCapture instance = new InMemoryCapture(29.97, sensorTypes);
+        Capture instance = this.createInstance();
+        instance.save();
         instance.load();
         
         this.data.forEach(instance::addSample);
+        instance.save();
         instance.load();
     }
     
@@ -182,10 +188,10 @@ public class InMemoryCaptureTest {
      * Test of load method, of class InMemoryCapture.
      */
     @Test
-    public void testToXml() {
+    public void testToXml() throws InstantiationException {
         System.out.println("toXml");
         
-        InMemoryCapture instance = createInstance();
+        Capture instance = createInstance();
         
         CaptureTests.testToXml(instance);
     }
@@ -194,11 +200,11 @@ public class InMemoryCaptureTest {
      * Test of writeTo method, of class InMemoryCapture.
      */
     @Test
-    public void testWriteTo() throws FactoryConfigurationError, XMLStreamException {
+    public void testWriteTo() throws FactoryConfigurationError, XMLStreamException, InstantiationException {
         System.out.println("toXml");
 
         // build a map of sensor types for the capture
-        InMemoryCapture instance = createInstance();
+        Capture instance = createInstance();
 
         CaptureTests.testWriteTo(instance);
     }
