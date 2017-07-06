@@ -135,7 +135,7 @@ class SamplePage {
         if (!this.containsSample(index)) {
             StringBuilder message = new StringBuilder();
             message.append("Page ");
-            message.append(startIndex);
+            message.append(startIndex/this.pageSize);
             message.append(" does not contain index ");
             message.append(index);
             message.append(".");
@@ -262,9 +262,13 @@ class SamplePage {
         
         // we will only get data if a page has been previously saved, if there
         // is none we can just go with defaults as this is a new page
-        if (!"".equals(savedData)) {
+        if (savedData != null && !"".equals(savedData)) {
             StringReader sr = new StringReader(savedData);
-            XMLStreamReader toReadFrom = XMLInputFactory.newFactory().createXMLStreamReader(sr);
+            // build xmlreader with factory set to enable coalescing
+            // which won't let it break CHARACTER events up
+            XMLInputFactory factory = XMLInputFactory.newFactory();
+            factory.setProperty(XMLInputFactory.IS_COALESCING, true);
+            XMLStreamReader toReadFrom = factory.createXMLStreamReader(sr);
             this.readFrom(toReadFrom);
         }
     }
@@ -302,11 +306,6 @@ class SamplePage {
         toWriteTo.writeCharacters(this.nextPage.toString());
         toWriteTo.writeEndElement();
         
-        // save the UUID for the next page
-        toWriteTo.writeStartElement(NEXT_TAG);
-        toWriteTo.writeCharacters(this.nextPage.toString());
-        toWriteTo.writeEndElement();
-        
         // save all sample data
         toWriteTo.writeStartElement("samples");
         for (Sample toWrite : this.samples) {
@@ -314,7 +313,6 @@ class SamplePage {
         }
         toWriteTo.writeEndElement();
         toWriteTo.writeEndElement();
-        toWriteTo.writeEndDocument();
     }
     
     /**
@@ -354,24 +352,16 @@ class SamplePage {
         // holds samples that are loaded
         List<Sample> readSamples = new ArrayList<>();
         
-        // add a sensor element for each data entry
-        while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "sample".equals(toReadFrom.getLocalName())) {
+        // read to first next entry
+        toReadFrom.next();
+        
+        // while we are at a sample entry read it in
+        while (toReadFrom.getEventType() == XMLStreamConstants.START_ELEMENT && "sample".equals(toReadFrom.getLocalName())) {
             readSamples.add(new Sample(
                     sampleIndexAt,
                     sampleStartTime.plusNanos(sampleInterval * sampleIndexAt),
                     toReadFrom));
         }
-        
-        // read into close element
-        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensors".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </sensors> not found.", toReadFrom.getLocation());
-        }
-        
-        // read into samples element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <samples> not found.", toReadFrom.getLocation());
-        }
-        toReadFrom.next();
         
         // read into close samples element
         if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
@@ -405,14 +395,14 @@ class SamplePage {
             throw new XMLStreamException("Expected <" + name + "> not found.", toReadFrom.getLocation());
         }
         
-        if (toReadFrom.getEventType() != XMLStreamConstants.CHARACTERS) {
+        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
             throw new XMLStreamException("Expected " + name + " value not found.", toReadFrom.getLocation());
         }
         
         String value  = toReadFrom.getText();
         
         // read into close element
-        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
+        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </" + name + "> not found.", toReadFrom.getLocation());
         }
         

@@ -19,6 +19,7 @@ package com.vitembp.embedded.data;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +89,12 @@ class UuidStringStorePagingCapture extends Capture {
     
     @Override
     public Iterable<Sample> getSamples() {
-        // this is the hard part.
+        // if manager is null, return an empty iterable
+        if (this.manager == null) {
+            return new ArrayList<>();
+        }
+        
+        // otherwise get it from the manager
         return this.manager.getSamples();
     }
 

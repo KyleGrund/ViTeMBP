@@ -145,11 +145,13 @@ class SamplePageManager {
     Iterable<Sample> getSamples() {
         return () -> new Iterator<Sample>() {
             SamplePage currentPage = firstPage;
+            SamplePage finalPage = lastPage;
+            int finalPageIndex = (pageCount - 1) * pageSize;
             int currentIndex = 0;
             
             @Override
             public boolean hasNext() {
-                return currentIndex < currentPage.sampleCount();
+                return currentPage != null && currentPage.containsSample(currentIndex);
             }
             
             @Override
@@ -160,11 +162,16 @@ class SamplePageManager {
                 // increment the sample we're currently at
                 currentIndex++;
                 
-                // if we incremented past the last sample in the page
-                // go to the next page and reset the index
-                if (currentIndex == currentPage.sampleCount()) {
-                    this.currentPage = this.currentPage.getNextPage();
-                    this.currentIndex = 0;
+                // if we incremented past the last sample in the page load
+                // the next page
+                if (!currentPage.containsSample(currentIndex)) {
+                    // if we need the final page use the local refrence as it
+                    // has probably not been loaded
+                    if (currentIndex == finalPageIndex) {
+                        this.currentPage = this.finalPage;
+                    } else {
+                        this.currentPage = this.currentPage.getNextPage();
+                    }
                 }
                 
                 // return the current item
@@ -256,15 +263,20 @@ class SamplePageManager {
      * @throws XMLStreamException If an exception occurs while writing this instance.
      */
     void save() throws IOException {
-        StringWriter sw = new StringWriter();
         try {
+            // save this instance
+            StringWriter sw = new StringWriter();
             XMLStreamWriter toWriteTo =
                     XMLOutputFactory.newFactory().createXMLStreamWriter(sw);
             this.writeTo(toWriteTo);
+        
+            this.store.write(sw.toString());
+
+            // save the last page as it may not have been saved
+            this.lastPage.save();
         } catch (XMLStreamException ex) {
             throw new IOException("IO Exception occured writing SamplePageManager from persistant storage.", ex);
         }
-        this.store.write(sw.toString());
     }
 
     /**
