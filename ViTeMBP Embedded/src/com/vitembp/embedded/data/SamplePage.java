@@ -192,7 +192,7 @@ class SamplePage {
      * @return A value indicating whether more samples can be added to this page.
      */
     public boolean isFull() {
-        return this.samples.size() < this.pageSize;
+        return this.samples.size() >= this.pageSize;
     }
     
     /**
