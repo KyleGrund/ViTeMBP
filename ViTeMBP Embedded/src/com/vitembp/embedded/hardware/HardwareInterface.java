@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.hardware;
 
+import com.vitembp.embedded.data.ConsumerIOException;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
 import java.util.HashMap;

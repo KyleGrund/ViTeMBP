@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.hardware;
 
+import com.vitembp.embedded.data.ConsumerIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;

@@ -15,30 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.vitembp.embedded.hardware;
+package com.vitembp.embedded.data;
 
 import java.io.IOException;
 
 /**
- * Represents an operation that accepts a single input argument and returns no
- * result. Unlike most other functional interfaces, {@code Consumer} is expected
- * to operate via side-effects.
- *
- * <p>This is a <a href="package-summary.html">functional interface</a>
- * whose functional method is {@link #accept(Object)}.
- *
- * @param <T> the type of the input to the operation
- *
- * @since 1.8
+ * A Supplier class that can throw an IOException.
  */
 @FunctionalInterface
-public interface ConsumerIOException<T> {
+public interface SupplierIOException<T> {
 
     /**
-     * Performs this operation on the given argument.
+     * Gets a result.
      *
-     * @param t the input argument
-     * @throws java.io.IOException If an exception occurs during execution of the target call.
+     * @return A result.
+     * @throws java.io.IOException If an IOException occurs during call.
      */
-    void accept(T t) throws IOException;
+    T get() throws IOException;
 }

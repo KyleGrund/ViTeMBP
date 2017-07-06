@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -81,22 +80,7 @@ public abstract class Capture {
      * @param data A map of sensors names to the data that was taken from them
      * for this sample.
      */
-    public void addSample(Map<String, String> data) {
-        // if this is the first sample save the start time
-        if (this.startTime == null) {
-            this.startTime = Instant.now();
-        }
-        
-        // create a new sample and add it to the samples array list
-        // the index of the new sample is the count of the old samples
-        int count = this.getSampleCount();
-        
-        // calculate the time of the sample
-        Instant sampleTime = this.startTime.plus((long)((count / this.sampleFrequency) / 1000d), ChronoUnit.MILLIS);
-        
-        // add sample to the data store
-        this.addSample(new Sample(this.getSampleCount(), sampleTime, data));
-    }
+    public abstract void addSample(Map<String, String> data);
     
     /**
      * Gets the number of samples in the capture.
@@ -142,6 +126,13 @@ public abstract class Capture {
      * @throws XMLStreamException If there is an error reading data from XML.
      */
     protected abstract void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException;
+    
+    /**
+     * Writes samples to an XMLStreamReader.
+     * @param toWriteTo The XMLStreamWriter to write samples to.
+     * @throws XMLStreamException If there is an error reading data from XML.
+     */
+    protected abstract void writeSamplesTo(XMLStreamWriter toWriteTo) throws XMLStreamException;
     
     /**
      * Gets the sampling frequency of this capture.
@@ -211,9 +202,7 @@ public abstract class Capture {
         toWriteTo.writeEndElement();
         
         toWriteTo.writeStartElement("samples");
-        for (Sample sample : this.getSamples()) {
-            sample.writeTo(toWriteTo);
-        }
+        this.writeSamplesTo(toWriteTo);
         toWriteTo.writeEndElement();
         
         toWriteTo.writeEndElement();

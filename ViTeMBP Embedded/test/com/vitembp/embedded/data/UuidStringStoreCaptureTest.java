@@ -112,19 +112,7 @@ public class UuidStringStoreCaptureTest {
         HashMap<String, UUID> sensorTypes = new HashMap<>();
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
-        UuidStringStore hashMapStore = new UuidStringStore() {
-            private final Map<UUID, String> dataStore = new HashMap<>();
-            
-            @Override
-            public String read(UUID key) {
-                return this.dataStore.get(key);
-            }
-
-            @Override
-            public void write(UUID key, String value) {
-                this.dataStore.put(key, value);
-            }
-        };
+        UuidStringLocation hashMapStore = new UuidStringLocation(new UuidStringStoreHashMap(), UUID.randomUUID());
         UuidStringStoreCapture instance = new UuidStringStoreCapture(29.97, hashMapStore, sensorTypes);
         this.data.forEach(instance::addSample);
         return instance;

@@ -18,16 +18,13 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -36,7 +33,7 @@ import org.apache.logging.log4j.LogManager;
 /**
  * An implementation of Capture using in-memory collection classes.
  */
-class UuidStringStoreCapture extends Capture {
+class UuidStringStorePagingCapture extends Capture {
     /**
      * Class logger instance.
      */
@@ -53,19 +50,24 @@ class UuidStringStoreCapture extends Capture {
     private final Map<String, UUID> types;
     
     /**
-     * The set of samples.
-     */
-    private final ArrayList<Sample> samples;
-    
-    /**
      * The persistent storage this instance uses.
      */
     private final UuidStringLocation store;
     
     /**
-     * The UUID location to save  this capture at.
+     * The size of a sample page.
      */
-    private final UUID captureLocation;
+    private final int pageSize;
+    
+    /**
+     * Manager which provides paging ability
+     */
+    private SamplePageManager manager;
+    
+    /**
+     * The number of samples in the capture.
+     */
+    private int sampleCount = 0;
     
     /**
      * Initializes a new instance of the InMemoryCapture class and stores it to
@@ -74,49 +76,57 @@ class UuidStringStoreCapture extends Capture {
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    public UuidStringStoreCapture(double frequency, UuidStringLocation store, Map<String, UUID> nameToIds) {
+    public UuidStringStorePagingCapture(double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
         super(frequency);
         
         // save refrences to parameters        
         this.store = store;
         this.names = new HashSet<>(nameToIds.keySet());
         this.types = new HashMap<>(nameToIds);
-        
-        // create store for any added samples
-        this.samples = new ArrayList<>();
-        
-        // the location to store this capture in the UUID store
-        captureLocation = UUID.randomUUID();
+        this.pageSize = pageSize;
     }
     
     @Override
     public Iterable<Sample> getSamples() {
-        return Collections.unmodifiableList(this.samples);
+        // this is the hard part.
+        return this.manager.getSamples();
     }
 
     @Override
     public void addSample(Map<String, String> data) {
+        // if this is the first sample, set start time
+        checkStartTime();
+        
+        // calculate the sample using the calculated interval
+        Instant sampleTime = this.startTime.plusNanos(this.nanoSecondInterval * this.sampleCount);
+        
         // create a new sample and add it to the samples array list
-        this.samples.add(new Sample(this.samples.size(), Instant.now(), data));
+        this.manager.addSample(new Sample(sampleCount, sampleTime, data));
+        sampleCount++;
+    }
+
+    /**
+     * If there are no samples, set the current time as the capture start time.
+     */
+    private void checkStartTime() {
+        // if this is the first sample, set the start time
+        if (this.sampleCount == 0) {
+            this.startTime = Instant.now();
+            
+            // build a page manager, now that we have the start time all
+            // dependencies have been bound
+            this.manager = new SamplePageManager(store, pageSize, this.startTime, this.nanoSecondInterval);
+        }
     }
     
     @Override
     public void save() throws IOException {
-        this.store.write(this.toXml());
+        this.manager.save();
     }
 
     @Override
     public void load() throws IOException {
-        // create a string  reader from capture entry in store
-        StringReader sr = new StringReader(this.store.read());
-        
-        try {
-            // load data from a newly created XML stream
-            this.readFrom(XMLInputFactory.newFactory().createXMLStreamReader(sr));
-        } catch (XMLStreamException ex) {
-            LOGGER.error("Exception while loading Capture from UUID String store.", ex);
-            throw new IOException("Exception while loading Capture from UUID String store.", ex);
-        }
+        this.manager.load();
     }
 
     @Override
@@ -131,27 +141,33 @@ class UuidStringStoreCapture extends Capture {
 
     @Override
     protected void addSample(Sample toAdd) {
-        this.samples.add(toAdd);
-    }
-
-    @Override
-    protected void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
-        while ("sample".equals(toReadFrom.getLocalName())) {
-            int index = this.samples.size();
-            Instant time = this.startTime.plusNanos(this.nanoSecondInterval * index);
-            this.samples.add(new Sample(this.samples.size(), time, toReadFrom));
-        }
+        // if this is the first sample, set start time
+        checkStartTime();
+        
+        this.manager.addSample(toAdd);
+        this.sampleCount++;
     }
 
     @Override
     protected int getSampleCount() {
-        return this.samples.size();
+        return this.manager.getSampleCount();
     }
-
+    
     @Override
     protected void writeSamplesTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
-        for (Sample sample : this.getSamples()) {
-            sample.writeTo(toWriteTo);
+        try {
+            this.save();
+        } catch (IOException ex) {
+            throw new XMLStreamException("IOException occurred while saving UuidStringStorePagingCapture.", ex);
+        }
+    }
+    
+    @Override
+    protected void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
+        try {
+            this.load();
+        } catch (IOException ex) {
+            throw new XMLStreamException("IOException occurred while loading UuidStringStorePagingCapture.", ex);
         }
     }
 }

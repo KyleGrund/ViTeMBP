@@ -29,13 +29,14 @@ public class CaptureFactory {
     public static Capture buildCapture(CaptureTypes type, double frequency, Map<String, UUID> nameToIds) throws InstantiationException {
         switch (type) { 
             case InMemory:
-                UuidStringStoreHashMap hashMapStore;
-                hashMapStore = new UuidStringStoreHashMap();
+                UuidStringLocation hashMapStore;
+                hashMapStore = new UuidStringLocation(new UuidStringStoreHashMap(), UUID.randomUUID());
                 return new UuidStringStoreCapture(frequency, hashMapStore, nameToIds);
             case EmbeddedH2:
                 try {
-                    UuidStringStoreH2 store = new UuidStringStoreH2(Paths.get("capturedata"));
-                    return new UuidStringStoreCapture(frequency, store, nameToIds);
+                    UuidStringStoreH2 h2Store = new UuidStringStoreH2(Paths.get("capturedata"));
+                    UuidStringLocation location = new UuidStringLocation(h2Store, UUID.randomUUID());
+                    return new UuidStringStoreCapture(frequency, location, nameToIds);
                 } catch (SQLException ex) {
                     throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
                 }
