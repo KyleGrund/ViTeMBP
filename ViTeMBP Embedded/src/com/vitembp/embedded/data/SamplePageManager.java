@@ -18,14 +18,9 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.UUID;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -78,7 +73,7 @@ class SamplePageManager {
     /**
      * The start time of the first sample.
      */
-    private final Instant startTime;
+    private Instant startTime;
     
     /**
      * The interval between samples.
@@ -185,7 +180,11 @@ class SamplePageManager {
      * @param toWriteTo the XMLStreamWriter to write to.
      * @throws XMLStreamException If an exception occurs while writing to the stream.
      */
-    private void writeTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
+    void writeTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
+        toWriteTo.writeStartElement("pagecount");
+        toWriteTo.writeCharacters(Integer.toString(this.pageCount));
+        toWriteTo.writeEndElement();
+        
         toWriteTo.writeStartElement("firstpagelocation");
         toWriteTo.writeCharacters(this.firstPageLocation.toString());
         toWriteTo.writeEndElement();
@@ -200,11 +199,13 @@ class SamplePageManager {
      * @param toReadFrom the XMLStreamReader to read from.
      * @throws XMLStreamException If an exception occurs while reading from the stream.
      */
-    private void readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
-        //this.firstPageLocation
-        UUID firstLocation = UUID.fromString(this.readElement("firstpagelocation", toReadFrom));
-        //this.lastPageLocation
-        UUID lastLocation = UUID.fromString(this.readElement("lastpagelocation", toReadFrom));
+    void readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
+        // read in value for this.pageCount
+        int pages = Integer.parseInt(XMLStreams.readElement("pagecount", toReadFrom));
+        // read in value for this.firstPageLocation
+        UUID firstLocation = UUID.fromString(XMLStreams.readElement("firstpagelocation", toReadFrom));
+        // read in value for this.lastPageLocation
+        UUID lastLocation = UUID.fromString(XMLStreams.readElement("lastpagelocation", toReadFrom));
         
         // load the first page
         SamplePage newFirstPage = new SamplePage(
@@ -238,6 +239,8 @@ class SamplePageManager {
             this.firstPage = newFirstPage;
             this.lastPage = newLastPage;
         }
+        
+        this.pageCount = pages;
     }
     
     /**
@@ -252,6 +255,7 @@ class SamplePageManager {
         this.lastPage.save();
         
         // set last page to new page
+        this.lastPageLocation = this.lastPage.getNextPageLocation();
         this.lastPage = newPage;
         
         // increment the number of pages in the list
@@ -264,18 +268,10 @@ class SamplePageManager {
      */
     void save() throws IOException {
         try {
-            // save this instance
-            StringWriter sw = new StringWriter();
-            XMLStreamWriter toWriteTo =
-                    XMLOutputFactory.newFactory().createXMLStreamWriter(sw);
-            this.writeTo(toWriteTo);
-        
-            this.store.write(sw.toString());
-
             // save the last page as it may not have been saved
             this.lastPage.save();
         } catch (XMLStreamException ex) {
-            throw new IOException("IO Exception occured writing SamplePageManager from persistant storage.", ex);
+            throw new IOException("XMLStreamException occured writing SamplePageManager from persistant storage.", ex);
         }
     }
 
@@ -286,38 +282,10 @@ class SamplePageManager {
     void load() throws IOException {
         try {
             // try to read in any previously saved data
-            StringReader sr = new StringReader(this.store.read());
-            XMLStreamReader toReadFrom = XMLInputFactory.newFactory().createXMLStreamReader(sr);
+            XMLStreamReader toReadFrom = XMLStreams.createReader(this.store.read());
             this.readFrom(toReadFrom);
         } catch (XMLStreamException ex) {
-            throw new IOException("IO Exception occured reading SamplePageManager from persistant storage.", ex);
+            throw new IOException("XMLStreamException occured reading SamplePageManager from persistant storage.", ex);
         }
-    }
-    
-    /**
-     * Reads a single text element from XMLStreamReader.
-     * @param name The name of the element.
-     * @param toReadFrom The reader to read from.
-     * @return The string read from the stream.
-     * @throws XMLStreamException If an exception occurs reading from stream.
-     */
-    private String readElement(String name, XMLStreamReader toReadFrom) throws XMLStreamException {
-        // read starting element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <" + name + "> not found.", toReadFrom.getLocation());
-        }
-        
-        if (toReadFrom.getEventType() != XMLStreamConstants.CHARACTERS) {
-            throw new XMLStreamException("Expected " + name + " value not found.", toReadFrom.getLocation());
-        }
-        
-        String value  = toReadFrom.getText();
-        
-        // read into close element
-        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </" + name + "> not found.", toReadFrom.getLocation());
-        }
-        
-        return value;
     }
 }

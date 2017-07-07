@@ -19,13 +19,12 @@ package com.vitembp.embedded.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -167,10 +166,39 @@ public class UuidStringStorePagingCaptureTest {
     @Test
     public void testLoad() throws Exception {
         System.out.println("load");
-        UuidStringStorePagingCapture instance = null;
+        double frequency = 29.9;
+        UuidStringStore memStore = new UuidStringStoreHashMap();
+        UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
+        // model one page every 10sec
+        int pageSize = 299;
+        // build a map of sensor types for the capture
+        HashMap<String, UUID> nameToIds = new HashMap<>();
+        nameToIds.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        
+        UuidStringStorePagingCapture instance = new UuidStringStorePagingCapture(frequency, store, pageSize, nameToIds);
+        List<Map<String, String>> addedData = this.seedData(instance, 3000);
+        instance.save();
+        
+        instance = new UuidStringStorePagingCapture(frequency, store, pageSize, nameToIds);
+        assertEquals(0, instance.getSampleCount());
+        
         instance.load();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(3000, instance.getSampleCount());
+        
+        // verify the data was added
+        Iterator<Map<String, String>> expResult = addedData.iterator();
+        Iterator<Sample> result = instance.getSamples().iterator();
+        while (expResult.hasNext()) {
+            Map<String, String> exp = expResult.next();
+            Map<String, String> res = result.next().getSensorData();
+            assertEquals(res.size(), exp.size());
+            exp.keySet().forEach((key) -> assertEquals(exp.get(key), res.get(key)));
+        }
+        
+        // verify both iteraters do not have more data
+        assertFalse(expResult.hasNext());
+        assertFalse(result.hasNext());
     }
 
     /**
@@ -179,12 +207,12 @@ public class UuidStringStorePagingCaptureTest {
     @Test
     public void testGetSensorNames() {
         System.out.println("getSensorNames");
-        UuidStringStorePagingCapture instance = null;
-        Set<String> expResult = null;
+        UuidStringStorePagingCapture instance = this.buildCapture();
+        Set<String> expResult = new HashSet();
+        expResult.add(SENSOR_NAMES[0]);
+        expResult.add(SENSOR_NAMES[1]);
         Set<String> result = instance.getSensorNames();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -193,65 +221,11 @@ public class UuidStringStorePagingCaptureTest {
     @Test
     public void testGetSensorTypes() {
         System.out.println("getSensorTypes");
-        UuidStringStorePagingCapture instance = null;
-        Map<String, UUID> expResult = null;
+        UuidStringStorePagingCapture instance = this.buildCapture();
+        Map<String, UUID> expResult = new HashMap();
+        expResult.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
+        expResult.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         Map<String, UUID> result = instance.getSensorTypes();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of addSample method, of class UuidStringStorePagingCapture.
-     */
-    @Test
-    public void testAddSample_Sample() {
-        System.out.println("addSample");
-        Sample toAdd = null;
-        UuidStringStorePagingCapture instance = null;
-        instance.addSample(toAdd);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getSampleCount method, of class UuidStringStorePagingCapture.
-     */
-    @Test
-    public void testGetSampleCount() {
-        System.out.println("getSampleCount");
-        UuidStringStorePagingCapture instance = null;
-        int expResult = 0;
-        int result = instance.getSampleCount();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of writeSamplesTo method, of class UuidStringStorePagingCapture.
-     */
-    @Test
-    public void testWriteSamplesTo() throws Exception {
-        System.out.println("writeSamplesTo");
-        XMLStreamWriter toWriteTo = null;
-        UuidStringStorePagingCapture instance = null;
-        instance.writeSamplesTo(toWriteTo);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of readSamplesFrom method, of class UuidStringStorePagingCapture.
-     */
-    @Test
-    public void testReadSamplesFrom() throws Exception {
-        System.out.println("readSamplesFrom");
-        XMLStreamReader toReadFrom = null;
-        UuidStringStorePagingCapture instance = null;
-        instance.readSamplesFrom(toReadFrom);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-    
+    }    
 }

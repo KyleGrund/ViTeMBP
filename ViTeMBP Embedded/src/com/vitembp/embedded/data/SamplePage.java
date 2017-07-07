@@ -18,14 +18,11 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -204,6 +201,14 @@ class SamplePage {
     }
     
     /**
+     * The location of the next page in the store.
+     * @return The UUID representing the location of the next page in the store. 
+     */
+    UUID getNextPageLocation() {
+        return this.nextPage;
+    }
+    
+    /**
      * Returns a new sample page for the next page location. If this is the last
      * page null is returned.
      * @return A new sample page for the next page location.
@@ -238,7 +243,7 @@ class SamplePage {
      */
     void save() throws XMLStreamException {
         StringWriter sw = new StringWriter();
-        XMLStreamWriter toWriteTo = XMLOutputFactory.newFactory().createXMLStreamWriter(sw);
+        XMLStreamWriter toWriteTo = XMLStreams.createWriter(sw);
         this.writeTo(toWriteTo);
         try {
             this.store.write(sw.toString());
@@ -263,13 +268,7 @@ class SamplePage {
         // we will only get data if a page has been previously saved, if there
         // is none we can just go with defaults as this is a new page
         if (savedData != null && !"".equals(savedData)) {
-            StringReader sr = new StringReader(savedData);
-            // build xmlreader with factory set to enable coalescing
-            // which won't let it break CHARACTER events up
-            XMLInputFactory factory = XMLInputFactory.newFactory();
-            factory.setProperty(XMLInputFactory.IS_COALESCING, true);
-            XMLStreamReader toReadFrom = factory.createXMLStreamReader(sr);
-            this.readFrom(toReadFrom);
+            this.readFrom(XMLStreams.createReader(savedData));
         }
     }
     
@@ -327,19 +326,19 @@ class SamplePage {
         }
         
         // read starting index        
-        int startSampleIndex = Integer.parseInt(this.readElement(START_INDEX_TAG, toReadFrom));
+        int startSampleIndex = Integer.parseInt(XMLStreams.readElement(START_INDEX_TAG, toReadFrom));
         
         // read page size
-        int maxPageSize = Integer.parseInt(this.readElement(PAGE_SIZE_TAG, toReadFrom));
+        int maxPageSize = Integer.parseInt(XMLStreams.readElement(PAGE_SIZE_TAG, toReadFrom));
         
         // read starting index        
-        Instant sampleStartTime = Instant.parse(this.readElement(START_TIME_TAG, toReadFrom));
+        Instant sampleStartTime = Instant.parse(XMLStreams.readElement(START_TIME_TAG, toReadFrom));
         
         // read page size
-        long sampleInterval = Integer.parseInt(this.readElement(SAMPLE_INTERVAL_TAG, toReadFrom));
+        long sampleInterval = Integer.parseInt(XMLStreams.readElement(SAMPLE_INTERVAL_TAG, toReadFrom));
         
         // read next UUID
-        UUID nextPageUuid = UUID.fromString(this.readElement(NEXT_TAG, toReadFrom));
+        UUID nextPageUuid = UUID.fromString(XMLStreams.readElement(NEXT_TAG, toReadFrom));
         
         // keeps track of the index of the sample that is currently being loaded
         int sampleIndexAt =  this.startIndex;
@@ -380,32 +379,5 @@ class SamplePage {
         this.startTime = sampleStartTime;
         this.nanosecondInterval = sampleInterval;
         this.nextPage = nextPageUuid;
-    }
-    
-    /**
-     * Reads a single text element from XMLStreamReader.
-     * @param name The name of the element.
-     * @param toReadFrom The reader to read from.
-     * @return The string read from the stream.
-     * @throws XMLStreamException If an exception occurs reading from stream.
-     */
-    private String readElement(String name, XMLStreamReader toReadFrom) throws XMLStreamException {
-        // read starting element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <" + name + "> not found.", toReadFrom.getLocation());
-        }
-        
-        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-            throw new XMLStreamException("Expected " + name + " value not found.", toReadFrom.getLocation());
-        }
-        
-        String value  = toReadFrom.getText();
-        
-        // read into close element
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </" + name + "> not found.", toReadFrom.getLocation());
-        }
-        
-        return value;
     }
 }

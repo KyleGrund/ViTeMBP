@@ -22,7 +22,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -115,7 +114,7 @@ public class Sample {
         StringWriter sw = new StringWriter();
             
         try {
-            XMLStreamWriter toWriteTo = XMLOutputFactory.newFactory().createXMLStreamWriter(sw);
+            XMLStreamWriter toWriteTo = XMLStreams.createWriter(sw);
             this.writeTo(toWriteTo);
         } catch (XMLStreamException ex) {
             LOGGER.error("XMLStreamException ocurred while writing sample to stream.", ex);

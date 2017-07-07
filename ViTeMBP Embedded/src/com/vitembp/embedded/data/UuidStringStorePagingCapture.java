@@ -18,6 +18,7 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -81,10 +83,10 @@ class UuidStringStorePagingCapture extends Capture {
         super(frequency);
         
         // save refrences to parameters        
-        this.store = store;
         this.names = new HashSet<>(nameToIds.keySet());
         this.types = new HashMap<>(nameToIds);
         this.pageSize = pageSize;
+        this.store = store;
     }
     
     @Override
@@ -125,14 +127,46 @@ class UuidStringStorePagingCapture extends Capture {
         }
     }
     
+    /**
+     * Saves this page to the underlying data store.
+     * @throws XMLStreamException If an exception occurs serializing this page.
+     */
     @Override
     public void save() throws IOException {
-        this.manager.save();
+        // save this instance to the store
+        try {
+            StringWriter sw = new StringWriter();
+            this.writeTo(XMLStreams.createWriter(sw));
+            this.store.write(sw.toString());
+        } catch (XMLStreamException ex) {
+            throw new IOException("XMLStreamException occured writing capture to persistant storage.", ex);
+        }
+        
+        // if we have a manager also save that
+        if (this.manager != null) {
+            this.manager.save();
+        }
     }
 
+    /**
+     * Loads this page from the underlying data store.
+     * @throws XMLStreamException If an exception occurs de-serializing this page.
+     */
     @Override
     public void load() throws IOException {
-        this.manager.load();
+        // try to read in any previously saved data
+        String savedData = "";
+        savedData = this.store.read();
+        
+        // we will only get data if a page has been previously saved, if there
+        // is none we can just go with defaults as this is a new page
+        if (savedData != null && !"".equals(savedData)) {
+            try {
+                this.readFrom(XMLStreams.createReader(savedData));
+            } catch (XMLStreamException ex) {
+                throw new IOException("XMLStreamException occured reading capture from persistnat storage.", ex);
+            }
+        }
     }
 
     @Override
@@ -156,24 +190,40 @@ class UuidStringStorePagingCapture extends Capture {
 
     @Override
     protected int getSampleCount() {
-        return this.manager.getSampleCount();
+        // if the manager hasn't been created it indicates no samples added yet
+        if (manager == null) {
+            return 0;
+        } else {
+            return this.manager.getSampleCount();
+        }
     }
     
     @Override
     protected void writeSamplesTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
-        try {
-            this.save();
-        } catch (IOException ex) {
-            throw new XMLStreamException("IOException occurred while saving UuidStringStorePagingCapture.", ex);
+        toWriteTo.writeStartElement("pagingdatalocation");
+        if (this.manager != null) {
+            this.manager.writeTo(toWriteTo);
         }
+        toWriteTo.writeEndElement();
     }
     
     @Override
     protected void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
-        try {
-            this.load();
-        } catch (IOException ex) {
-            throw new XMLStreamException("IOException occurred while loading UuidStringStorePagingCapture.", ex);
+        if (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "pagingdatalocation".equals(toReadFrom.getLocalName())) {
+            if (this.manager != null) {
+                this.manager.readFrom(toReadFrom);
+            } else {
+                SamplePageManager man = new SamplePageManager(store, pageSize, Instant.EPOCH, this.nanoSecondInterval);
+                man.readFrom(toReadFrom);
+                this.manager = man;
+            }
+            // read into the close element
+            toReadFrom.next();
         }
+
+        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"pagingdatalocation".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected \"pagingdatalocation\" start or end element not found.", toReadFrom.getLocation());
+        }
+      
     }
 }

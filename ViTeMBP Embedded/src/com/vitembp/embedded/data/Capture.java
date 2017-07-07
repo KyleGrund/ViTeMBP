@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -162,7 +161,7 @@ public abstract class Capture {
         StringWriter sw = new StringWriter();
             
         try {
-            XMLStreamWriter toWriteTo = XMLOutputFactory.newFactory().createXMLStreamWriter(sw);
+            XMLStreamWriter toWriteTo = XMLStreams.createWriter(sw);
             this.writeTo(toWriteTo);
         } catch (XMLStreamException ex) {
             LOGGER.error("XMLStreamException ocurred while writing capture to stream.", ex);
@@ -335,14 +334,13 @@ public abstract class Capture {
         if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <samples> not found.", toReadFrom.getLocation());
         }
-        toReadFrom.next();
         
         // read samples by using subclass implementation as the base class
         // doesn't know how to handle samples
         this.readSamplesFrom(toReadFrom);
         
         // read into close samples element
-        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
+        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </samples> not found.", toReadFrom.getLocation());
         }
         

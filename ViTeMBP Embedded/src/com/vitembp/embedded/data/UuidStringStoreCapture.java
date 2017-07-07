@@ -18,7 +18,6 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -107,12 +105,9 @@ class UuidStringStoreCapture extends Capture {
 
     @Override
     public void load() throws IOException {
-        // create a string  reader from capture entry in store
-        StringReader sr = new StringReader(this.store.read());
-        
         try {
-            // load data from a newly created XML stream
-            this.readFrom(XMLInputFactory.newFactory().createXMLStreamReader(sr));
+            // read data from the underyling data store
+            this.readFrom(XMLStreams.createReader(this.store.read()));
         } catch (XMLStreamException ex) {
             LOGGER.error("Exception while loading Capture from UUID String store.", ex);
             throw new IOException("Exception while loading Capture from UUID String store.", ex);
