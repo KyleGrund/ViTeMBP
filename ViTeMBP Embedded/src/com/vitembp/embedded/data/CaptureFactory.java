@@ -19,6 +19,7 @@ package com.vitembp.embedded.data;
 
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,6 +27,14 @@ import java.util.UUID;
  * A factory class that creates Capture instances.
  */
 public class CaptureFactory {
+    /**
+     * Builds a new capture with the specified parameters.
+     * @param type The type of the capture, reflecting the backing store it uses.
+     * @param frequency The sample frequency of the capture.
+     * @param nameToIds A map of the Sensor names to types.
+     * @return A new capture with the specified parameters.
+     * @throws InstantiationException If an appropriate capture cannot be created.
+     */
     public static Capture buildCapture(CaptureTypes type, double frequency, Map<String, UUID> nameToIds) throws InstantiationException {
         switch (type) { 
             case InMemory:
@@ -43,5 +52,24 @@ public class CaptureFactory {
         }
         
         throw new InstantiationException("Could not build a Capture instance for the given parameters.");
+    }
+    
+    /**
+     * Gets an Iterable of Capture objects for the captures in the store.
+     * @param type The type of capture to load captures from.
+     * @return An Iterable of Capture objects for the captures in the store.
+     */
+    public static Iterable<Capture> getCaptures(CaptureTypes type) {
+        switch (type) { 
+            case EmbeddedH2:
+//                try {
+//                    UuidStringStoreH2 h2Store = new UuidStringStoreH2(Paths.get("capturedata"));
+//                    UuidStringLocation location = new UuidStringLocation(h2Store, UUID.randomUUID());
+//                    return new UuidStringStoreCapture(frequency, location, nameToIds);
+//                } catch (SQLException ex) {
+//                    throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
+//                }
+        }
+        return new ArrayList<Capture>();
     }
 }
