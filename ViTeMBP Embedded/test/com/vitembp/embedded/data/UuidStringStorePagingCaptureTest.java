@@ -208,7 +208,7 @@ public class UuidStringStorePagingCaptureTest {
     public void testGetSensorNames() {
         System.out.println("getSensorNames");
         UuidStringStorePagingCapture instance = this.buildCapture();
-        Set<String> expResult = new HashSet();
+        Set<String> expResult = new HashSet<>();
         expResult.add(SENSOR_NAMES[0]);
         expResult.add(SENSOR_NAMES[1]);
         Set<String> result = instance.getSensorNames();
@@ -222,7 +222,7 @@ public class UuidStringStorePagingCaptureTest {
     public void testGetSensorTypes() {
         System.out.println("getSensorTypes");
         UuidStringStorePagingCapture instance = this.buildCapture();
-        Map<String, UUID> expResult = new HashMap();
+        Map<String, UUID> expResult = new HashMap<>();
         expResult.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         expResult.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         Map<String, UUID> result = instance.getSensorTypes();

@@ -131,6 +131,9 @@ class UuidStringStoreCapture extends Capture {
 
     @Override
     protected void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
+        // read to first sample
+        toReadFrom.next();
+        
         while ("sample".equals(toReadFrom.getLocalName())) {
             int index = this.samples.size();
             Instant time = this.startTime.plusNanos(this.nanoSecondInterval * index);

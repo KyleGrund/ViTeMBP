@@ -340,7 +340,7 @@ public abstract class Capture {
         this.readSamplesFrom(toReadFrom);
         
         // read into close samples element
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
+        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </samples> not found.", toReadFrom.getLocation());
         }
         
