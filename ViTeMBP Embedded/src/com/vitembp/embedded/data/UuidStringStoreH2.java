@@ -122,7 +122,10 @@ class UuidStringStoreH2 implements UuidStringStore {
         try {
             // execute query and return the results
             ResultSet results = this.connection.createStatement().executeQuery(query.toString());
-            results.next();
+            // if next returns false there are no valid rows, return null
+            if (!results.next()) {
+                return null;
+            }
             BufferedReader val = new BufferedReader(results.getClob("VALUE").getCharacterStream());
             return val.readLine();
         } catch (SQLException ex) {
@@ -135,7 +138,7 @@ class UuidStringStoreH2 implements UuidStringStore {
     public void write(UUID key, String value) throws IOException {
         // build query to put value String into the data store at UUID key
         StringBuilder query = new StringBuilder();
-        query.append("INSERT INTO DATA VALUES('");
+        query.append("MERGE INTO DATA VALUES('");
         query.append(key.toString());
         query.append("', '");
         query.append(value);
@@ -144,6 +147,7 @@ class UuidStringStoreH2 implements UuidStringStore {
         try {
             // execute query
             boolean result = this.connection.createStatement().execute(query.toString());
+            // todo: check updated rows count
         } catch (SQLException ex) {
             LOGGER.error("Could not write to database.", ex);
             throw new IOException("Exception writing to H2 database.", ex);
