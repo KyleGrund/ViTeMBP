@@ -17,11 +17,14 @@
  */
 package com.vitembp.embedded.data;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A factory class that creates Capture instances.
@@ -44,10 +47,12 @@ public class CaptureFactory {
             case EmbeddedH2:
                 try {
                     UuidStringStoreH2 h2Store = new UuidStringStoreH2(Paths.get("capturedata"));
-                    UuidStringLocation location = new UuidStringLocation(h2Store, UUID.randomUUID());
+                    UuidStringLocation location = new UuidStringLocation(h2Store, h2Store.addCaptureLocation());
                     return new UuidStringStoreCapture(frequency, location, nameToIds);
                 } catch (SQLException ex) {
                     throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
+                } catch (IOException ex) {
+                    throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }
         }
         

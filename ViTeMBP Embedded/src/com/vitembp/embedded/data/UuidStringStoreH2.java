@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
@@ -37,6 +38,11 @@ class UuidStringStoreH2 implements UuidStringStore {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
+     * The locations in the store where a list of captures are stored.
+     */
+    private static final UUID CAPTURE_LOCATIONS = UUID.fromString("c05ccaec-fdb8-4723-9eb9-2afa756e7fae");
+    
+    /**
      * The connection to the database.
      */
     private final Connection connection;
@@ -46,7 +52,7 @@ class UuidStringStoreH2 implements UuidStringStore {
      * @param dataFile The file to store the database to.
      * @throws SQLException If there is an error connecting to the database.
      */
-    public UuidStringStoreH2(Path dataFile) throws SQLException {
+    UuidStringStoreH2(Path dataFile) throws SQLException {
         // load the jdbc driver
         org.h2.Driver.load();
         
@@ -77,6 +83,32 @@ class UuidStringStoreH2 implements UuidStringStore {
         } catch (SQLException ex) {
             LOGGER.error("Could not close database.", ex);
         }
+    }
+    
+    @Override
+    public Iterable<UUID> getCaptureLocations() throws IOException {
+        return (Iterable<UUID>)Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
+                .stream()
+                .map(UUID::fromString);
+    }
+    
+    @Override
+    public UUID addCaptureLocation() throws IOException {
+        // generate a new UUID
+        UUID toAdd = UUID.randomUUID();
+        
+        // get the current list
+        String captures = this.read(CAPTURE_LOCATIONS);
+        
+        // if there are no captures just store the single UUID, otherwise
+        // append the list with a comma and then the UUID.
+        if (captures == null || "".equals(captures)) {
+            this.write(CAPTURE_LOCATIONS, toAdd.toString());
+        } else {
+            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(toAdd.toString()));
+        }
+        
+        return toAdd;
     }
     
     @Override

@@ -18,6 +18,7 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +32,11 @@ class UuidStringStoreHashMap implements UuidStringStore {
      */
     private final Map<UUID, String> store = new HashMap<>();
     
+    /**
+     * The locations in the store where a list of captures are stored.
+     */
+    private static final UUID CAPTURE_LOCATIONS = UUID.fromString("3dec3d2b-f220-4bc8-b299-330816d12f25");
+    
     @Override
     public String read(UUID key) throws IOException {
         return this.store.get(key);
@@ -41,4 +47,29 @@ class UuidStringStoreHashMap implements UuidStringStore {
         this.store.put(key, value);
     }
     
+    @Override
+    public Iterable<UUID> getCaptureLocations() throws IOException {
+        return (Iterable<UUID>)Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
+                .stream()
+                .map(UUID::fromString);
+    }
+    
+    @Override
+    public UUID addCaptureLocation() throws IOException {
+        // generate a new UUID
+        UUID toAdd = UUID.randomUUID();
+        
+        // get the current list
+        String captures = this.read(CAPTURE_LOCATIONS);
+        
+        // if there are no captures just store the single UUID, otherwise
+        // append the list with a comma and then the UUID.
+        if (captures == null || "".equals(captures)) {
+            this.write(CAPTURE_LOCATIONS, toAdd.toString());
+        } else {
+            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(toAdd.toString()));
+        }
+        
+        return toAdd;
+    }
 }

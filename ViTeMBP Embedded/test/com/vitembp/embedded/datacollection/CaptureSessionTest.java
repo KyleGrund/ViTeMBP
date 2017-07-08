@@ -73,7 +73,7 @@ public class CaptureSessionTest {
         Map<String, UUID> sensorTypes = new HashMap<>();
         sensors.values().forEach((s) -> sensorTypes.put(s.getBinding(), s.getType()));
         
-        Capture capturedData = CaptureFactory.buildCapture(CaptureTypes.InMemory, 29.97, sensorTypes);
+        Capture capturedData = CaptureFactory.buildCapture(CaptureTypes.EmbeddedH2, 29.97, sensorTypes);
         toTest = new CaptureSession(sensors, capturedData);
         
         // take test data for 1 second
