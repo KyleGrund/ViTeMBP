@@ -23,8 +23,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A factory class that creates Capture instances.
@@ -51,6 +49,14 @@ public class CaptureFactory {
                     return new UuidStringStoreCapture(frequency, location, nameToIds);
                 } catch (SQLException ex) {
                     throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
+                } catch (IOException ex) {
+                    throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
+                }
+            case AmazonDynamoDB:
+                try {
+                    UuidStringStoreDynamoDB ddbStore = new UuidStringStoreDynamoDB();
+                    UuidStringLocation location = new UuidStringLocation(ddbStore, ddbStore.addCaptureLocation());
+                    return new UuidStringStoreCapture(frequency, location, nameToIds);
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }

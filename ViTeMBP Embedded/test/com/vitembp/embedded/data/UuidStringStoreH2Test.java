@@ -152,4 +152,33 @@ public class UuidStringStoreH2Test {
             Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
         }
     }
+    
+    /**
+     * Test of write method, of class UuidStringStoreH2.
+     */
+    @Test
+    public void testUpdate() {
+        System.out.println("write");
+        UUID key = UUID.randomUUID();
+        try {
+            // create a temp file and delete it to get a filename for the db
+            Path tempFile = Files.createTempFile("testdb", "");
+            Files.delete(tempFile);
+
+            // instantiate the connector
+            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
+           
+            String expected = "A test string.";
+            instance.write(key, expected);
+            assertTrue(expected.equals(instance.read(key)));
+            
+            expected = "A different string.";
+            instance.write(key, expected);
+            assertTrue(expected.equals(instance.read(key)));
+        } catch (SQLException ex) {
+            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
+        } catch (IOException ex) {
+            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
+        }
+    }
 }

@@ -22,5 +22,6 @@ package com.vitembp.embedded.data;
  */
 public enum CaptureTypes {
     InMemory,
-    EmbeddedH2
+    EmbeddedH2,
+    AmazonDynamoDB
 }

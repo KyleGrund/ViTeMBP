@@ -49,9 +49,10 @@ class UuidStringStoreHashMap implements UuidStringStore {
     
     @Override
     public Iterable<UUID> getCaptureLocations() throws IOException {
-        return (Iterable<UUID>)Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
+        return Arrays.asList(Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
                 .stream()
-                .map(UUID::fromString);
+                .map(UUID::fromString)
+                .toArray(UUID[]::new));
     }
     
     @Override

@@ -87,9 +87,10 @@ class UuidStringStoreH2 implements UuidStringStore {
     
     @Override
     public Iterable<UUID> getCaptureLocations() throws IOException {
-        return (Iterable<UUID>)Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
+        return Arrays.asList(Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
                 .stream()
-                .map(UUID::fromString);
+                .map(UUID::fromString)
+                .toArray(UUID[]::new));
     }
     
     @Override
@@ -146,8 +147,11 @@ class UuidStringStoreH2 implements UuidStringStore {
         
         try {
             // execute query
-            boolean result = this.connection.createStatement().execute(query.toString());
-            // todo: check updated rows count
+            int rowsUpdated = this.connection.createStatement().executeUpdate(query.toString());
+            // only one row should have been updated
+            if (rowsUpdated != 1) {
+                throw new SQLException("Expected one row to be udpdated, actually updated: " + Integer.toString(rowsUpdated));
+            }
         } catch (SQLException ex) {
             LOGGER.error("Could not write to database.", ex);
             throw new IOException("Exception writing to H2 database.", ex);
@@ -155,6 +159,7 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     private void initializeDatabase() throws SQLException {
-        boolean result = this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
+        // execute query to create the DATA table
+        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
     }
 }
