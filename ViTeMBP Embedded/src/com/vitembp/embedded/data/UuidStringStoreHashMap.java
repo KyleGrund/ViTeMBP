@@ -17,16 +17,19 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Implementation of the UuidStringtStore class using a HashMap
  */
-class UuidStringStoreHashMap implements UuidStringStore {
+class UuidStringStoreHashMap implements UuidStringStore, TransportableStore {
     /**
      * The backing data store.
      */
@@ -72,5 +75,11 @@ class UuidStringStoreHashMap implements UuidStringStore {
         }
         
         return toAdd;
+    }
+    
+    @Override
+    public Stream<UUID> getKeys() throws IOException {
+        // generate a stream of the parsed UUIDs
+        return StreamSupport.stream(this.store.keySet().spliterator(), false);
     }
 }

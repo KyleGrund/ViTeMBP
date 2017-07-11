@@ -56,7 +56,7 @@ public class CaptureFactory {
                 try {
                     UuidStringStoreDynamoDB ddbStore = new UuidStringStoreDynamoDB();
                     UuidStringLocation location = new UuidStringLocation(ddbStore, ddbStore.addCaptureLocation());
-                    return new UuidStringStoreCapture(frequency, location, nameToIds);
+                    return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 30), nameToIds);
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }

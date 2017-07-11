@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,13 +26,16 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 
 /**
      * Creates a UuidStringStore for the H2 embedded database.
  */
-class UuidStringStoreH2 implements UuidStringStore {
+class UuidStringStoreH2 implements UuidStringStore, TransportableStore {
     /**
      * Class logger instance.
      */
@@ -161,5 +165,40 @@ class UuidStringStoreH2 implements UuidStringStore {
     private void initializeDatabase() throws SQLException {
         // execute query to create the DATA table
         this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
+    }
+
+    @Override
+    public Stream<UUID> getKeys() throws IOException {
+        try {
+            // get all ID entries from the DATA table in the database
+            ResultSet set = this.connection.createStatement().executeQuery("SELECT ID FROM DATA");
+            boolean hasElements = set.first();
+            
+            // generate a stream of the parsed UUIDs
+            return StreamSupport.stream(((Iterable<UUID>)() -> new Iterator<UUID>() {
+                boolean hasNext = hasElements;
+                @Override
+                public boolean hasNext() {
+                    return hasNext;
+                }
+
+                @Override
+                public UUID next() {
+                    if (hasNext) {
+                        try {
+                            UUID value = UUID.fromString(set.getString("ID"));
+                            hasNext = set.next();
+                            return value;
+                        } catch (SQLException ex) {
+                            LOGGER.error("Unexpected exception accessing ID column.", ex);
+                        }
+                    }
+                    return null;
+                }
+                
+            }).spliterator(), false);
+        } catch (SQLException ex) {
+            throw new IOException("Could not retrieve keys from H2 store.", ex);
+        }
     }
 }

@@ -18,6 +18,10 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -150,5 +154,34 @@ public class UuidStringStoreDynamoDBTest {
         nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         Capture toTest = CaptureFactory.buildCapture(CaptureTypes.AmazonDynamoDB, 29.9, nameToIds);
         CaptureTests.testWriteTo(toTest);
+    }
+    
+    /**
+     * Test of getKeys method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testGetKeys() {
+        System.out.println("read");        
+        try {
+            // instantiate the connector
+            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
+            
+            UUID key = UUID.randomUUID();
+            String expResult = "A test string for ID scans.";
+            instance.write(key, expResult);
+            
+            assertTrue(instance.getKeys().count() > 0);
+            
+            long keysCount = instance.getKeys()
+                    .filter((id) -> 
+                    {
+                        return key.equals(id);
+                    })
+                    .count();
+            
+            assertEquals(1, keysCount);
+        } catch (IOException ex) {
+            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
+        }
     }
 }

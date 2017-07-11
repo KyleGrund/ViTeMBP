@@ -24,17 +24,21 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
+import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 
 /**
      * Creates a UuidStringStore for the H2 embedded database.
  */
-class UuidStringStoreDynamoDB implements UuidStringStore {
+class UuidStringStoreDynamoDB implements UuidStringStore, TransportableStore {
     /**
      * Class logger instance.
      */
@@ -116,5 +120,11 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
         } catch (AmazonServiceException e) {
             LOGGER.error("Exception occurred writing to database.", e);
         }
+    }
+
+    @Override
+    public Stream<UUID> getKeys() throws IOException {
+        ScanResult res = this.client.scan("DATA", Arrays.asList(new String[] { "ID" }));
+        return res.getItems().stream().map((item) -> UUID.fromString(item.get("ID").getS()));
     }
 }
