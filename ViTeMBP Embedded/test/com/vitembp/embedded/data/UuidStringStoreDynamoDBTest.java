@@ -18,10 +18,6 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -114,6 +110,30 @@ public class UuidStringStoreDynamoDBTest {
             UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
             
             instance.write(key, value);
+        } catch (IOException ex) {
+            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
+        }
+    }
+    
+    /**
+     * Test of read method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testDelete() {
+        System.out.println("delete");
+        try {
+            // instantiate the connector
+            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
+            
+            UUID key = UUID.randomUUID();
+            String expResult = "A test string.";
+            instance.write(key, expResult);
+            String result = instance.read(key);
+            assertEquals(expResult, result);
+            instance.delete(key);
+            result = instance.read(key);
+            assertNull(result);
+
         } catch (IOException ex) {
             Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
         }

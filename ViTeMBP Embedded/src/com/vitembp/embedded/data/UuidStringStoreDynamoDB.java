@@ -21,6 +21,8 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
+import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
@@ -29,10 +31,10 @@ import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -123,8 +125,35 @@ class UuidStringStoreDynamoDB implements UuidStringStore, TransportableStore {
     }
 
     @Override
+    public void delete(UUID key) throws IOException {
+        Map<String, AttributeValue> reqkey = new HashMap<>();
+        reqkey.put("ID", new AttributeValue().withS(key.toString()));
+        
+        DeleteItemRequest request = new DeleteItemRequest().withTableName("DATA").withKey(reqkey);
+        
+        DeleteItemResult result = client.deleteItem(request);
+    }
+    
+    @Override
     public Stream<UUID> getKeys() throws IOException {
         ScanResult res = this.client.scan("DATA", Arrays.asList(new String[] { "ID" }));
         return res.getItems().stream().map((item) -> UUID.fromString(item.get("ID").getS()));
+    }
+    
+    @Override
+    public Map<UUID, String> getHashes(List<UUID> locations) throws IOException {
+        Map<UUID, String> hashes = new HashMap<>();
+        for (UUID loc : locations) {
+            // try to get any data
+            String toHash = this.read(loc);
+            if (toHash == null) {
+                // put in an empty string as this entry is blank
+                hashes.put(loc, "");
+            } else {
+                // had data, add the standard 32bit string hash
+                hashes.put(loc, Integer.toString(toHash.hashCode()));
+            }
+        }
+        return hashes;
     }
 }

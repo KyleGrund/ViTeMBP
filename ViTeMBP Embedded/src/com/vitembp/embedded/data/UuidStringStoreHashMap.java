@@ -21,6 +21,7 @@ import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -48,6 +49,11 @@ class UuidStringStoreHashMap implements UuidStringStore, TransportableStore {
     @Override
     public void write(UUID key, String value) throws IOException {
         this.store.put(key, value);
+    }
+    
+    @Override
+    public void delete(UUID key) throws IOException {
+        this.store.remove(key);
     }
     
     @Override
@@ -81,5 +87,22 @@ class UuidStringStoreHashMap implements UuidStringStore, TransportableStore {
     public Stream<UUID> getKeys() throws IOException {
         // generate a stream of the parsed UUIDs
         return StreamSupport.stream(this.store.keySet().spliterator(), false);
+    }
+
+    @Override
+    public Map<UUID, String> getHashes(List<UUID> locations) throws IOException {
+        Map<UUID, String> hashes = new HashMap<>();
+        for (UUID loc : locations) {
+            // try to get any data
+            String toHash = this.read(loc);
+            if (toHash == null) {
+                // put in an empty string as this entry is blank
+                hashes.put(loc, "");
+            } else {
+                // had data, add the standard 32bit string hash
+                hashes.put(loc, Integer.toString(toHash.hashCode()));
+            }
+        }
+        return hashes;
     }
 }

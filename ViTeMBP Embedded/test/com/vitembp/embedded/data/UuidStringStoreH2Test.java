@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -111,6 +110,47 @@ public class UuidStringStoreH2Test {
             instance.write(key, expResult);
             String result = instance.read(key);
             assertEquals(expResult, result);
+            
+            // verify the db file was created
+            if (!Files.exists(expected)) {
+                fail("Database file not created.");
+            }
+            
+            // close the db and delete the db file
+            instance.close();
+            Files.delete(expected);
+        } catch (SQLException ex) {
+            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
+        } catch (IOException ex) {
+            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
+        }
+    }
+    
+    /**
+     * Test of delete method, of class UuidStringStoreH2.
+     */
+    @Test
+    public void testDelete() {
+        System.out.println("delete");        
+        try {
+            // create a temp file and delete it to get a filename for the db
+            Path tempFile = Files.createTempFile("testdb", "");
+            Files.delete(tempFile);
+            
+            // the file name actually created will have the .mv.db appeneded
+            Path expected = Paths.get(tempFile.toAbsolutePath().toString() + ".mv.db");
+            
+            // instantiate the connector
+            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
+            
+            UUID key = UUID.randomUUID();
+            String expResult = "A test string.";
+            instance.write(key, expResult);
+            String result = instance.read(key);
+            assertEquals(expResult, result);
+            instance.delete(key);
+            result = instance.read(key);
+            assertNull(result);
             
             // verify the db file was created
             if (!Files.exists(expected)) {

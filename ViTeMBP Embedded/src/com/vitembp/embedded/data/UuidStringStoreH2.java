@@ -26,7 +26,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -162,6 +165,27 @@ class UuidStringStoreH2 implements UuidStringStore, TransportableStore {
         }
     }
     
+    @Override
+    public void delete(UUID key) throws IOException {
+        // build query to delete the data stored at UUID key
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM DATA WHERE ID='");
+        query.append(key.toString());
+        query.append("'");
+        
+        try {
+            // execute query
+            int rowsUpdated = this.connection.createStatement().executeUpdate(query.toString());
+            // only one row should have been updated
+            if (rowsUpdated != 1) {
+                throw new SQLException("Expected one row to be udpdated, actually updated: " + Integer.toString(rowsUpdated));
+            }
+        } catch (SQLException ex) {
+            LOGGER.error("Could not write to database.", ex);
+            throw new IOException("Exception writing to H2 database.", ex);
+        }
+    }
+    
     private void initializeDatabase() throws SQLException {
         // execute query to create the DATA table
         this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
@@ -200,5 +224,22 @@ class UuidStringStoreH2 implements UuidStringStore, TransportableStore {
         } catch (SQLException ex) {
             throw new IOException("Could not retrieve keys from H2 store.", ex);
         }
+    }
+    
+    @Override
+    public Map<UUID, String> getHashes(List<UUID> locations) throws IOException {
+        Map<UUID, String> hashes = new HashMap<>();
+        for (UUID loc : locations) {
+            // try to get any data
+            String toHash = this.read(loc);
+            if (toHash == null) {
+                // put in an empty string as this entry is blank
+                hashes.put(loc, "");
+            } else {
+                // had data, add the standard 32bit string hash
+                hashes.put(loc, Integer.toString(toHash.hashCode()));
+            }
+        }
+        return hashes;
     }
 }
