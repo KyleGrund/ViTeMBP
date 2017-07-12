@@ -18,7 +18,9 @@
 package com.vitembp.embedded.datatransport;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
@@ -31,47 +33,118 @@ public class UuidStringTransporter {
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
+    /**
+     * The time to wait before retrying after an IO failure.
+     */
     private static final int IO_FAIL_BACKOFF_TIME = 10000;
     
+    /**
+     * The number of hashes to create in one batch transaction.
+     */
+    private static final int HASH_BATCH_SIZE = 2;
+    
+    /**
+     * The store with the source data.
+     */
     private final TransportableStore from;
+    
+    /**
+     * The destination store for the source data.
+     */
     private final TransportableStore to;
+    
+    /**
+     * The thread that runs the synchronization.
+     */
     private final Thread syncThread;
     
-    public UuidStringTransporter(TransportableStore from, TransportableStore to) {
+    /**
+     * A boolean value indicating whether to delete values from the source store
+     * after they have been synchronized.
+     */
+    private final boolean deleteAfterTransfer;
+    
+    /**
+     * A boolean flag indicating whether the sync thread should keep running.
+     */
+    private boolean isRunning = true;
+    
+    /**
+     * Initializes a new instance of the UuidStringTransporter class.
+     * @param from The store to transfer data from.
+     * @param to The store to transfer data to.
+     * @param deleteAfterTransfer Whether data should be deleted after it is
+     * found to be synchronized.
+     */
+    public UuidStringTransporter(TransportableStore from, TransportableStore to, boolean deleteAfterTransfer) {
         this.from = from;
         this.to = to;
+        this.deleteAfterTransfer = deleteAfterTransfer;
         this.syncThread = new Thread(this::syncTask);
+        this.syncThread.setName("UuidStringTransporter");
     }
     
-    private void startSync() {
+    /**
+     * Starts the sync thread.
+     */
+    public void startSync() {
         this.syncThread.start();
     }
     
+    /**
+     * Starts the sync thread.
+     */
+    public void stopSync() {
+        this.isRunning = false;
+    }
+    
+    /**
+     * The method which executes the synchronization task.
+     */
     private void syncTask() {
-        try {
-            Iterator<UUID> keys = this.from.getKeys().iterator();
-            boolean success;
-            while (keys.hasNext()) {
-                UUID key = keys.next();
-                success = false;
-                while (!success) {
-                    try {
-                        this.to.write(key, this.from.read(key));
-                        success = true;
-                    } catch (IOException ex) {
-                        // write a debug exception, as these are expected
-                        LOGGER.debug("IOException while uploading data.", ex);
+        // look until this flag tells us to stop
+        while (this.isRunning) {
+            try {
+                // get batches of UUIDs to transport
+                List<List<UUID>> batches = this.from.getKeys().collect(
+                        ArrayList::new,
+                        (List<List<UUID>> list, UUID toAdd) -> {
+                            List<UUID> last;
+                            while (list.isEmpty() || (last = list.get(list.size() - 1)).size() >= HASH_BATCH_SIZE) {
+                                list.add(new ArrayList<>());
+                            }
+                            last.add(toAdd);
+                        },
+                        (a,b) -> a.addAll(b));
 
-                        // wait a while before retrying as the usual reason for
-                        // failure are network issues
-                        Thread.sleep(IO_FAIL_BACKOFF_TIME);
+                // for each batch of UUIDs to process
+                for (List<UUID> batch : batches) {
+                    // get their hashes
+                    Map<UUID, String> fromHashes = from.getHashes(batch);
+                    Map<UUID, String> toHashes = to.getHashes(batch);
+
+                    // for each key in this batch
+                    for (UUID key : batch) {
+                        if (!fromHashes.get(key).equals(toHashes.get(key))) {
+                            // the hashes don't match so copy the entry between
+                            // the stores
+                            to.write(key, from.read(key));
+                        } else if (this.deleteAfterTransfer) {
+                            // the hashes match so delete if set to do so by the
+                            // deleteAfterTransfer parameter.
+                            from.delete(key);
+                        }
                     }
                 }
+                
+                Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
+                
+            } catch (IOException ex) {
+                LOGGER.error("Failed to access keys in store.", ex);
+            } catch (InterruptedException ex) {
+                LOGGER.error("UuidStringTransporter thread interrupted.", ex);
+                this.stopSync();
             }
-        } catch (InterruptedException ex) {
-            LOGGER.error("Sync task thread interrupted.", ex);
-        } catch (IOException ex) {
-            LOGGER.error("Failed to access keys in store.", ex);
         }
     }
 }
