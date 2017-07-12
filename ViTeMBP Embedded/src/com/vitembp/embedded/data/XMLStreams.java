@@ -59,11 +59,12 @@ public class XMLStreams {
      * @throws XMLStreamException If an exception occurs reading from stream.
      */
     public static String readElement(String name, XMLStreamReader toReadFrom) throws XMLStreamException {
-        // read starting element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
+        // check starting element
+        if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <" + name + "> not found.", toReadFrom.getLocation());
         }
         
+        // read text data
         if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
             throw new XMLStreamException("Expected " + name + " value not found.", toReadFrom.getLocation());
         }
@@ -74,6 +75,9 @@ public class XMLStreams {
         if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </" + name + "> not found.", toReadFrom.getLocation());
         }
+        
+        // read past close element
+        toReadFrom.next();
         
         return value;
     }

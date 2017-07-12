@@ -224,39 +224,17 @@ public abstract class Capture {
         }
         
         // read into start time element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"starttime".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <starttime> not found.", toReadFrom.getLocation());
-        }
-        
-        // read and parse start time
-        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-            throw new XMLStreamException("Expected start time string not found.", toReadFrom.getLocation());
-        }
-        
+        toReadFrom.next();
         try {
-            this.startTime = Instant.parse(toReadFrom.getText());
+            this.startTime = Instant.parse(XMLStreams.readElement("starttime", toReadFrom));
         } catch (DateTimeParseException ex) {
             LOGGER.error("Error parsing start time when loading Capture from XML.", ex);
             throw new XMLStreamException("Error parsing start time when loading Capture from XML.", toReadFrom.getLocation(), ex);
         }
-
-        // read into close start time element
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"starttime".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </starttime> not found.", toReadFrom.getLocation());
-        }
         
-        // read into sample frequency element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"samplefrequency".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <samplefrequency> not found.", toReadFrom.getLocation());
-        }
-        
-        // read and parse sample frequency
-        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-            throw new XMLStreamException("Expected sample frequency string not found.", toReadFrom.getLocation());
-        }
-        
+        // read sample frequency element
         try {
-            this.sampleFrequency = Double.valueOf(toReadFrom.getText());
+            this.sampleFrequency = Double.valueOf(XMLStreams.readElement("samplefrequency", toReadFrom));
         } catch (NumberFormatException ex) {
             LOGGER.error("Error parsing sample frequency when loading Capture from XML.", ex);
             throw new XMLStreamException("Error parsing sample frequency when loading Capture from XML.", toReadFrom.getLocation(), ex);
@@ -265,56 +243,26 @@ public abstract class Capture {
         // the sample frequency was updated so recalculate the update interval
         this.calculateIntervalFromFrequency();
         
-        // read into close sample interval element
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"samplefrequency".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </samplefrequency> not found.", toReadFrom.getLocation());
-        }
-        
         // read into sensors element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"sensors".equals(toReadFrom.getLocalName())) {
+        if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !"sensors".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <sensors> not found.", toReadFrom.getLocation());
         }
-        toReadFrom.next();
         
         // map of sensor name to type
         Map<String, String> sensorTypes = new HashMap<>();
         
         // add a sensor element for each data entry
-        while ("sensor".equals(toReadFrom.getLocalName())) {
-            // read into name element
-            if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected <name> not found.", toReadFrom.getLocation());
-            }
+        toReadFrom.next();
+        while (toReadFrom.getEventType() == XMLStreamConstants.START_ELEMENT  && "sensor".equals(toReadFrom.getLocalName())) {
+            // read name element
+            toReadFrom.next();
+            String sensorName = XMLStreams.readElement("name", toReadFrom);
             
-            if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-                throw new XMLStreamException("Expected sensor name string not found.", toReadFrom.getLocation());
-            }
-            
-            String sensorName = toReadFrom.getText();
-            
-            // read into close name element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected </name> not found.", toReadFrom.getLocation());
-            }
-            
-            // read into type element
-            if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"type".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected <type> not found.", toReadFrom.getLocation());
-            }
-            
-            if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-                throw new XMLStreamException("Expected sensor type string not found.", toReadFrom.getLocation());
-            }
-            
-            String sensorType = toReadFrom.getText();
-            
-            // read into close type element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"type".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected </type> not found.", toReadFrom.getLocation());
-            }
+            // read type element
+            String sensorType = XMLStreams.readElement("type", toReadFrom);
         
-            // read into close element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"sensor".equals(toReadFrom.getLocalName())) {
+            // read close element
+            if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"sensor".equals(toReadFrom.getLocalName())) {
                 throw new XMLStreamException("Expected </sensor> not found.", toReadFrom.getLocation());
             }
             

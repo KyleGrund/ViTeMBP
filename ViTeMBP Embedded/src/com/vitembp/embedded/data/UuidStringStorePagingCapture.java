@@ -217,10 +217,9 @@ class UuidStringStorePagingCapture extends Capture {
                 man.readFrom(toReadFrom);
                 this.manager = man;
             }
-            // read into the close element
-            toReadFrom.next();
         }
 
+        // check for end element
         if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"pagingdatalocation".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected \"pagingdatalocation\" start or end element not found.", toReadFrom.getLocation());
         }

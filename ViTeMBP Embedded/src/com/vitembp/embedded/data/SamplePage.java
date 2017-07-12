@@ -325,7 +325,8 @@ class SamplePage {
             throw new XMLStreamException("Expected <samplepage> not found.", toReadFrom.getLocation());
         }
         
-        // read starting index        
+        // read starting index       
+        toReadFrom.next();
         int startSampleIndex = Integer.parseInt(XMLStreams.readElement(START_INDEX_TAG, toReadFrom));
         
         // read page size
@@ -344,7 +345,7 @@ class SamplePage {
         int sampleIndexAt =  this.startIndex;
         
         // read into samples element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
+        if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !"samples".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <samples> not found.", toReadFrom.getLocation());
         }
         

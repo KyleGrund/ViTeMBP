@@ -201,6 +201,7 @@ class SamplePageManager {
      */
     void readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
         // read in value for this.pageCount
+        toReadFrom.next();
         int pages = Integer.parseInt(XMLStreams.readElement("pagecount", toReadFrom));
         // read in value for this.firstPageLocation
         UUID firstLocation = UUID.fromString(XMLStreams.readElement("firstpagelocation", toReadFrom));

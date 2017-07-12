@@ -18,6 +18,7 @@
 package com.vitembp.embedded.configuration;
 
 import com.vitembp.embedded.data.CaptureTypes;
+import com.vitembp.embedded.data.XMLStreams;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -88,6 +89,17 @@ public class SystemConfig {
     private CaptureTypes captureType = CaptureTypes.InMemory;
     
     /**
+     * A boolean value indicating whether to upload collected data to the cloud.
+     */
+    private boolean uploadToCloud = true;
+    
+    /**
+     * A boolean value indicating whether to delete local data after it has been
+     * synchronized with the cloud.
+     */
+    private boolean deleteOnUploadToCloud = true;
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {       
@@ -156,6 +168,26 @@ public class SystemConfig {
      */
     public CaptureTypes getCaptureType() {
         return this.captureType;
+    }
+    
+    /**
+     * Returns a boolean value indicating whether to upload local data to the
+     * cloud.
+     * @return A boolean value indicating whether to upload local data to the
+     * cloud.
+     */
+    public boolean getUploadToCloud() {
+        return this.uploadToCloud;
+    }
+    
+    /**
+     * Returns a boolean value indicating whether to delete local data on
+     * upload local data to the cloud.
+     * @return A boolean value indicating whether to delete local data on
+     * upload local data to the cloud.
+     */
+    public boolean getDeleteOnUploadToCloud() {
+        return this.deleteOnUploadToCloud;
     }
     
     /**
@@ -299,6 +331,16 @@ public class SystemConfig {
         toWriteTo.writeCharacters(this.captureType.name());
         toWriteTo.writeEndElement();
         
+        // save upload options
+        toWriteTo.writeStartElement("cloud");
+        toWriteTo.writeStartElement("uploadtocloud");
+        toWriteTo.writeCharacters(Boolean.toString(this.uploadToCloud));
+        toWriteTo.writeEndElement();
+        toWriteTo.writeStartElement("deleteonuploadtocloud");
+        toWriteTo.writeCharacters(Boolean.toString(this.deleteOnUploadToCloud));
+        toWriteTo.writeEndElement();
+        toWriteTo.writeEndElement();
+        
         // close configuration
         toWriteTo.writeEndElement();
         
@@ -320,31 +362,13 @@ public class SystemConfig {
         if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"configuration".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <configuration> not found.", toReadFrom.getLocation());
         }
-        
-        // read into sampling frequency element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"samplingfrequency".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <samplingfrequency> not found.", toReadFrom.getLocation());
-        }
-        
-        // read and parse sampling frequency
-        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-            throw new XMLStreamException("Expected sampling frequency string not found.", toReadFrom.getLocation());
-        }
-        
-        try {
-            this.samplingFrequency = Double.valueOf(toReadFrom.getText());
-        } catch (NumberFormatException ex) {
-            LOGGER.error("Error parsing sampling frequency when loading Capture from XML.", ex);
-            throw new XMLStreamException("Error parsing sampling frequency when loading Capture from XML.", toReadFrom.getLocation(), ex);
-        }
-        
-        // read into close sampleing interval element
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"samplingfrequency".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </samplingfrequency> not found.", toReadFrom.getLocation());
-        }
+
+        // read sampling frequency
+        toReadFrom.next();
+        this.samplingFrequency = Double.valueOf(XMLStreams.readElement("samplingfrequency", toReadFrom));
         
         // read into sensor names element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"sensornames".equals(toReadFrom.getLocalName())) {
+        if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !"sensornames".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <sensornames> not found.", toReadFrom.getLocation());
         }
         
@@ -352,20 +376,10 @@ public class SystemConfig {
         Set<String> readSensorNames = new HashSet<>();
         
         // add a name element for each name entry
-        while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "name".equals(toReadFrom.getLocalName())) {
-            if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-                throw new XMLStreamException("Expected sensor name string not found.", toReadFrom.getLocation());
-            }
-            
-            String sensorName = toReadFrom.getText();
-            
-            // read into close name element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected </name> not found.", toReadFrom.getLocation());
-            }
-            
-            // successfully found a sensor name, save it
-            readSensorNames.add(sensorName);
+        toReadFrom.next();
+        while (toReadFrom.getEventType() == XMLStreamConstants.START_ELEMENT && "name".equals(toReadFrom.getLocalName())) {
+            // read and save sensor name
+            readSensorNames.add(XMLStreams.readElement("name", toReadFrom));
         }
         
         // read into close element
@@ -384,41 +398,11 @@ public class SystemConfig {
         // add a name element for each name entry
         while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "sensorbinding".equals(toReadFrom.getLocalName())) {
             // read name element
-            if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected <name> not found.", toReadFrom.getLocation());
-            }
+            toReadFrom.next();
+            String sensorName = XMLStreams.readElement("name", toReadFrom);
             
-            if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-                throw new XMLStreamException("Expected sensor name string not found.", toReadFrom.getLocation());
-            }
-            
-            String sensorName = toReadFrom.getText();
-            
-            // read into close name element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"name".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected </name> not found.", toReadFrom.getLocation());
-            }
-            
-            // read binding
-            if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"binding".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected <binding> not found.", toReadFrom.getLocation());
-            }
-            
-            if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-                throw new XMLStreamException("Expected sensor binding string not found.", toReadFrom.getLocation());
-            }
-            
-            String sensorBinding = toReadFrom.getText();
-            
-            // read into close binding element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"binding".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected </binding> not found.", toReadFrom.getLocation());
-            }
-            
-            // read into close binding element
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"sensorbinding".equals(toReadFrom.getLocalName())) {
-                throw new XMLStreamException("Expected </sensorbinding> not found.", toReadFrom.getLocation());
-            }
+            // read binding            
+            String sensorBinding = XMLStreams.readElement("binding", toReadFrom);
             
             // successfully found a sensor name, save it
             readSensorBindings.put(sensorName, sensorBinding);
@@ -430,21 +414,23 @@ public class SystemConfig {
         }
         
         // read capture type
-        // read into capture type element
-        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"capturetype".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected <samplingfrequency> not found.", toReadFrom.getLocation());
+        toReadFrom.next();
+        this.captureType = Enum.valueOf(CaptureTypes.class, XMLStreams.readElement("capturetype", toReadFrom));
+        
+        
+        // read cloud options
+        // read into cloud element
+        if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !"cloud".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <cloud> not found.", toReadFrom.getLocation());
         }
         
-        // read and parse sampling frequency
-        if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-            throw new XMLStreamException("Expected capture type string not found.", toReadFrom.getLocation());
-        }
+        toReadFrom.next();
+        this.uploadToCloud = Boolean.valueOf(XMLStreams.readElement("uploadtocloud", toReadFrom));
+        this.deleteOnUploadToCloud = Boolean.valueOf(XMLStreams.readElement("deleteonuploadtocloud", toReadFrom));
         
-        this.captureType = Enum.valueOf(CaptureTypes.class, toReadFrom.getText());
-        
-        // read into close capture type element
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"capturetype".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected </capturetype> not found.", toReadFrom.getLocation());
+        // read into close cloud
+        if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"cloud".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </cloud> not found.", toReadFrom.getLocation());
         }
         
         // read into close configuration
