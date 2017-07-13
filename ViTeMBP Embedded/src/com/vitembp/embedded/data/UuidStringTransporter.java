@@ -161,5 +161,7 @@ public class UuidStringTransporter {
                 this.stopSync();
             }
         }
+        
+        LOGGER.info("UuidStringTransporter thread exiting.");
     }
 }

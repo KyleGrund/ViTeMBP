@@ -44,7 +44,7 @@ public class CaptureFactory {
                 try {
                     UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
                     UuidStringLocation location = new UuidStringLocation(h2Store, h2Store.addCaptureLocation());
-                    return new UuidStringStoreCapture(frequency, location, nameToIds);
+                    return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }
@@ -52,7 +52,7 @@ public class CaptureFactory {
                 try {
                     UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
                     UuidStringLocation location = new UuidStringLocation(ddbStore, ddbStore.addCaptureLocation());
-                    return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 30), nameToIds);
+                    return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }
