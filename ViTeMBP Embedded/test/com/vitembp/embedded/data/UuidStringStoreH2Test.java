@@ -21,11 +21,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,206 +58,100 @@ public class UuidStringStoreH2Test {
      * Test of instantiation of class UuidStringStoreH2.
      */
     @Test
-    public void testInstantiate() {
+    public void testInstantiate() throws IOException, InstantiationException {
         System.out.println("instantiate");
-        try {
-            // create a temp file and delete it to get a filename for the db
-            Path tempFile = Files.createTempFile("testdb", "");
-            Files.delete(tempFile);
-            
-            // the file name actually created will have the .mv.db appeneded
-            Path expected = Paths.get(tempFile.toAbsolutePath().toString() + ".mv.db");
-            
-            // instantiate the connector
-            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
-            
-            // verify the db file was created
-            if (!Files.exists(expected)) {
-                fail("Database file not created.");
-            }
-            
-            // close the db and delete the db file
-            instance.close();
-            Files.delete(expected);
-        } catch (SQLException ex) {
-            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        assertNotNull(instance);
     }
     
     /**
      * Test of read method, of class UuidStringStoreH2.
      */
     @Test
-    public void testRead() {
+    public void testRead() throws InstantiationException, IOException {
         System.out.println("read");        
-        try {
-            // create a temp file and delete it to get a filename for the db
-            Path tempFile = Files.createTempFile("testdb", "");
-            Files.delete(tempFile);
-            
-            // the file name actually created will have the .mv.db appeneded
-            Path expected = Paths.get(tempFile.toAbsolutePath().toString() + ".mv.db");
-            
-            // instantiate the connector
-            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
-            
-            UUID key = UUID.randomUUID();
-            String expResult = "A test string.";
-            instance.write(key, expResult);
-            String result = instance.read(key);
-            assertEquals(expResult, result);
-            
-            // verify the db file was created
-            if (!Files.exists(expected)) {
-                fail("Database file not created.");
-            }
-            
-            // close the db and delete the db file
-            instance.close();
-            Files.delete(expected);
-        } catch (SQLException ex) {
-            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+
+        UUID key = UUID.randomUUID();
+        String expResult = "A test string.";
+        instance.write(key, expResult);
+        String result = instance.read(key);
+        assertEquals(expResult, result);
     }
     
     /**
      * Test of delete method, of class UuidStringStoreH2.
      */
     @Test
-    public void testDelete() {
+    public void testDelete() throws InstantiationException, IOException {
         System.out.println("delete");        
-        try {
-            // create a temp file and delete it to get a filename for the db
-            Path tempFile = Files.createTempFile("testdb", "");
-            Files.delete(tempFile);
-            
-            // the file name actually created will have the .mv.db appeneded
-            Path expected = Paths.get(tempFile.toAbsolutePath().toString() + ".mv.db");
-            
-            // instantiate the connector
-            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
-            
-            UUID key = UUID.randomUUID();
-            String expResult = "A test string.";
-            instance.write(key, expResult);
-            String result = instance.read(key);
-            assertEquals(expResult, result);
-            instance.delete(key);
-            result = instance.read(key);
-            assertNull(result);
-            
-            // verify the db file was created
-            if (!Files.exists(expected)) {
-                fail("Database file not created.");
-            }
-            
-            // close the db and delete the db file
-            instance.close();
-            Files.delete(expected);
-        } catch (SQLException ex) {
-            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+
+        UUID key = UUID.randomUUID();
+        String expResult = "A test string.";
+        instance.write(key, expResult);
+        String result = instance.read(key);
+        assertEquals(expResult, result);
+        instance.delete(key);
+        result = instance.read(key);
+        assertNull(result);
     }
 
     /**
      * Test of write method, of class UuidStringStoreH2.
      */
     @Test
-    public void testWrite() {
+    public void testWrite() throws InstantiationException, IOException {
         System.out.println("write");
         UUID key = UUID.randomUUID();
         String value = "A test string.";
-        try {
-            // create a temp file and delete it to get a filename for the db
-            Path tempFile = Files.createTempFile("testdb", "");
-            Files.delete(tempFile);
-            
-            // the file name actually created will have the .mv.db appeneded
-            Path expected = Paths.get(tempFile.toAbsolutePath().toString() + ".mv.db");
-            
-            // instantiate the connector
-            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
-            
-            instance.write(key, value);
-        } catch (SQLException ex) {
-            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+
+        instance.write(key, value);
     }
     
     /**
      * Test of write method, of class UuidStringStoreH2.
      */
     @Test
-    public void testUpdate() {
+    public void testUpdate() throws InstantiationException, IOException {
         System.out.println("write");
         UUID key = UUID.randomUUID();
-        try {
-            // create a temp file and delete it to get a filename for the db
-            Path tempFile = Files.createTempFile("testdb", "");
-            Files.delete(tempFile);
 
-            // instantiate the connector
-            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
-           
-            String expected = "A test string.";
-            instance.write(key, expected);
-            assertTrue(expected.equals(instance.read(key)));
-            
-            expected = "A different string.";
-            instance.write(key, expected);
-            assertTrue(expected.equals(instance.read(key)));
-        } catch (SQLException ex) {
-            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+
+        String expected = "A test string.";
+        instance.write(key, expected);
+        assertTrue(expected.equals(instance.read(key)));
+
+        expected = "A different string.";
+        instance.write(key, expected);
+        assertTrue(expected.equals(instance.read(key)));
     }
     
     /**
      * Test of getKeys method, of class UuidStringStoreH2.
      */
     @Test
-    public void testGetKeys() {
+    public void testGetKeys() throws InstantiationException, IOException {
         System.out.println("read");        
-        try {
-            // create a temp file and delete it to get a filename for the db
-            Path tempFile = Files.createTempFile("testdb", "");
-            Files.delete(tempFile);
-            
-            // the file name actually created will have the .mv.db appeneded
-            Path expected = Paths.get(tempFile.toAbsolutePath().toString() + ".mv.db");
-            
-            // instantiate the connector
-            UuidStringStoreH2 instance = new UuidStringStoreH2(tempFile);
-            
-            UUID key = UUID.randomUUID();
-            String expResult = "A test string.";
-            instance.write(key, expResult);
-            
-            assertEquals(1, instance.getKeys().count());
-            
-            instance.getKeys().forEach((id) -> assertTrue(key.equals(id)));
-            
-            // verify the db file was created
-            if (!Files.exists(expected)) {
-                fail("Database file not created.");
-            }
-            
-            // close the db and delete the db file
-            instance.close();
-            Files.delete(expected);
-        } catch (SQLException ex) {
-            Assert.fail("SQLException occurred: " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        // the count before the write
+        long before = instance.getKeys().count();
+        UUID key = UUID.randomUUID();
+        String expResult = "A test string.";
+        instance.write(key, expResult);
+
+        // assert one entry was added
+        assertEquals(1, instance.getKeys().count() - before);
+
+        // assert the added entry has the right key
+        assertEquals(1, instance.getKeys().filter((id) -> key.equals(id)).count());
     }
 }

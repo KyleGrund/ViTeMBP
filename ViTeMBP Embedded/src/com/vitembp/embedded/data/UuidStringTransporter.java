@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.vitembp.embedded.datatransport;
+package com.vitembp.embedded.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,12 +46,12 @@ public class UuidStringTransporter {
     /**
      * The store with the source data.
      */
-    private final TransportableStore from;
+    private final UuidStringStore from;
     
     /**
      * The destination store for the source data.
      */
-    private final TransportableStore to;
+    private final UuidStringStore to;
     
     /**
      * The thread that runs the synchronization.
@@ -76,7 +76,10 @@ public class UuidStringTransporter {
      * @param deleteAfterTransfer Whether data should be deleted after it is
      * found to be synchronized.
      */
-    public UuidStringTransporter(TransportableStore from, TransportableStore to, boolean deleteAfterTransfer) {
+    UuidStringTransporter(UuidStringStore from, UuidStringStore to, boolean deleteAfterTransfer) throws InstantiationException {
+        if (from == to) {
+            throw new IllegalArgumentException("To and from capture types cannot be the same.");
+        }
         this.from = from;
         this.to = to;
         this.deleteAfterTransfer = deleteAfterTransfer;
@@ -96,6 +99,16 @@ public class UuidStringTransporter {
      */
     public void stopSync() {
         this.isRunning = false;
+    }
+    
+    /**
+     * Gets a boolean value indicating whether to delete items in the source
+     * store after they have been transfered.
+     * @return A boolean value indicating whether to delete items in the source
+     * store after they have been transfered.
+     */
+    public boolean getDeleteAfterTransfer() {
+        return this.deleteAfterTransfer;
     }
     
     /**

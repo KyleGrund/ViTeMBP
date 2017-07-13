@@ -17,7 +17,6 @@
  */
 package com.vitembp.embedded.data;
 
-import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,7 +29,7 @@ import java.util.stream.StreamSupport;
 /**
  * Implementation of the UuidStringtStore class using a HashMap
  */
-class UuidStringStoreHashMap implements UuidStringStore, TransportableStore {
+class UuidStringStoreHashMap implements UuidStringStore {
     /**
      * The backing data store.
      */
@@ -40,6 +39,12 @@ class UuidStringStoreHashMap implements UuidStringStore, TransportableStore {
      * The locations in the store where a list of captures are stored.
      */
     private static final UUID CAPTURE_LOCATIONS = UUID.fromString("3dec3d2b-f220-4bc8-b299-330816d12f25");
+    
+    /**
+     * Initializes a new instance of the UuidStringStoreHashMap class.
+     */
+    UuidStringStoreHashMap() {
+    }
     
     @Override
     public String read(UUID key) throws IOException {

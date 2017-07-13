@@ -18,8 +18,6 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -39,22 +37,20 @@ public class CaptureFactory {
     public static Capture buildCapture(CaptureTypes type, double frequency, Map<String, UUID> nameToIds) throws InstantiationException {
         switch (type) { 
             case InMemory:
-                UuidStringLocation hashMapStore;
-                hashMapStore = new UuidStringLocation(new UuidStringStoreHashMap(), UUID.randomUUID());
+                UuidStringStore inMemory = UuidStringStoreFactory.build(CaptureTypes.InMemory);
+                UuidStringLocation hashMapStore = new UuidStringLocation(inMemory, UUID.randomUUID());
                 return new UuidStringStoreCapture(frequency, hashMapStore, nameToIds);
             case EmbeddedH2:
                 try {
-                    UuidStringStoreH2 h2Store = new UuidStringStoreH2(Paths.get("capturedata"));
+                    UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
                     UuidStringLocation location = new UuidStringLocation(h2Store, h2Store.addCaptureLocation());
                     return new UuidStringStoreCapture(frequency, location, nameToIds);
-                } catch (SQLException ex) {
-                    throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }
             case AmazonDynamoDB:
                 try {
-                    UuidStringStoreDynamoDB ddbStore = new UuidStringStoreDynamoDB();
+                    UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
                     UuidStringLocation location = new UuidStringLocation(ddbStore, ddbStore.addCaptureLocation());
                     return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 30), nameToIds);
                 } catch (IOException ex) {

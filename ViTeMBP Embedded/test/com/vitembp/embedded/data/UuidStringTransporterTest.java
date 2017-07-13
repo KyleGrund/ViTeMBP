@@ -17,7 +17,6 @@
  */
 package com.vitembp.embedded.data;
 
-import com.vitembp.embedded.datatransport.UuidStringTransporter;
 import java.util.Random;
 import java.util.UUID;
 import org.junit.After;

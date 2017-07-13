@@ -78,9 +78,9 @@ public class UuidStringStorePagingCaptureTest {
     public void tearDown() {
     }
 
-    private UuidStringStorePagingCapture buildCapture() {
+    private UuidStringStorePagingCapture buildCapture() throws InstantiationException {
         double frequency = 29.9;
-        UuidStringStore memStore = new UuidStringStoreHashMap();
+        UuidStringStoreHashMap memStore = (UuidStringStoreHashMap)UuidStringStoreFactory.build(CaptureTypes.InMemory);
         UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
         // model one page every 10sec
         int pageSize = 299;
@@ -116,7 +116,7 @@ public class UuidStringStorePagingCaptureTest {
      * it contains no samples.
      */
     @Test
-    public void testGetZeroSamples() {
+    public void testGetZeroSamples() throws InstantiationException {
         System.out.println("getSamples");
         UuidStringStorePagingCapture instance = buildCapture();
         Iterator<Sample> result = instance.getSamples().iterator();
@@ -127,7 +127,7 @@ public class UuidStringStorePagingCaptureTest {
      * Test of getSamples method, of class UuidStringStorePagingCapture.
      */
     @Test
-    public void testGetSamples() {
+    public void testGetSamples() throws InstantiationException {
         System.out.println("getSamples");
         UuidStringStorePagingCapture instance = buildCapture();
         
@@ -167,7 +167,7 @@ public class UuidStringStorePagingCaptureTest {
     public void testLoad() throws Exception {
         System.out.println("load");
         double frequency = 29.9;
-        UuidStringStore memStore = new UuidStringStoreHashMap();
+        UuidStringStoreHashMap memStore = (UuidStringStoreHashMap)UuidStringStoreFactory.build(CaptureTypes.InMemory);
         UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
         // model one page every 10sec
         int pageSize = 299;
@@ -205,7 +205,7 @@ public class UuidStringStorePagingCaptureTest {
      * Test of getSensorNames method, of class UuidStringStorePagingCapture.
      */
     @Test
-    public void testGetSensorNames() {
+    public void testGetSensorNames() throws InstantiationException {
         System.out.println("getSensorNames");
         UuidStringStorePagingCapture instance = this.buildCapture();
         Set<String> expResult = new HashSet<>();
@@ -219,7 +219,7 @@ public class UuidStringStorePagingCaptureTest {
      * Test of getSensorTypes method, of class UuidStringStorePagingCapture.
      */
     @Test
-    public void testGetSensorTypes() {
+    public void testGetSensorTypes() throws InstantiationException {
         System.out.println("getSensorTypes");
         UuidStringStorePagingCapture instance = this.buildCapture();
         Map<String, UUID> expResult = new HashMap<>();

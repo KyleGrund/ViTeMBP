@@ -107,12 +107,13 @@ public class UuidStringStoreCaptureTest {
      * Builds an instance to test.
      * @return An instance to test.
      */
-    private UuidStringStoreCapture createInstance() {
+    private UuidStringStoreCapture createInstance() throws InstantiationException {
         // build a map of sensor types for the capture
         HashMap<String, UUID> sensorTypes = new HashMap<>();
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
-        UuidStringLocation hashMapStore = new UuidStringLocation(new UuidStringStoreHashMap(), UUID.randomUUID());
+        UuidStringStoreHashMap toTest = (UuidStringStoreHashMap)UuidStringStoreFactory.build(CaptureTypes.InMemory);
+        UuidStringLocation hashMapStore = new UuidStringLocation(toTest, UUID.randomUUID());
         UuidStringStoreCapture instance = new UuidStringStoreCapture(29.97, hashMapStore, sensorTypes);
         this.data.forEach(instance::addSample);
         return instance;
@@ -122,7 +123,7 @@ public class UuidStringStoreCaptureTest {
      * Test of getSamples method, of class UuidStringStoreCapture.
      */
     @Test
-    public void testGetSamples() {
+    public void testGetSamples() throws InstantiationException {
         System.out.println("getSamples");
         UuidStringStoreCapture instance = this.createInstance();
         CaptureTests.testGetSamples(instance, samples, org.junit.Assert::assertEquals, org.junit.Assert::assertTrue);
@@ -132,7 +133,7 @@ public class UuidStringStoreCaptureTest {
      * Test of addSample method, of class UuidStringStoreCapture.
      */
     @Test
-    public void testAddSample_Map() {
+    public void testAddSample_Map() throws InstantiationException {
         System.out.println("addSample");
         UuidStringStoreCapture instance = this.createInstance();
         this.data.forEach(instance::addSample);
@@ -163,7 +164,7 @@ public class UuidStringStoreCaptureTest {
      * Test of getSensorNames method, of class UuidStringStoreCapture.
      */
     @Test
-    public void testGetSensorNames() {
+    public void testGetSensorNames() throws InstantiationException {
         System.out.println("getSensorNames");
         UuidStringStoreCapture instance = this.createInstance();
         Set<String> expResult = new HashSet<>();
@@ -177,7 +178,7 @@ public class UuidStringStoreCaptureTest {
      * Test of getSensorTypes method, of class UuidStringStoreCapture.
      */
     @Test
-    public void testGetSensorTypes() {
+    public void testGetSensorTypes() throws InstantiationException {
         System.out.println("getSensorTypes");
         UuidStringStoreCapture instance = this.createInstance();
         Map<String, UUID> expResult = new HashMap<>();
@@ -191,7 +192,7 @@ public class UuidStringStoreCaptureTest {
      * Test of addSample method, of class UuidStringStoreCapture.
      */
     @Test
-    public void testAddSample_Sample() {
+    public void testAddSample_Sample() throws InstantiationException {
         System.out.println("addSample");
         Sample toAdd = this.samples.get(0);
         UuidStringStoreCapture instance = this.createInstance();

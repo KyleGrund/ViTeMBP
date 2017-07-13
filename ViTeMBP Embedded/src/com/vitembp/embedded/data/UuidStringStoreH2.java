@@ -17,7 +17,6 @@
  */
 package com.vitembp.embedded.data;
 
-import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,7 +37,7 @@ import org.apache.logging.log4j.LogManager;
 /**
      * Creates a UuidStringStore for the H2 embedded database.
  */
-class UuidStringStoreH2 implements UuidStringStore, TransportableStore {
+class UuidStringStoreH2 implements UuidStringStore {
     /**
      * Class logger instance.
      */

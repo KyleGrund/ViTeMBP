@@ -72,7 +72,7 @@ class UuidStringStoreCapture extends Capture {
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    public UuidStringStoreCapture(double frequency, UuidStringLocation store, Map<String, UUID> nameToIds) {
+    UuidStringStoreCapture(double frequency, UuidStringLocation store, Map<String, UUID> nameToIds) {
         super(frequency);
         
         // save refrences to parameters        

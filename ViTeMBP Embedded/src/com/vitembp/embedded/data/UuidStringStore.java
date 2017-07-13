@@ -18,7 +18,10 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * Provides an interface to a UUID keyed String value store.
@@ -57,4 +60,30 @@ interface UuidStringStore {
      * list of capture locations in the persistent store.
      */
     public abstract UUID addCaptureLocation() throws IOException;
+    
+    /**
+     * Deletes a value from the location specified by the key.
+     * @param key The location to delete the data from.
+     * @throws java.io.IOException If an exception occurs while writing to the
+     * persistent store.
+     */
+    public abstract void delete(UUID key) throws IOException;
+    
+    /**
+     * Gets a stream of UUID keys which contain data in the store.
+     * @return A stream of UUID keys which contain data in the store.
+     * @throws java.io.IOException If an exception occurs while reading from the
+     * persistent store.
+     */
+    public abstract Stream<UUID> getKeys() throws IOException;
+    
+    /**
+     * Gets a Map of UUID keys to their hash in the data in the store.
+     * If the key does not exist in the store it will generate an empty string.
+     * @param locations The locations to retrieve hashes for.
+     * @return A Map of UUID keys to their hash in the data in the store.
+     * @throws java.io.IOException If an exception occurs while writing to the
+     * persistent store.
+     */
+    public abstract Map<UUID, String> getHashes(List<UUID> locations) throws IOException;
 }

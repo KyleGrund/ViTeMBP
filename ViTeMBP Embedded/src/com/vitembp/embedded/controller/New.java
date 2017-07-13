@@ -17,7 +17,14 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.configuration.SystemConfig;
+import com.vitembp.embedded.data.CaptureFactory;
+import com.vitembp.embedded.data.CaptureTypes;
+import com.vitembp.embedded.data.UuidStringTransporter;
+import com.vitembp.embedded.data.UuidStringTransporterFactory;
 import com.vitembp.embedded.hardware.HardwareInterface;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -30,14 +37,32 @@ class New implements ControllerState {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     @Override
-    public Class execute(ExecutionContext state) {      
+    public Class execute(ExecutionContext state) {
         // initialize all sensors
         HardwareInterface.getInterface().getSensors().forEach((name, sensor) -> {
+            SystemConfig config = state.getConfig();
+            
             if (sensor != null) {
                 LOGGER.debug("Initializing sensor \"" + name + "\".");
                 sensor.initialize();
             } else {
                 LOGGER.error("Configured sensor: \"" + name + "\" not bound to hardware.");
+            }
+            
+            // initialize database synchronization
+            if (config.getUploadToCloud()) {
+                try {
+                    boolean deleteOnUpload = config.getDeleteOnUploadToCloud();
+                    
+                    // build the uploading transport using the DynamoDB as the target
+                    // as this is the cloud destination
+                    UuidStringTransporter transport = UuidStringTransporterFactory.build(config.getCaptureType(), CaptureTypes.AmazonDynamoDB, deleteOnUpload);
+                    
+                    // start the synchronization thread
+                    transport.startSync();
+                } catch (InstantiationException ex) {
+                    LOGGER.error("Could not start the cloud upload services.", ex);
+                }
             }
         });
         

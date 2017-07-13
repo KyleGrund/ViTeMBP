@@ -27,7 +27,6 @@ import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
-import com.vitembp.embedded.datatransport.TransportableStore;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ import org.apache.logging.log4j.LogManager;
 /**
      * Creates a UuidStringStore for the H2 embedded database.
  */
-class UuidStringStoreDynamoDB implements UuidStringStore, TransportableStore {
+class UuidStringStoreDynamoDB implements UuidStringStore {
     /**
      * Class logger instance.
      */

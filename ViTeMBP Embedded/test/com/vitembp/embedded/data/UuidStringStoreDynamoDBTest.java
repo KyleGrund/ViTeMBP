@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -69,97 +68,82 @@ public class UuidStringStoreDynamoDBTest {
      * Test of instantiation of class UuidStringStoreDynamoDB.
      */
     @Test
-    public void testInstantiate() {
+    public void testInstantiate() throws InstantiationException {
         System.out.println("instantiate");
 
         // instantiate the connector
-        UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
+        UuidStringStoreDynamoDB instance = (UuidStringStoreDynamoDB)UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
     }
     
     /**
      * Test of read method, of class UuidStringStoreDynamoDB.
      */
     @Test
-    public void testRead() {
+    public void testRead() throws IOException, InstantiationException {
         System.out.println("read");
-        try {
-            // instantiate the connector
-            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
-            
-            UUID key = UUID.randomUUID();
-            String expResult = "A test string.";
-            instance.write(key, expResult);
-            String result = instance.read(key);
-            assertEquals(expResult, result);
 
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        // instantiate the connector
+        UuidStringStoreDynamoDB instance = (UuidStringStoreDynamoDB)UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+
+        UUID key = UUID.randomUUID();
+        String expResult = "A test string.";
+        instance.write(key, expResult);
+        String result = instance.read(key);
+        assertEquals(expResult, result);
     }
 
     /**
      * Test of write method, of class UuidStringStoreDynamoDB.
      */
     @Test
-    public void testWrite() {
+    public void testWrite() throws InstantiationException, IOException {
         System.out.println("write");
         UUID key = UUID.randomUUID();
         String value = "A test string.";
-        try {
-            // instantiate the connector
-            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
-            
-            instance.write(key, value);
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        
+        // instantiate the connector
+        UuidStringStoreDynamoDB instance = (UuidStringStoreDynamoDB)UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+
+        instance.write(key, value);
     }
     
     /**
      * Test of read method, of class UuidStringStoreDynamoDB.
      */
     @Test
-    public void testDelete() {
+    public void testDelete() throws InstantiationException, IOException {
         System.out.println("delete");
-        try {
-            // instantiate the connector
-            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
-            
-            UUID key = UUID.randomUUID();
-            String expResult = "A test string.";
-            instance.write(key, expResult);
-            String result = instance.read(key);
-            assertEquals(expResult, result);
-            instance.delete(key);
-            result = instance.read(key);
-            assertNull(result);
+        // instantiate the connector
+        UuidStringStoreDynamoDB instance = (UuidStringStoreDynamoDB)UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
 
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        UUID key = UUID.randomUUID();
+        String expResult = "A test string.";
+        instance.write(key, expResult);
+        String result = instance.read(key);
+        assertEquals(expResult, result);
+        instance.delete(key);
+        result = instance.read(key);
+        assertNull(result);
     }
     
     /**
      * Test of write method, of class UuidStringStoreDynamoDB.
      */
     @Test
-    public void testUpdate() {
+    public void testUpdate() throws InstantiationException, IOException {
         System.out.println("write");
         UUID key = UUID.randomUUID();
-        try {
-            // instantiate the connector
-            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
-            
-            String expected = "A test string.";
-            instance.write(key, expected);
-            assertTrue(expected.equals(instance.read(key)));
-            
-            expected = "A different string.";
-            instance.write(key, expected);
-            assertTrue(expected.equals(instance.read(key)));
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+        
+        // instantiate the connector
+        UuidStringStoreDynamoDB instance = (UuidStringStoreDynamoDB)UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+
+        String expected = "A test string.";
+        instance.write(key, expected);
+        assertTrue(expected.equals(instance.read(key)));
+
+        expected = "A different string.";
+        instance.write(key, expected);
+        assertTrue(expected.equals(instance.read(key)));
     }
     
     /**
@@ -180,28 +164,25 @@ public class UuidStringStoreDynamoDBTest {
      * Test of getKeys method, of class UuidStringStoreDynamoDB.
      */
     @Test
-    public void testGetKeys() {
+    public void testGetKeys() throws InstantiationException, IOException {
         System.out.println("read");        
-        try {
-            // instantiate the connector
-            UuidStringStoreDynamoDB instance = new UuidStringStoreDynamoDB();
-            
-            UUID key = UUID.randomUUID();
-            String expResult = "A test string for ID scans.";
-            instance.write(key, expResult);
-            
-            assertTrue(instance.getKeys().count() > 0);
-            
-            long keysCount = instance.getKeys()
-                    .filter((id) -> 
-                    {
-                        return key.equals(id);
-                    })
-                    .count();
-            
-            assertEquals(1, keysCount);
-        } catch (IOException ex) {
-            Assert.fail("IOException occurred: " + ex.getLocalizedMessage());
-        }
+
+        // instantiate the connector
+        UuidStringStoreDynamoDB instance = (UuidStringStoreDynamoDB)UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+
+        UUID key = UUID.randomUUID();
+        String expResult = "A test string for ID scans.";
+        instance.write(key, expResult);
+
+        assertTrue(instance.getKeys().count() > 0);
+
+        long keysCount = instance.getKeys()
+                .filter((id) -> 
+                {
+                    return key.equals(id);
+                })
+                .count();
+
+        assertEquals(1, keysCount);
     }
 }
