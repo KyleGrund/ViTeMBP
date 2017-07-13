@@ -142,10 +142,12 @@ public class UuidStringTransporter {
                             // the hashes don't match so copy the entry between
                             // the stores
                             to.write(key, from.read(key));
+                            LOGGER.debug("Synced key: " + key.toString());
                         } else if (this.deleteAfterTransfer) {
                             // the hashes match so delete if set to do so by the
                             // deleteAfterTransfer parameter.
                             from.delete(key);
+                            LOGGER.debug("Deleted key: " + key.toString());
                         }
                     }
                 }

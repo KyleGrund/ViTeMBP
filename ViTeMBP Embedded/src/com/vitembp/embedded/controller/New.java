@@ -18,13 +18,10 @@
 package com.vitembp.embedded.controller;
 
 import com.vitembp.embedded.configuration.SystemConfig;
-import com.vitembp.embedded.data.CaptureFactory;
 import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.data.UuidStringTransporter;
 import com.vitembp.embedded.data.UuidStringTransporterFactory;
 import com.vitembp.embedded.hardware.HardwareInterface;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**

@@ -86,7 +86,7 @@ public class SystemConfig {
     /**
      * The type of capture to use to store captured data.
      */
-    private CaptureTypes captureType = CaptureTypes.InMemory;
+    private CaptureTypes captureType = CaptureTypes.EmbeddedH2;
     
     /**
      * A boolean value indicating whether to upload collected data to the cloud.

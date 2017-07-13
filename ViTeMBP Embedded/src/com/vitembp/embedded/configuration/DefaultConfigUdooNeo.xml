@@ -10,5 +10,9 @@
             <binding>i2c-3:32</binding>
         </sensorbinding>
     </sensorbindings>
-    <capturetype>InMemory</capturetype>
+    <capturetype>EmbeddedH2</capturetype>
+    <cloud>
+        <uploadtocloud>true</uploadtocloud>
+        <deleteonuploadtocloud>true</deleteonuploadtocloud>
+    </cloud>
 </configuration>
