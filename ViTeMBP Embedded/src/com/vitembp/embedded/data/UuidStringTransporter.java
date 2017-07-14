@@ -85,6 +85,7 @@ public class UuidStringTransporter {
         this.deleteAfterTransfer = deleteAfterTransfer;
         this.syncThread = new Thread(this::syncTask);
         this.syncThread.setName("UuidStringTransporter");
+        this.syncThread.setPriority(Thread.MIN_PRIORITY);
     }
     
     /**

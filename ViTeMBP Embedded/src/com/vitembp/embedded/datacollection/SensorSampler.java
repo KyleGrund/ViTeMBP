@@ -84,6 +84,7 @@ public class SensorSampler {
         this.isRunning = true;
         this.loggingThread = new Thread(() -> { collectData(); });
         this.loggingThread.setName("DataLogger");
+        this.loggingThread.setPriority(Thread.MAX_PRIORITY);
         this.loggingThread.start();
     }
     
