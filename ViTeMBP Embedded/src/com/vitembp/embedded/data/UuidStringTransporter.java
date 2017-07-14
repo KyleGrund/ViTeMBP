@@ -118,46 +118,53 @@ public class UuidStringTransporter {
         // look until this flag tells us to stop
         while (this.isRunning) {
             try {
-                // get batches of UUIDs to transport
-                List<List<UUID>> batches = this.from.getKeys().collect(
-                        ArrayList::new,
-                        (List<List<UUID>> list, UUID toAdd) -> {
-                            List<UUID> last;
-                            while (list.isEmpty() || (last = list.get(list.size() - 1)).size() >= HASH_BATCH_SIZE) {
-                                list.add(new ArrayList<>());
+                try {
+                    // get batches of UUIDs to transport
+                    List<List<UUID>> batches = this.from.getKeys().collect(
+                            ArrayList::new,
+                            (List<List<UUID>> list, UUID toAdd) -> {
+                                List<UUID> last;
+                                while (list.isEmpty() || (last = list.get(list.size() - 1)).size() >= HASH_BATCH_SIZE) {
+                                    list.add(new ArrayList<>());
+                                }
+                                last.add(toAdd);
+                            },
+                            (a,b) -> a.addAll(b));
+
+                    // for each batch of UUIDs to process
+                    for (List<UUID> batch : batches) {
+                        // get their hashes
+                        Map<UUID, String> fromHashes = from.getHashes(batch);
+                        Map<UUID, String> toHashes = to.getHashes(batch);
+
+                        // for each key in this batch
+                        for (UUID key : batch) {
+                            if (!fromHashes.get(key).equals(toHashes.get(key))) {
+                                // the hashes don't match so copy the entry between
+                                // the stores
+                                to.write(key, from.read(key));
+                                LOGGER.debug("Synced key: " + key.toString());
+                            } else if (this.deleteAfterTransfer) {
+                                // the hashes match so delete if set to do so by the
+                                // deleteAfterTransfer parameter.
+                                from.delete(key);
+                                LOGGER.debug("Deleted key: " + key.toString());
                             }
-                            last.add(toAdd);
-                        },
-                        (a,b) -> a.addAll(b));
-
-                // for each batch of UUIDs to process
-                for (List<UUID> batch : batches) {
-                    // get their hashes
-                    Map<UUID, String> fromHashes = from.getHashes(batch);
-                    Map<UUID, String> toHashes = to.getHashes(batch);
-
-                    // for each key in this batch
-                    for (UUID key : batch) {
-                        if (!fromHashes.get(key).equals(toHashes.get(key))) {
-                            // the hashes don't match so copy the entry between
-                            // the stores
-                            to.write(key, from.read(key));
-                            LOGGER.debug("Synced key: " + key.toString());
-                        } else if (this.deleteAfterTransfer) {
-                            // the hashes match so delete if set to do so by the
-                            // deleteAfterTransfer parameter.
-                            from.delete(key);
-                            LOGGER.debug("Deleted key: " + key.toString());
                         }
                     }
+
+                    Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
+
+                } catch (IOException ex) {
+                    LOGGER.error("Failed to access keys in store.", ex);
+                } catch (Exception ex) {
+                    LOGGER.error("Unexpected exception in synchronization thread.", ex);
+                    Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
                 }
-                
-                Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
-                
-            } catch (IOException ex) {
-                LOGGER.error("Failed to access keys in store.", ex);
             } catch (InterruptedException ex) {
                 LOGGER.error("UuidStringTransporter thread interrupted.", ex);
+                // this exception indicates the thread holder wants the thread
+                // to end, so exit
                 this.stopSync();
             }
         }
