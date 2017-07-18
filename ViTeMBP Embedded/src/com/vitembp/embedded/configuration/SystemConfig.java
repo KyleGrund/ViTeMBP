@@ -100,6 +100,11 @@ public class SystemConfig {
     private boolean deleteOnUploadToCloud = true;
     
     /**
+     * A boolean value indicating whether data should be stored compressed.
+     */
+    private boolean enableCompression = true;
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {       
@@ -118,6 +123,16 @@ public class SystemConfig {
         
     }
 
+    /**
+     * Returns a boolean value indicating whether to compress data before it
+     * is stored.
+     * @return A boolean value indicating whether to compress data before it
+     * is stored.
+     */
+    public boolean getEnableCompression() {
+        return this.enableCompression;
+    }
+    
     /**
      * Gets the sampling frequency to use when polling data from the sensors.
      * @return The sampling frequency to use when polling data from the sensors.
@@ -331,6 +346,11 @@ public class SystemConfig {
         toWriteTo.writeCharacters(this.captureType.name());
         toWriteTo.writeEndElement();
         
+        // save capture type
+        toWriteTo.writeStartElement("enablecompression");
+        toWriteTo.writeCharacters(Boolean.toString(this.enableCompression));
+        toWriteTo.writeEndElement();
+        
         // save upload options
         toWriteTo.writeStartElement("cloud");
         toWriteTo.writeStartElement("uploadtocloud");
@@ -417,6 +437,8 @@ public class SystemConfig {
         toReadFrom.next();
         this.captureType = Enum.valueOf(CaptureTypes.class, XMLStreams.readElement("capturetype", toReadFrom));
         
+        // read enable compression
+        this.enableCompression = Boolean.valueOf(XMLStreams.readElement("enablecompression", toReadFrom));
         
         // read cloud options
         // read into cloud element

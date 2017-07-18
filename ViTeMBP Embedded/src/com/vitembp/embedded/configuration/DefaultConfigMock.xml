@@ -6,6 +6,7 @@
     <sensorbindings>
     </sensorbindings>
     <capturetype>InMemory</capturetype>
+    <enablecompression>true</enablecompression>
     <cloud>
         <uploadtocloud>true</uploadtocloud>
         <deleteonuploadtocloud>true</deleteonuploadtocloud>

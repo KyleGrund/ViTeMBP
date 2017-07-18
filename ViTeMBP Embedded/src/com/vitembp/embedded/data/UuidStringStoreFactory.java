@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 
@@ -50,13 +51,19 @@ class UuidStringStoreFactory {
         switch (type) { 
             case InMemory:
                 if (inMemoryInstance == null) {
-                    inMemoryInstance = new UuidStringStoreGZip(new UuidStringStoreHashMap());
+                    inMemoryInstance = new UuidStringStoreHashMap();
+                    if (SystemConfig.getConfig().getEnableCompression()) {
+                        inMemoryInstance = new UuidStringStoreGZip(inMemoryInstance);
+                    }
                 }
                 return inMemoryInstance;
             case EmbeddedH2:
                 if (h2Instance == null) {
                     try {
-                        h2Instance = new UuidStringStoreGZip(new UuidStringStoreH2(Paths.get("capturedata")));
+                        h2Instance = new UuidStringStoreH2(Paths.get("capturedata"));
+                        if (SystemConfig.getConfig().getEnableCompression()) {
+                            h2Instance = new UuidStringStoreGZip(h2Instance);
+                        }
                     } catch (SQLException ex) {
                         throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
                     }
@@ -64,7 +71,10 @@ class UuidStringStoreFactory {
                 return h2Instance;
             case AmazonDynamoDB:
                 if (dynamoDBInstance == null) {
-                    dynamoDBInstance = new UuidStringStoreGZip(new UuidStringStoreDynamoDB());
+                    dynamoDBInstance = new UuidStringStoreDynamoDB();
+                    if (SystemConfig.getConfig().getEnableCompression()) {
+                        dynamoDBInstance = new UuidStringStoreGZip(dynamoDBInstance);
+                    }
                 }
                 return dynamoDBInstance;
         }

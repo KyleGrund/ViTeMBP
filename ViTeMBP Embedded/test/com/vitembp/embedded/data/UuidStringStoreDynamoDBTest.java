@@ -20,6 +20,7 @@ package com.vitembp.embedded.data;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -209,5 +210,32 @@ public class UuidStringStoreDynamoDBTest {
                 .count();
 
         assertEquals(1, keysCount);
+    }
+    
+    /**
+     * Test of read/write method, of class UuidStringStoreDynamoDB.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testFuzzReadWrite() throws InstantiationException, IOException {
+        System.out.println("read write fuzz");        
+        // instantiate the connector
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+        
+        Random rnd = new Random();
+        int iterations = rnd.nextInt(100) + 1;
+        for (int i = 0; i < iterations; i++) {
+            UUID key = UUID.randomUUID();
+            StringBuilder sb = new StringBuilder();
+            int len = rnd.nextInt(3000) + 1;
+            while (sb.length() < len) {
+                sb.append((char)rnd.nextInt(256));
+            }
+            String expResult = sb.toString();
+            instance.write(key, expResult);
+            String result = instance.read(key);
+            assertEquals(expResult, result);
+        }
     }
 }

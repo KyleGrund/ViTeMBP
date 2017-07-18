@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -86,15 +87,19 @@ class UuidStringStoreGZip implements UuidStringStore {
         for (int i = 0; i < toDecomp.length; i++) {
             compressedData[i] = (byte)toDecomp[i];
         }
-        ByteArrayInputStream bytes = new ByteArrayInputStream(compressedData);
-        GZIPInputStream outStream = new GZIPInputStream(bytes);
-        bytes.close();
-        StringBuilder sb = new StringBuilder();
-        while (outStream.available() == 1) {
-            sb.append((char)outStream.read());
+        GZIPInputStream outStream;
+        try (ByteArrayInputStream bytes = new ByteArrayInputStream(compressedData)) {
+            outStream = new GZIPInputStream(bytes);
         }
-        sb.deleteCharAt(sb.length() - 1);
-        return sb.toString();
+        ArrayList<Byte> sb = new ArrayList<>();
+        while (outStream.available() == 1) {
+            sb.add((byte)outStream.read());
+        }
+        byte[] ary = new byte[sb.size() - 1];
+        for (int i = 0; i < ary.length; i++) {
+            ary[i] = sb.get(i);
+        }
+        return new String(ary, "UTF-8");
     }
     
     private String compress(String value) throws IOException {

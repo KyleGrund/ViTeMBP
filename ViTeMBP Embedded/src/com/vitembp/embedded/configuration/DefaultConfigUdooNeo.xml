@@ -11,6 +11,7 @@
         </sensorbinding>
     </sensorbindings>
     <capturetype>EmbeddedH2</capturetype>
+    <enablecompression>true</enablecompression>
     <cloud>
         <uploadtocloud>true</uploadtocloud>
         <deleteonuploadtocloud>true</deleteonuploadtocloud>

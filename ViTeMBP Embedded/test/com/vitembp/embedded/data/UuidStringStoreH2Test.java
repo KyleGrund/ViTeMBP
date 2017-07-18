@@ -18,9 +18,7 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Random;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -116,6 +114,8 @@ public class UuidStringStoreH2Test {
     
     /**
      * Test of write method, of class UuidStringStoreH2.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testUpdate() throws InstantiationException, IOException {
@@ -136,6 +136,8 @@ public class UuidStringStoreH2Test {
     
     /**
      * Test of getKeys method, of class UuidStringStoreH2.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testGetKeys() throws InstantiationException, IOException {
@@ -153,5 +155,30 @@ public class UuidStringStoreH2Test {
 
         // assert the added entry has the right key
         assertEquals(1, instance.getKeys().filter((id) -> key.equals(id)).count());
+    }
+    
+    /**
+     * Test of read method, of class UuidStringStoreH2.
+     */
+    @Test
+    public void testFuzzReadWrite() throws InstantiationException, IOException {
+        System.out.println("read write fuzz");        
+        // instantiate the connector
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        
+        Random rnd = new Random();
+        int iterations = rnd.nextInt(10000) + 1;
+        for (int i = 0; i < iterations; i++) {
+            UUID key = UUID.randomUUID();
+            StringBuilder sb = new StringBuilder();
+            int len = rnd.nextInt(3000) + 1;
+            while (sb.length() < len) {
+                sb.append((char)rnd.nextInt(256));
+            }
+            String expResult = sb.toString();
+            instance.write(key, expResult);
+            String result = instance.read(key);
+            assertEquals(expResult, result);
+        }
     }
 }

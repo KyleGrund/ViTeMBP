@@ -20,8 +20,10 @@ package com.vitembp.embedded.data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -32,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.sql.rowset.serial.SerialClob;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -134,7 +137,13 @@ class UuidStringStoreH2 implements UuidStringStore {
                 return null;
             }
             BufferedReader val = new BufferedReader(results.getClob("VALUE").getCharacterStream());
-            return val.readLine();
+            StringBuilder result = new StringBuilder();
+            int read = val.read();
+            while (read != -1) {
+                result.append((char)read);
+                read = val.read();
+            } 
+            return result.toString();
         } catch (SQLException ex) {
             LOGGER.error("Could not read from database.", ex);
             throw new IOException("Exception reading from H2 database.", ex);
@@ -143,17 +152,26 @@ class UuidStringStoreH2 implements UuidStringStore {
 
     @Override
     public void write(UUID key, String value) throws IOException {
+        char[] chars = new char[value.length()];
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = value.charAt(i);
+        }
+        
         // build query to put value String into the data store at UUID key
         StringBuilder query = new StringBuilder();
         query.append("MERGE INTO DATA VALUES('");
         query.append(key.toString());
-        query.append("', '");
-        query.append(value);
-        query.append("')");
-        
+        query.append("', (?))");
+
         try {
+            // build statement
+            PreparedStatement stmt = this.connection.prepareStatement(query.toString());
+            Clob toSend = new SerialClob(chars);
+            stmt.setClob(1, toSend);
+            
             // execute query
-            int rowsUpdated = this.connection.createStatement().executeUpdate(query.toString());
+            int rowsUpdated = stmt.executeUpdate();
+            
             // only one row should have been updated
             if (rowsUpdated != 1) {
                 throw new SQLException("Expected one row to be udpdated, actually updated: " + Integer.toString(rowsUpdated));
