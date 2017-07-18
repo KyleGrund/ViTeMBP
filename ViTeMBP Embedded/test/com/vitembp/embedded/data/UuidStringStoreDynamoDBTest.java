@@ -91,9 +91,26 @@ public class UuidStringStoreDynamoDBTest {
         String result = instance.read(key);
         assertEquals(expResult, result);
     }
+    
+    /**
+     * Test of read method on empty location, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testReadEmpty() throws IOException, InstantiationException {
+        System.out.println("read empty");
+
+        // instantiate the connector
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+
+        UUID key = UUID.randomUUID();
+        String result = instance.read(key);
+        assertNull(result);
+    }
 
     /**
      * Test of write method, of class UuidStringStoreDynamoDB.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testWrite() throws InstantiationException, IOException {
@@ -105,10 +122,17 @@ public class UuidStringStoreDynamoDBTest {
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
 
         instance.write(key, value);
+        
+        key = UUID.randomUUID();
+        value = "";
+
+        instance.write(key, value);
     }
     
     /**
      * Test of read method, of class UuidStringStoreDynamoDB.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testDelete() throws InstantiationException, IOException {

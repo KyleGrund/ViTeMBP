@@ -197,7 +197,7 @@ class UuidStringStoreH2 implements UuidStringStore {
             ResultSet set = this.connection.createStatement().executeQuery("SELECT ID FROM DATA");
             boolean hasElements = set.first();
             
-            // generate a stream of the parsed UUIDs
+            // generate a stream of the parsed UUIDs excluding CAPTURE_LOCATIONS
             return StreamSupport.stream(((Iterable<UUID>)() -> new Iterator<UUID>() {
                 boolean hasNext = hasElements;
                 @Override
@@ -218,8 +218,7 @@ class UuidStringStoreH2 implements UuidStringStore {
                     }
                     return null;
                 }
-                
-            }).spliterator(), false);
+            }).spliterator(), false).filter(id -> !id.equals(CAPTURE_LOCATIONS));
         } catch (SQLException ex) {
             throw new IOException("Could not retrieve keys from H2 store.", ex);
         }
