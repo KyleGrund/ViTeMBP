@@ -50,13 +50,13 @@ class UuidStringStoreFactory {
         switch (type) { 
             case InMemory:
                 if (inMemoryInstance == null) {
-                    inMemoryInstance = new UuidStringStoreHashMap();
+                    inMemoryInstance = new UuidStringStoreGZip(new UuidStringStoreHashMap());
                 }
                 return inMemoryInstance;
             case EmbeddedH2:
                 if (h2Instance == null) {
                     try {
-                        h2Instance = new UuidStringStoreH2(Paths.get("capturedata"));
+                        h2Instance = new UuidStringStoreGZip(new UuidStringStoreH2(Paths.get("capturedata")));
                     } catch (SQLException ex) {
                         throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
                     }
@@ -64,7 +64,7 @@ class UuidStringStoreFactory {
                 return h2Instance;
             case AmazonDynamoDB:
                 if (dynamoDBInstance == null) {
-                    dynamoDBInstance = new UuidStringStoreDynamoDB();
+                    dynamoDBInstance = new UuidStringStoreGZip(new UuidStringStoreDynamoDB());
                 }
                 return dynamoDBInstance;
         }

@@ -80,7 +80,7 @@ public class UuidStringStorePagingCaptureTest {
 
     private UuidStringStorePagingCapture buildCapture() throws InstantiationException {
         double frequency = 29.9;
-        UuidStringStoreHashMap memStore = (UuidStringStoreHashMap)UuidStringStoreFactory.build(CaptureTypes.InMemory);
+        UuidStringStore memStore = UuidStringStoreFactory.build(CaptureTypes.InMemory);
         UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
         // model one page every 10sec
         int pageSize = 299;
@@ -167,7 +167,7 @@ public class UuidStringStorePagingCaptureTest {
     public void testLoad() throws Exception {
         System.out.println("load");
         double frequency = 29.9;
-        UuidStringStoreHashMap memStore = (UuidStringStoreHashMap)UuidStringStoreFactory.build(CaptureTypes.InMemory);
+        UuidStringStore memStore = UuidStringStoreFactory.build(CaptureTypes.InMemory);
         UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
         // model one page every 10sec
         int pageSize = 299;

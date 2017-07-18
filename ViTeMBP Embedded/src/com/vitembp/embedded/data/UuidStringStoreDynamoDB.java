@@ -26,8 +26,10 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
+import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -135,7 +137,18 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     
     @Override
     public Stream<UUID> getKeys() throws IOException {
+        List<ScanResult> keys = new ArrayList<>();
         ScanResult res = this.client.scan("DATA", Arrays.asList(new String[] { "ID" }));
+        keys.add(res);
+        Map<String,AttributeValue> lastRes = res.getLastEvaluatedKey();
+        while (lastRes != null) {
+            ScanRequest sr = new ScanRequest();
+            sr.setTableName("DATA");
+            sr.setAttributesToGet(Arrays.asList(new String[] { "ID" }));
+            sr.setExclusiveStartKey(lastRes);
+            res = this.client.scan(sr);
+            keys.add(res);
+        }
         return res.getItems().stream().map((item) -> UUID.fromString(item.get("ID").getS()));
     }
     

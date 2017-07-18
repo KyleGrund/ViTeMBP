@@ -100,14 +100,18 @@ class UuidStringStoreCapture extends Capture {
     
     @Override
     public void save() throws IOException {
-        this.store.write(this.toXml());
+        String toWrite = this.toXml();
+        int len = toWrite.length();
+        this.store.write(toWrite);
     }
 
     @Override
     public void load() throws IOException {
         try {
             // read data from the underyling data store
-            this.readFrom(XMLStreams.createReader(this.store.read()));
+            String toRead = this.store.read();
+            int len = toRead.length();
+            this.readFrom(XMLStreams.createReader(toRead));
         } catch (XMLStreamException ex) {
             LOGGER.error("Exception while loading Capture from UUID String store.", ex);
             throw new IOException("Exception while loading Capture from UUID String store.", ex);

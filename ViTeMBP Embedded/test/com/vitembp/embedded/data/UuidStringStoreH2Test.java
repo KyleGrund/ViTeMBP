@@ -61,7 +61,7 @@ public class UuidStringStoreH2Test {
     public void testInstantiate() throws IOException, InstantiationException {
         System.out.println("instantiate");
         // instantiate the connector
-        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
         assertNotNull(instance);
     }
     
@@ -72,7 +72,7 @@ public class UuidStringStoreH2Test {
     public void testRead() throws InstantiationException, IOException {
         System.out.println("read");        
         // instantiate the connector
-        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
 
         UUID key = UUID.randomUUID();
         String expResult = "A test string.";
@@ -88,7 +88,7 @@ public class UuidStringStoreH2Test {
     public void testDelete() throws InstantiationException, IOException {
         System.out.println("delete");        
         // instantiate the connector
-        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
 
         UUID key = UUID.randomUUID();
         String expResult = "A test string.";
@@ -109,7 +109,7 @@ public class UuidStringStoreH2Test {
         UUID key = UUID.randomUUID();
         String value = "A test string.";
         // instantiate the connector
-        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
 
         instance.write(key, value);
     }
@@ -123,7 +123,7 @@ public class UuidStringStoreH2Test {
         UUID key = UUID.randomUUID();
 
         // instantiate the connector
-        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
 
         String expected = "A test string.";
         instance.write(key, expected);
@@ -141,7 +141,7 @@ public class UuidStringStoreH2Test {
     public void testGetKeys() throws InstantiationException, IOException {
         System.out.println("read");        
         // instantiate the connector
-        UuidStringStoreH2 instance = (UuidStringStoreH2)UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
         // the count before the write
         long before = instance.getKeys().count();
         UUID key = UUID.randomUUID();
