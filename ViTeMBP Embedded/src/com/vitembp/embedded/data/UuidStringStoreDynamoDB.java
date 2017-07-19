@@ -75,22 +75,17 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     }
     
     @Override
-    public UUID addCaptureLocation() throws IOException {
-        // generate a new UUID
-        UUID toAdd = UUID.randomUUID();
-        
-        // get the current list
+    public void addCapture(Capture toAdd, UUID locationID) throws IOException { 
+        // get the current list of capture locations
         String captures = this.read(CAPTURE_LOCATIONS);
         
         // if there are no captures just store the single UUID, otherwise
         // append the list with a comma and then the UUID.
         if (captures == null || "".equals(captures)) {
-            this.write(CAPTURE_LOCATIONS, toAdd.toString());
+            this.write(CAPTURE_LOCATIONS, locationID.toString());
         } else {
-            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(toAdd.toString()));
+            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(locationID.toString()));
         }
-        
-        return toAdd;
     }
     
     @Override

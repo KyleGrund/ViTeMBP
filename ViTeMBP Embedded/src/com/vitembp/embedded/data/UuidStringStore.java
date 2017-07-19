@@ -59,7 +59,7 @@ interface UuidStringStore {
      * @throws IOException If an exception occurs while adding the UUID to the
      * list of capture locations in the persistent store.
      */
-    public abstract UUID addCaptureLocation() throws IOException;
+    public abstract void addCapture(Capture toAdd, UUID location) throws IOException;
     
     /**
      * Deletes a value from the location specified by the key.

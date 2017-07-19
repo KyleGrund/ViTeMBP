@@ -45,12 +45,12 @@ class UuidStringStorePagingCapture extends Capture {
     /**
      * The names of the sensors whose data is represented by this sample.
      */
-    private final Set<String> names;
+    private Set<String> names;
     
     /**
      * The map of sensor names to their UUID type.
      */
-    private final Map<String, UUID> types;
+    private Map<String, UUID> types;
     
     /**
      * The persistent storage this instance uses.
@@ -60,7 +60,7 @@ class UuidStringStorePagingCapture extends Capture {
     /**
      * The size of a sample page.
      */
-    private final int pageSize;
+    private int pageSize;
     
     /**
      * Manager which provides paging ability
@@ -79,7 +79,7 @@ class UuidStringStorePagingCapture extends Capture {
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    public UuidStringStorePagingCapture(double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
+    UuidStringStorePagingCapture(double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
         super(frequency);
         
         // save refrences to parameters        
@@ -87,6 +87,21 @@ class UuidStringStorePagingCapture extends Capture {
         this.types = new HashMap<>(nameToIds);
         this.pageSize = pageSize;
         this.store = store;
+    }
+    
+    /**
+     * Initializes a new instance of the InMemoryCapture class and stores it to
+     * the persistent storage.
+     * @param frequency The frequency at which samples were taken.
+     * @param store The persistent storage this instance uses.
+     * @param nameToIds A map of sensor names to type UUIDs.
+     */
+    UuidStringStorePagingCapture(UuidStringLocation store) throws IOException {
+        // save refrences to parameters        
+        this.store = store;
+        
+        // load from store
+        this.load();
     }
     
     @Override
@@ -209,11 +224,18 @@ class UuidStringStorePagingCapture extends Capture {
     
     @Override
     protected void readSamplesFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
-        if (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "pagingdatalocation".equals(toReadFrom.getLocalName())) {
+        // check for start element
+        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"pagingdatalocation".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <pagingdatalocation> element not found.", toReadFrom.getLocation());
+        }
+        toReadFrom.next();
+        
+        // if no data was read the paging location section will be empty, so skip loading the paging manager
+        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"pagingdatalocation".equals(toReadFrom.getLocalName())) {
             if (this.manager != null) {
                 this.manager.readFrom(toReadFrom);
             } else {
-                SamplePageManager man = new SamplePageManager(store, pageSize, Instant.EPOCH, this.nanoSecondInterval);
+                SamplePageManager man = new SamplePageManager(store, this.pageSize, this.startTime, this.nanoSecondInterval);
                 man.readFrom(toReadFrom);
                 this.manager = man;
             }
@@ -221,7 +243,7 @@ class UuidStringStorePagingCapture extends Capture {
 
         // check for end element
         if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"pagingdatalocation".equals(toReadFrom.getLocalName())) {
-            throw new XMLStreamException("Expected \"pagingdatalocation\" start or end element not found.", toReadFrom.getLocation());
+            throw new XMLStreamException("Expected </pagingdatalocation> element not found.", toReadFrom.getLocation());
         }
         
         // read to next element

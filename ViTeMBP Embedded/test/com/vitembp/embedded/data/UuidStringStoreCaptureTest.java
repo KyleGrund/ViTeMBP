@@ -121,6 +121,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of getSamples method, of class UuidStringStoreCapture.
+     * @throws java.lang.InstantiationException
      */
     @Test
     public void testGetSamples() throws InstantiationException {
@@ -131,6 +132,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of addSample method, of class UuidStringStoreCapture.
+     * @throws java.lang.InstantiationException
      */
     @Test
     public void testAddSample_Map() throws InstantiationException {
@@ -141,6 +143,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of save method, of class UuidStringStoreCapture.
+     * @throws java.lang.Exception
      */
     @Test
     public void testSave() throws Exception {
@@ -151,6 +154,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of load method, of class UuidStringStoreCapture.
+     * @throws java.lang.Exception
      */
     @Test
     public void testLoad() throws Exception {
@@ -162,6 +166,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of getSensorNames method, of class UuidStringStoreCapture.
+     * @throws java.lang.InstantiationException
      */
     @Test
     public void testGetSensorNames() throws InstantiationException {
@@ -176,6 +181,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of getSensorTypes method, of class UuidStringStoreCapture.
+     * @throws java.lang.InstantiationException
      */
     @Test
     public void testGetSensorTypes() throws InstantiationException {
@@ -190,6 +196,7 @@ public class UuidStringStoreCaptureTest {
 
     /**
      * Test of addSample method, of class UuidStringStoreCapture.
+     * @throws java.lang.InstantiationException
      */
     @Test
     public void testAddSample_Sample() throws InstantiationException {

@@ -19,8 +19,11 @@ package com.vitembp.embedded.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A factory class that creates Capture instances.
@@ -43,16 +46,22 @@ public class CaptureFactory {
             case EmbeddedH2:
                 try {
                     UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
-                    UuidStringLocation location = new UuidStringLocation(h2Store, h2Store.addCaptureLocation());
-                    return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    UUID locationID = UUID.randomUUID();
+                    UuidStringLocation location = new UuidStringLocation(h2Store, locationID);
+                    Capture toReturn = new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    h2Store.addCapture(toReturn, locationID);
+                    return toReturn;
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }
             case AmazonDynamoDB:
                 try {
                     UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
-                    UuidStringLocation location = new UuidStringLocation(ddbStore, ddbStore.addCaptureLocation());
-                    return new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    UUID locationID = UUID.randomUUID();
+                    UuidStringLocation location = new UuidStringLocation(ddbStore, locationID);
+                    Capture toReturn = new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    ddbStore.addCapture(toReturn, locationID);
+                    return toReturn;
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
                 }
@@ -65,18 +74,23 @@ public class CaptureFactory {
      * Gets an Iterable of Capture objects for the captures in the store.
      * @param type The type of capture to load captures from.
      * @return An Iterable of Capture objects for the captures in the store.
+     * @throws java.lang.InstantiationException
      */
-    public static Iterable<Capture> getCaptures(CaptureTypes type) {
+    public static Iterable<Capture> getCaptures(CaptureTypes type) throws InstantiationException {
         switch (type) { 
             case EmbeddedH2:
-//                try {
-//                    UuidStringStoreH2 h2Store = new UuidStringStoreH2(Paths.get("capturedata"));
-//                    UuidStringLocation location = new UuidStringLocation(h2Store, UUID.randomUUID());
-//                    return new UuidStringStoreCapture(frequency, location, nameToIds);
-//                } catch (SQLException ex) {
-//                    throw new InstantiationException("Could not create database file. " + ex.getLocalizedMessage());
-//                }
+                try {
+                    UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+                    List<Capture> toReturn = new ArrayList<>();
+                    for (UUID id : h2Store.getCaptureLocations()) {
+                        toReturn.add(new UuidStringStorePagingCapture(new UuidStringLocation(h2Store, id)));
+                    }
+                    return toReturn;
+                } catch (IOException ex) {
+                    throw new InstantiationException("Could not load database capture index. " + ex.getLocalizedMessage());
+                }
         }
-        return new ArrayList<Capture>();
+        
+        throw new UnsupportedOperationException();
     }
 }

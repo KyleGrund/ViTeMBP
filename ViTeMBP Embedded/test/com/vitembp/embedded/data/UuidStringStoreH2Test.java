@@ -18,8 +18,14 @@
 package com.vitembp.embedded.data;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,6 +60,8 @@ public class UuidStringStoreH2Test {
 
     /**
      * Test of instantiation of class UuidStringStoreH2.
+     * @throws java.io.IOException
+     * @throws java.lang.InstantiationException
      */
     @Test
     public void testInstantiate() throws IOException, InstantiationException {
@@ -65,6 +73,8 @@ public class UuidStringStoreH2Test {
     
     /**
      * Test of read method, of class UuidStringStoreH2.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testRead() throws InstantiationException, IOException {
@@ -81,6 +91,8 @@ public class UuidStringStoreH2Test {
     
     /**
      * Test of delete method, of class UuidStringStoreH2.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testDelete() throws InstantiationException, IOException {
@@ -100,6 +112,8 @@ public class UuidStringStoreH2Test {
 
     /**
      * Test of write method, of class UuidStringStoreH2.
+     * @throws java.lang.InstantiationException
+     * @throws java.io.IOException
      */
     @Test
     public void testWrite() throws InstantiationException, IOException {
@@ -180,5 +194,54 @@ public class UuidStringStoreH2Test {
             String result = instance.read(key);
             assertEquals(expResult, result);
         }
+    }
+
+    /**
+     * Test of getCaptureLocations method, of class UuidStringStoreH2.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetCaptureLocations() throws Exception {
+        System.out.println("getCaptureLocations");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UUID id = UUID.randomUUID();
+        UuidStringLocation loc = new UuidStringLocation(instance, id);
+        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
+        instance.addCapture(usspc, id);
+        Iterable<UUID> result = instance.getCaptureLocations();
+        Stream<UUID> found = StreamSupport.stream(result.spliterator(), false);
+        assertTrue(found.anyMatch((uid) -> id.equals(uid)));
+    }
+
+    /**
+     * Test of addCapture method, of class UuidStringStoreH2.
+     */
+    @Test
+    public void testAddCapture() throws Exception {
+        System.out.println("addCapture");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UUID id = UUID.randomUUID();
+        UuidStringLocation loc = new UuidStringLocation(instance, id);
+        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
+        instance.addCapture(usspc, id);
+    }
+
+    /**
+     * Test of getHashes method, of class UuidStringStoreH2.
+     */
+    @Test
+    public void testGetHashes() throws Exception {
+        System.out.println("getHashes");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UUID id = UUID.randomUUID();
+        UuidStringLocation loc = new UuidStringLocation(instance, id);
+        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
+        instance.addCapture(usspc, id);
+        Iterable<UUID> result = instance.getCaptureLocations();
+        List<UUID> locations = new ArrayList<>();
+        result.forEach(locations::add);
+        Map<UUID, String> hashes = instance.getHashes(locations);
+        Stream<UUID> found = StreamSupport.stream(hashes.keySet().spliterator(), false);
+        assertTrue(found.anyMatch((uid) -> id.equals(uid)));
     }
 }

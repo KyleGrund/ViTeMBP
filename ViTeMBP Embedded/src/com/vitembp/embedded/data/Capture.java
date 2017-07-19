@@ -60,6 +60,18 @@ public abstract class Capture {
      * Initializes a new instance of the Capture class.
      * @param sampleFrequency The frequency at which samples were taken.
      */
+    Capture() {
+        // default to 29.9Hz, the standard us video frame rate
+        this.sampleFrequency = 29.9;
+        
+        // calculate the update interval from the sample frequency
+        this.calculateIntervalFromFrequency();
+    }
+    
+    /**
+     * Initializes a new instance of the Capture class.
+     * @param sampleFrequency The frequency at which samples were taken.
+     */
     Capture(double sampleFrequency) {
         this.sampleFrequency = sampleFrequency;
         

@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -103,22 +104,42 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     @Override
-    public UUID addCaptureLocation() throws IOException {
-        // generate a new UUID
-        UUID toAdd = UUID.randomUUID();
-        
+    public void addCapture(Capture toAdd, UUID locationID) throws IOException {       
         // get the current list
         String captures = this.read(CAPTURE_LOCATIONS);
         
         // if there are no captures just store the single UUID, otherwise
         // append the list with a comma and then the UUID.
         if (captures == null || "".equals(captures)) {
-            this.write(CAPTURE_LOCATIONS, toAdd.toString());
+            this.write(CAPTURE_LOCATIONS, locationID.toString());
         } else {
-            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(toAdd.toString()));
+            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(locationID.toString()));
         }
         
-        return toAdd;
+        // add capture data: location, system, start, frequency to captures table
+        StringBuilder query = new StringBuilder();
+        query.append("MERGE INTO CAPTURES VALUES('");
+        query.append(locationID.toString());
+        query.append("', '");
+        query.append(SystemConfig.getConfig().getSystemUUID().toString());
+        query.append("', '");
+        query.append(toAdd.getStartTime().toString());
+        query.append("', '");
+        query.append(Double.toString(toAdd.getSampleFrequency()));
+        query.append("')");
+
+        try {
+            // execute query
+            int rowsUpdated = this.connection.createStatement().executeUpdate(query.toString());
+            
+            // only one row should have been updated
+            if (rowsUpdated != 1) {
+                throw new SQLException("Expected one row to be udpdated, actually updated: " + Integer.toString(rowsUpdated));
+            }
+        } catch (SQLException ex) {
+            LOGGER.error("Could not write to database.", ex);
+            throw new IOException("Exception writing to H2 database.", ex);
+        }
     }
     
     @Override
@@ -204,8 +225,11 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     private void initializeDatabase() throws SQLException {
-        // execute query to create the DATA table
+        // execute query to create the DATA table with (ID -> UUID, VALUE -> String) 
         this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
+        // execute query to create the CAPTURES table which tracks the locations of captures in the data table
+        // with the system that created them, the time they were created, and the frequency of the capture data
+        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM UUID, STARTTIME DATETIME, FREQUENCY DOUBLE)");
     }
 
     @Override
