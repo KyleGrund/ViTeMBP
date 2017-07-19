@@ -148,6 +148,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
             sr.setExclusiveStartKey(lastRes);
             res = this.client.scan(sr);
             keys.add(res);
+            lastRes = res.getLastEvaluatedKey();
         }
         return res.getItems().stream().map((item) -> UUID.fromString(item.get("ID").getS()));
     }

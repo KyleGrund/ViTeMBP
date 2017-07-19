@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -56,6 +57,11 @@ public class SystemConfig {
      * The name of the file to save and load configuration from.
      */
     private static final Path CONFIG_FILE_PATH = Paths.get("vitembp_config.xml");
+    
+    /**
+     * A UUID representing the type of this sensor.
+     */
+    private static final UUID DEFAULT_UUID = UUID.fromString("2ae1239a-3389-4580-b704-ff5c7b4dd3ee");
     
     /**
      * The singleton instance for this class.
@@ -105,6 +111,11 @@ public class SystemConfig {
     private boolean enableCompression = true;
     
     /**
+     * The UUID representing this instance.
+     */
+    private UUID systemID = DEFAULT_UUID;
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {       
@@ -120,7 +131,6 @@ public class SystemConfig {
         } else {
             LOGGER.info("System configuration not found on filesystem.");
         }
-        
     }
 
     /**
@@ -206,6 +216,14 @@ public class SystemConfig {
     }
     
     /**
+     * Gets the unique UUID of this system.
+     * @return The unique UUID of this system.
+     */
+    public UUID getSystemUUID() {
+        return this.systemID;
+    }
+    
+    /**
      * Loads the configuration from a file.
      * @param configFile The file to load from.
      */
@@ -284,6 +302,9 @@ public class SystemConfig {
             
             // load the config
             this.loadConfigFromPath(location);
+            
+            // create a new, unique, system ID
+            this.systemID = UUID.randomUUID();
         } catch (XMLStreamException | IllegalStateException | IOException ex) {
             throw new IOException("Exception reading default configuration from: " + location.toString(), ex);
         }
@@ -307,6 +328,11 @@ public class SystemConfig {
         toWriteTo.writeStartDocument();
         
         toWriteTo.writeStartElement("configuration");
+        
+        // save sampling frequency
+        toWriteTo.writeStartElement("systemid");
+        toWriteTo.writeCharacters(this.systemID.toString());
+        toWriteTo.writeEndElement();
         
         // save sampling frequency
         toWriteTo.writeStartElement("samplingfrequency");
@@ -383,8 +409,11 @@ public class SystemConfig {
             throw new XMLStreamException("Expected <configuration> not found.", toReadFrom.getLocation());
         }
 
-        // read sampling frequency
+        // read system ID
         toReadFrom.next();
+        this.systemID = UUID.fromString(XMLStreams.readElement("systemid", toReadFrom));
+        
+        // read sampling frequency
         this.samplingFrequency = Double.valueOf(XMLStreams.readElement("samplingfrequency", toReadFrom));
         
         // read into sensor names element

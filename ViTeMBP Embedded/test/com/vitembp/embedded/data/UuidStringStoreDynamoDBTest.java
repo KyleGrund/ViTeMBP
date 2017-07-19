@@ -70,7 +70,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testInstantiate() throws InstantiationException {
-        System.out.println("instantiate");
+        System.out.println("instantiate-DynamoDB");
 
         // instantiate the connector
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
@@ -81,7 +81,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testRead() throws IOException, InstantiationException {
-        System.out.println("read");
+        System.out.println("read-DynamoDB");
 
         // instantiate the connector
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
@@ -98,7 +98,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testReadEmpty() throws IOException, InstantiationException {
-        System.out.println("read empty");
+        System.out.println("read empty-DynamoDB");
 
         // instantiate the connector
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
@@ -115,7 +115,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testWrite() throws InstantiationException, IOException {
-        System.out.println("write");
+        System.out.println("write-DynamoDB");
         UUID key = UUID.randomUUID();
         String value = "A test string.";
         
@@ -137,7 +137,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testDelete() throws InstantiationException, IOException {
-        System.out.println("delete");
+        System.out.println("delete-DynamoDB");
         // instantiate the connector
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
 
@@ -156,7 +156,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testUpdate() throws InstantiationException, IOException {
-        System.out.println("write");
+        System.out.println("update-DynamoDB");
         UUID key = UUID.randomUUID();
         
         // instantiate the connector
@@ -190,26 +190,17 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testGetKeys() throws InstantiationException, IOException {
-        System.out.println("read");        
+        System.out.println("getKeys-DynamoDB");        
 
         // instantiate the connector
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
-
+        
         UUID key = UUID.randomUUID();
         String expResult = "A test string for ID scans.";
         instance.write(key, expResult);
 
         long keyCount = instance.getKeys().count();
         assertTrue(keyCount > 0);
-
-        long keysCount = instance.getKeys()
-                .filter((id) -> 
-                {
-                    return key.equals(id);
-                })
-                .count();
-
-        assertEquals(1, keysCount);
     }
     
     /**
@@ -219,7 +210,7 @@ public class UuidStringStoreDynamoDBTest {
      */
     @Test
     public void testFuzzReadWrite() throws InstantiationException, IOException {
-        System.out.println("read write fuzz");        
+        System.out.println("read write fuzz-DynamoDB");        
         // instantiate the connector
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
         
