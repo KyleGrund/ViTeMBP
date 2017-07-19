@@ -59,9 +59,24 @@ public class CaptureFactoryTest {
      * @throws java.lang.Exception
      */
     @Test
-    public void testBuildCapture() throws Exception {
-        System.out.println("buildCapture");
+    public void testBuildCaptureH2() throws Exception {
+        System.out.println("buildCaptureH2");
         CaptureTypes type = CaptureTypes.EmbeddedH2;
+        double frequency = 29.9;
+        Map<String, UUID> nameToIds = new HashMap<>();
+        nameToIds.put("Sensor 1", UUID.randomUUID());
+        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+        assertNotNull(result);
+    }
+    
+    /**
+     * Test of buildCapture method, of class CaptureFactory.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testBuildCaptureDynamoDB() throws Exception {
+        System.out.println("buildCaptureDynamoDB");
+        CaptureTypes type = CaptureTypes.AmazonDynamoDB;
         double frequency = 29.9;
         Map<String, UUID> nameToIds = new HashMap<>();
         nameToIds.put("Sensor 1", UUID.randomUUID());
@@ -74,8 +89,8 @@ public class CaptureFactoryTest {
      * @throws java.lang.Exception
      */
     @Test
-    public void testGetCaptures() throws Exception {
-        System.out.println("getCaptures");
+    public void testGetCapturesH2() throws Exception {
+        System.out.println("getCaptures H2");
         CaptureTypes type = CaptureTypes.EmbeddedH2;
         double frequency = 29.9;
         Map<String, UUID> nameToIds = new HashMap<>();
@@ -86,12 +101,22 @@ public class CaptureFactoryTest {
         List<Capture> loaded = new ArrayList<>();
         captures.forEach(loaded::add);
         assertTrue(loaded.size() > 0);
-        
-        type = CaptureTypes.AmazonDynamoDB;
-        result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+    }
+    
+    /**
+     * Test of getCaptures method, of class CaptureFactory.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetCapturesDynamoDB() throws Exception {
+        System.out.println("getCaptures DynamoDB");
+        CaptureTypes type = CaptureTypes.AmazonDynamoDB;
+        double frequency = 29.9;
+        Map<String, UUID> nameToIds = new HashMap<>();
+        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds);
         result.save();
-        captures = CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB);
-        loaded = new ArrayList<>();
+        Iterable<Capture> captures = CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB);
+        List<Capture> loaded = new ArrayList<>();
         captures.forEach(loaded::add);
         assertTrue(loaded.size() > 0);
     }
