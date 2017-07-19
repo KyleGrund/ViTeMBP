@@ -17,6 +17,9 @@
  */
 package com.vitembp.embedded.data;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
+import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -128,7 +131,7 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     @Override
-    public void addCapture(Capture toAdd, UUID locationID) throws IOException {       
+    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException {       
         // add capture data: location, system, start, frequency to captures table
         StringBuilder query = new StringBuilder();
         query.append("MERGE INTO CAPTURES VALUES('");
@@ -294,5 +297,26 @@ class UuidStringStoreH2 implements UuidStringStore {
             }
         }
         return hashes;
+    }
+    
+    @Override
+    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {        
+        // build query to delete the data for the capture at UUID location
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM CAPTURES WHERE LOCATION='");
+        query.append(toRemove.getLocation().toString());
+        query.append("'");
+        
+        try {
+            // execute query
+            int rowsUpdated = this.connection.createStatement().executeUpdate(query.toString());
+            // only one row should have been updated
+            if (rowsUpdated != 1) {
+                throw new SQLException("Expected one row to be udpdated, actually updated: " + Integer.toString(rowsUpdated));
+            }
+        } catch (SQLException ex) {
+            LOGGER.error("Could not remove capture from database.", ex);
+            throw new IOException("Exception writing to H2 database.", ex);
+        }
     }
 }

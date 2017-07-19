@@ -20,7 +20,6 @@ package com.vitembp.embedded.data;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +70,7 @@ class UuidStringStoreHashMap implements UuidStringStore {
     }
     
     @Override
-    public void addCapture(Capture toAdd, UUID locationID) throws IOException {
+    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException {
         this.captureList.add(new CaptureDescription(
                 locationID,
                 SystemConfig.getConfig().getSystemUUID(),
@@ -100,5 +99,16 @@ class UuidStringStoreHashMap implements UuidStringStore {
             }
         }
         return hashes;
+    }
+
+    @Override
+    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
+        // filter matching captures, and then remove them
+        this.captureList.stream().filter((cap) -> {
+            return cap.getCreated().equals(toRemove.getCreated()) &&
+                    Math.abs(cap.getFrequency() - toRemove.getFrequency()) < 0.01 &&
+                    cap.getLocation().equals(toRemove.getLocation()) &&
+                    cap.getSystem().equals(toRemove.getSystem());
+        }).forEach((cap) -> captureList.remove(cap));
     }
 }

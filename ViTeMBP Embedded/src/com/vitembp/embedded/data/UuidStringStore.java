@@ -54,12 +54,18 @@ interface UuidStringStore {
     public abstract Stream<CaptureDescription> getCaptureLocations() throws IOException;
     
     /**
-     * Adds a random UUID to the list of captures in the store then returns it.
-     * @return The UUID which was added.
+     * Adds a description of a capture in the store.
      * @throws IOException If an exception occurs while adding the UUID to the
-     * list of capture locations in the persistent store.
+     * list of captures in the persistent store.
      */
-    public abstract void addCapture(Capture toAdd, UUID location) throws IOException;
+    public abstract void addCaptureDescription(Capture toAdd, UUID location) throws IOException;
+    
+    /**
+     * Removes a description of a capture in the store.
+     * @throws IOException If an exception occurs while removing the UUID to the
+     * list of captures in the persistent store.
+     */
+    public abstract void removeCaptureDescription(CaptureDescription toRemove) throws IOException;
     
     /**
      * Deletes a value from the location specified by the key.

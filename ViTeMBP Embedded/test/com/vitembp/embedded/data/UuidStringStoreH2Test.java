@@ -207,12 +207,12 @@ public class UuidStringStoreH2Test {
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
-        instance.addCapture(usspc, id);
+        instance.addCaptureDescription(usspc, id);
         assertTrue(instance.getCaptureLocations().anyMatch((uid) -> id.equals(uid.getLocation())));
     }
 
     /**
-     * Test of addCapture method, of class UuidStringStoreH2.
+     * Test of addCaptureDescription method, of class UuidStringStoreH2.
      */
     @Test
     public void testAddCapture() throws Exception {
@@ -221,7 +221,7 @@ public class UuidStringStoreH2Test {
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
-        instance.addCapture(usspc, id);
+        instance.addCaptureDescription(usspc, id);
     }
 
     /**
@@ -234,11 +234,65 @@ public class UuidStringStoreH2Test {
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
-        instance.addCapture(usspc, id);
+        instance.addCaptureDescription(usspc, id);
         List<UUID> locations = new ArrayList<>();
         instance.getCaptureLocations().map((d) -> d.getLocation()).forEach(locations::add);
         Map<UUID, String> hashes = instance.getHashes(locations);
         Stream<UUID> found = StreamSupport.stream(hashes.keySet().spliterator(), false);
         assertTrue(found.anyMatch((uid) -> id.equals(uid)));
+    }
+
+    /**
+     * Test of addCaptureDescription method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testAddCaptureDescription() throws Exception {
+        System.out.println("addCaptureDescription H2");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UUID locationID = UUID.randomUUID();
+        Double freq = new Random().nextDouble();
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Capture toAdd = new UuidStringStoreCapture(
+                freq,
+                new UuidStringLocation(instance, locationID),
+                names);
+        instance.addCaptureDescription(toAdd, locationID);
+        Stream<CaptureDescription> result = instance.getCaptureLocations();
+        assertTrue(result.anyMatch((cap) -> cap.getLocation().equals(locationID)));
+        
+    }
+
+    /**
+     * Test of removeCaptureDescription method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testRemoveCaptureDescription() throws Exception {
+        System.out.println("removeCaptureDescription H2");
+        // add a capture description object
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UUID locationID = UUID.randomUUID();
+        Double freq = new Random().nextDouble();
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Capture toAdd = new UuidStringStoreCapture(
+                freq,
+                new UuidStringLocation(instance, locationID),
+                names);
+        instance.addCaptureDescription(toAdd, locationID);
+        
+        // make sure it was added
+        Stream<CaptureDescription> result = instance.getCaptureLocations();
+        CaptureDescription added = result
+                .filter((cap) -> cap.getLocation().equals(locationID))
+                .findFirst()
+                .get();
+        assertNotNull(added);
+        
+        // remove it
+        instance.removeCaptureDescription(added);
+        
+        // ensure it was removed
+        assertFalse(instance.getCaptureLocations().anyMatch((cap) -> cap.getLocation().equals(locationID)));
     }
 }

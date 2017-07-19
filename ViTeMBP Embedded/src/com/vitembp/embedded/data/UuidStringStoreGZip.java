@@ -34,8 +34,15 @@ import java.util.zip.GZIPOutputStream;
  * in the store.
  */
 class UuidStringStoreGZip implements UuidStringStore {
+    /**
+     * The store which is being wrapped.
+     */
     private final UuidStringStore store;
     
+    /**
+     * Initializes a new instance of the UuidStringStoreGZip class.
+     * @param toWrap The store to wrap.
+     */
     UuidStringStoreGZip(final UuidStringStore toWrap) {
         store = toWrap;
     }
@@ -56,8 +63,8 @@ class UuidStringStoreGZip implements UuidStringStore {
     }
 
     @Override
-    public void addCapture(Capture toAdd, UUID locationID) throws IOException {
-        this.store.addCapture(toAdd, locationID);
+    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException {
+        this.store.addCaptureDescription(toAdd, locationID);
     }
 
     @Override
@@ -120,5 +127,10 @@ class UuidStringStoreGZip implements UuidStringStore {
             toWrite.append((char)bytesToWrite[i]);
         }
         return toWrite.toString();
+    }
+
+    @Override
+    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
+        this.store.removeCaptureDescription(toRemove);
     }
 }

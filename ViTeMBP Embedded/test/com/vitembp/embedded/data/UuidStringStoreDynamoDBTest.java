@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -228,5 +229,74 @@ public class UuidStringStoreDynamoDBTest {
             String result = instance.read(key);
             assertEquals(expResult, result);
         }
+    }
+
+    /**
+     * Test of getCaptureLocations method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testGetCaptureLocations() throws Exception {
+        System.out.println("getCaptureLocations DynamoDB");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Double freq = new Random().nextDouble();
+        Capture toAdd = CaptureFactory.buildCapture(CaptureTypes.AmazonDynamoDB, freq, names);
+        Stream<CaptureDescription> result = instance.getCaptureLocations();
+        assertTrue(result.anyMatch((cap) -> Math.abs(cap.getFrequency() - freq) < 0.00001));
+    }
+
+    /**
+     * Test of addCaptureDescription method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testAddCaptureDescription() throws Exception {
+        System.out.println("addCaptureDescription DynamoDB");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+        UUID locationID = UUID.randomUUID();
+        Double freq = new Random().nextDouble();
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Capture toAdd = new UuidStringStoreCapture(
+                freq,
+                new UuidStringLocation(instance, locationID),
+                names);
+        instance.addCaptureDescription(toAdd, locationID);
+        Stream<CaptureDescription> result = instance.getCaptureLocations();
+        assertTrue(result.anyMatch((cap) -> cap.getLocation().equals(locationID)));
+        
+    }
+
+    /**
+     * Test of removeCaptureDescription method, of class UuidStringStoreDynamoDB.
+     */
+    @Test
+    public void testRemoveCaptureDescription() throws Exception {
+        System.out.println("removeCaptureDescription DynamoDB");
+        // add a capture description object
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+        UUID locationID = UUID.randomUUID();
+        Double freq = new Random().nextDouble();
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Capture toAdd = new UuidStringStoreCapture(
+                freq,
+                new UuidStringLocation(instance, locationID),
+                names);
+        instance.addCaptureDescription(toAdd, locationID);
+        
+        // make sure it was added
+        Stream<CaptureDescription> result = instance.getCaptureLocations();
+        CaptureDescription added = result
+                .filter((cap) -> cap.getLocation().equals(locationID))
+                .findFirst()
+                .get();
+        assertNotNull(added);
+        
+        // remove it
+        instance.removeCaptureDescription(added);
+        
+        // ensure it was removed
+        assertFalse(instance.getCaptureLocations().anyMatch((cap) -> cap.getLocation().equals(locationID)));
     }
 }

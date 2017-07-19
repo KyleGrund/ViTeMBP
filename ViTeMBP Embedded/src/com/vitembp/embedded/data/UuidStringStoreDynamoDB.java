@@ -89,7 +89,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     }
     
     @Override
-    public void addCapture(Capture toAdd, UUID locationID) throws IOException { 
+    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException { 
         // add capture data: location, system, start, frequency to captures table
         Map<String, AttributeValue> attrs = new HashMap<>();
         attrs.put("LOCATION", new AttributeValue(locationID.toString()));
@@ -181,5 +181,14 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
             }
         }
         return hashes;
+    }
+
+    @Override
+    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
+        Map<String, AttributeValue> attrs = new HashMap<>();
+        attrs.put("LOCATION", new AttributeValue(toRemove.getLocation().toString()));
+        attrs.put("SYSTEM", new AttributeValue(toRemove.getSystem().toString()));
+        DeleteItemRequest request = new DeleteItemRequest().withTableName("CAPTURES").withKey(attrs);
+        DeleteItemResult result = client.deleteItem(request);
     }
 }
