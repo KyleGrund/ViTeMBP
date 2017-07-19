@@ -46,12 +46,12 @@ interface UuidStringStore {
     public abstract void write(UUID key, String value) throws IOException;
     
     /**
-     * Gets an Iterable of UUID locations which contain captures.
-     * @return An Iterable of UUID locations which contain captures.
+     * Gets an Iterable of CaptureDescription descriptors for captures.
+     * @return A stream of CaptureDescription descriptors for captures.
      * @throws java.io.IOException If an exception occurs while reading from the
      * persistent store.
      */
-    public abstract Iterable<UUID> getCaptureLocations() throws IOException;
+    public abstract Stream<CaptureDescription> getCaptureLocations() throws IOException;
     
     /**
      * Adds a random UUID to the list of captures in the store then returns it.

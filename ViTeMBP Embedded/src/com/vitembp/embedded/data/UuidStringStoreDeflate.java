@@ -50,7 +50,7 @@ class UuidStringStoreDeflate implements UuidStringStore {
     }
 
     @Override
-    public Iterable<UUID> getCaptureLocations() throws IOException {
+    public Stream<CaptureDescription> getCaptureLocations() throws IOException {
         return this.store.getCaptureLocations();
     }
 

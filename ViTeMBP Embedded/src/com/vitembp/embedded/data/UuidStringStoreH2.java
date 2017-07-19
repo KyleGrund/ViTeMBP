@@ -27,7 +27,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,12 +46,7 @@ class UuidStringStoreH2 implements UuidStringStore {
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
-    
-    /**
-     * The locations in the store where a list of captures are stored.
-     */
-    private static final UUID CAPTURE_LOCATIONS = UUID.fromString("c05ccaec-fdb8-4723-9eb9-2afa756e7fae");
-    
+
     /**
      * The connection to the database.
      */
@@ -96,26 +91,44 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     @Override
-    public Iterable<UUID> getCaptureLocations() throws IOException {
-        return Arrays.asList(Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
-                .stream()
-                .map(UUID::fromString)
-                .toArray(UUID[]::new));
+    public Stream<CaptureDescription> getCaptureLocations() throws IOException {
+        try {
+            // get all ID entries from the DATA table in the database
+            ResultSet set = this.connection.createStatement().executeQuery("SELECT * FROM CAPTURES");
+            boolean hasElements = set.first();
+            
+            // generate a stream of the parsed UUIDs excluding CAPTURE_LOCATIONS
+            return StreamSupport.stream(((Iterable<CaptureDescription>)() -> new Iterator<CaptureDescription>() {
+                boolean hasNext = hasElements;
+                @Override
+                public boolean hasNext() {
+                    return hasNext;
+                }
+
+                @Override
+                public CaptureDescription next() {
+                    if (hasNext) {
+                        try {
+                            UUID system = UUID.fromString(set.getString("SYSTEM"));
+                            UUID location = UUID.fromString(set.getString("LOCATION"));
+                            Instant time = Instant.parse(set.getString("CREATEDTIME"));
+                            double frequency = set.getDouble("FREQUENCY");
+                            hasNext = set.next();
+                            return new CaptureDescription(location, system, time, frequency);
+                        } catch (SQLException ex) {
+                            LOGGER.error("Unexpected exception accessing captures table.", ex);
+                        }
+                    }
+                    return null;
+                }
+            }).spliterator(), false);
+        } catch (SQLException ex) {
+            throw new IOException("Could not retrieve keys from H2 store.", ex);
+        }
     }
     
     @Override
     public void addCapture(Capture toAdd, UUID locationID) throws IOException {       
-        // get the current list
-        String captures = this.read(CAPTURE_LOCATIONS);
-        
-        // if there are no captures just store the single UUID, otherwise
-        // append the list with a comma and then the UUID.
-        if (captures == null || "".equals(captures)) {
-            this.write(CAPTURE_LOCATIONS, locationID.toString());
-        } else {
-            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(locationID.toString()));
-        }
-        
         // add capture data: location, system, start, frequency to captures table
         StringBuilder query = new StringBuilder();
         query.append("MERGE INTO CAPTURES VALUES('");
@@ -229,7 +242,7 @@ class UuidStringStoreH2 implements UuidStringStore {
         this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
         // execute query to create the CAPTURES table which tracks the locations of captures in the data table
         // with the system that created them, the time they were created, and the frequency of the capture data
-        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM UUID, CREATEDTIME DATETIME, FREQUENCY DOUBLE)");
+        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM UUID, CREATEDTIME VARCHAR, FREQUENCY DOUBLE)");
     }
 
     @Override
@@ -260,7 +273,7 @@ class UuidStringStoreH2 implements UuidStringStore {
                     }
                     return null;
                 }
-            }).spliterator(), false).filter(id -> !id.equals(CAPTURE_LOCATIONS));
+            }).spliterator(), false);
         } catch (SQLException ex) {
             throw new IOException("Could not retrieve keys from H2 store.", ex);
         }

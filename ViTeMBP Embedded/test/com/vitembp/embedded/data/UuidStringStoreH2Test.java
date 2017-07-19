@@ -208,9 +208,7 @@ public class UuidStringStoreH2Test {
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
         instance.addCapture(usspc, id);
-        Iterable<UUID> result = instance.getCaptureLocations();
-        Stream<UUID> found = StreamSupport.stream(result.spliterator(), false);
-        assertTrue(found.anyMatch((uid) -> id.equals(uid)));
+        assertTrue(instance.getCaptureLocations().anyMatch((uid) -> id.equals(uid.getLocation())));
     }
 
     /**
@@ -237,9 +235,8 @@ public class UuidStringStoreH2Test {
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
         instance.addCapture(usspc, id);
-        Iterable<UUID> result = instance.getCaptureLocations();
         List<UUID> locations = new ArrayList<>();
-        result.forEach(locations::add);
+        instance.getCaptureLocations().map((d) -> d.getLocation()).forEach(locations::add);
         Map<UUID, String> hashes = instance.getHashes(locations);
         Stream<UUID> found = StreamSupport.stream(hashes.keySet().spliterator(), false);
         assertTrue(found.anyMatch((uid) -> id.equals(uid)));

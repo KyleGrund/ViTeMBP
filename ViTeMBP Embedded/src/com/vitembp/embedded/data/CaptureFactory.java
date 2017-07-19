@@ -82,7 +82,7 @@ public class CaptureFactory {
                 try {
                     UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
                     List<Capture> toReturn = new ArrayList<>();
-                    for (UUID id : h2Store.getCaptureLocations()) {
+                    for (UUID id : (Iterable<UUID>)h2Store.getCaptureLocations().map((c) -> c.getLocation())::iterator) {
                         toReturn.add(new UuidStringStorePagingCapture(new UuidStringLocation(h2Store, id)));
                     }
                     return toReturn;
@@ -93,7 +93,7 @@ public class CaptureFactory {
                 try {
                     UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
                     List<Capture> toReturn = new ArrayList<>();
-                    for (UUID id : ddbStore.getCaptureLocations()) {
+                    for (UUID id : (Iterable<UUID>)ddbStore.getCaptureLocations().map((c) -> c.getLocation())::iterator) {
                         toReturn.add(new UuidStringStorePagingCapture(new UuidStringLocation(ddbStore, id)));
                     }
                     return toReturn;

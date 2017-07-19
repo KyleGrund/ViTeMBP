@@ -17,7 +17,9 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +36,8 @@ class UuidStringStoreHashMap implements UuidStringStore {
      * The backing data store.
      */
     private final Map<UUID, String> store = new HashMap<>();
+    
+    private final List<CaptureDescription> captureList = new ArrayList<>();
     
     /**
      * The locations in the store where a list of captures are stored.
@@ -62,25 +66,17 @@ class UuidStringStoreHashMap implements UuidStringStore {
     }
     
     @Override
-    public Iterable<UUID> getCaptureLocations() throws IOException {
-        return Arrays.asList(Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
-                .stream()
-                .map(UUID::fromString)
-                .toArray(UUID[]::new));
+    public Stream<CaptureDescription> getCaptureLocations() throws IOException {
+        return this.captureList.stream();
     }
     
     @Override
     public void addCapture(Capture toAdd, UUID locationID) throws IOException {
-        // get the current list
-        String captures = this.read(CAPTURE_LOCATIONS);
-        
-        // if there are no captures just store the single UUID, otherwise
-        // append the list with a comma and then the UUID.
-        if (captures == null || "".equals(captures)) {
-            this.write(CAPTURE_LOCATIONS, locationID.toString());
-        } else {
-            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(locationID.toString()));
-        }
+        this.captureList.add(new CaptureDescription(
+                locationID,
+                SystemConfig.getConfig().getSystemUUID(),
+                toAdd.getCreatedTime(),
+                toAdd.getSampleFrequency()));
     }
     
     @Override

@@ -30,6 +30,7 @@ import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,11 +50,6 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
-     * The locations in the store where a list of captures are stored.
-     */
-    private static final UUID CAPTURE_LOCATIONS = UUID.fromString("b4522adf-5581-4e5a-a2e8-6ea94d25c0b3");
-    
-    /**
      * The connection to the database.
      */
     private final AmazonDynamoDB client;
@@ -68,26 +64,32 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     }
     
     @Override
-    public Iterable<UUID> getCaptureLocations() throws IOException {
-        return Arrays.asList(Arrays.asList(this.read(CAPTURE_LOCATIONS).split(","))
-                .stream()
-                .map(UUID::fromString)
-                .toArray(UUID[]::new));
+    public Stream<CaptureDescription> getCaptureLocations() throws IOException {
+        List<ScanResult> keys = new ArrayList<>();
+        List<String> params = Arrays.asList(new String[] { "LOCATION", "SYSTEM", "CREATEDTIME", "FREQUENCY" });
+        ScanResult res = this.client.scan("CAPTURES", params);
+        keys.add(res);
+        Map<String,AttributeValue> lastRes = res.getLastEvaluatedKey();
+        while (lastRes != null) {
+            ScanRequest sr = new ScanRequest();
+            sr.setTableName("CAPTURES");
+            sr.setAttributesToGet(params);
+            sr.setExclusiveStartKey(lastRes);
+            res = this.client.scan(sr);
+            keys.add(res);
+            lastRes = res.getLastEvaluatedKey();
+        }
+        // return results as stream of captures
+        return res.getItems().stream().map((item) -> 
+                new CaptureDescription(
+                        UUID.fromString(item.get("LOCATION").getS()),
+                        UUID.fromString(item.get("SYSTEM").getS()),
+                        Instant.parse(item.get("CREATEDTIME").getS()),
+                        Double.parseDouble(item.get("FREQUENCY").getS())));
     }
     
     @Override
     public void addCapture(Capture toAdd, UUID locationID) throws IOException { 
-        // get the current list of capture locations
-        String captures = this.read(CAPTURE_LOCATIONS);
-        
-        // if there are no captures just store the single UUID, otherwise
-        // append the list with a comma and then the UUID.
-        if (captures == null || "".equals(captures)) {
-            this.write(CAPTURE_LOCATIONS, locationID.toString());
-        } else {
-            this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(locationID.toString()));
-        }
-        
         // add capture data: location, system, start, frequency to captures table
         Map<String, AttributeValue> attrs = new HashMap<>();
         attrs.put("LOCATION", new AttributeValue(locationID.toString()));
