@@ -86,5 +86,13 @@ public class CaptureFactoryTest {
         List<Capture> loaded = new ArrayList<>();
         captures.forEach(loaded::add);
         assertTrue(loaded.size() > 0);
+        
+        type = CaptureTypes.AmazonDynamoDB;
+        result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+        result.save();
+        captures = CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB);
+        loaded = new ArrayList<>();
+        captures.forEach(loaded::add);
+        assertTrue(loaded.size() > 0);
     }
 }

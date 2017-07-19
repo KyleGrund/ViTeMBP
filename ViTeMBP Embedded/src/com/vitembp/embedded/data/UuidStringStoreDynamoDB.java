@@ -28,6 +28,7 @@ import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +86,21 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
             this.write(CAPTURE_LOCATIONS, locationID.toString());
         } else {
             this.write(CAPTURE_LOCATIONS, captures.concat(",").concat(locationID.toString()));
+        }
+        
+        // add capture data: location, system, start, frequency to captures table
+        Map<String, AttributeValue> attrs = new HashMap<>();
+        attrs.put("LOCATION", new AttributeValue(locationID.toString()));
+        attrs.put("SYSTEM", new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
+        attrs.put("CREATEDTIME", new AttributeValue(toAdd.getCreatedTime().toString()));
+        attrs.put("FREQUENCY", new AttributeValue(Double.toString(toAdd.getSampleFrequency())));
+        
+        try {
+            this.client.putItem("CAPTURES", attrs);
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error("The database does not contain the captures index table.", e);
+        } catch (AmazonServiceException e) {
+            LOGGER.error("Exception occurred writing to database.", e);
         }
     }
     

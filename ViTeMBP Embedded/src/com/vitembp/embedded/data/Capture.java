@@ -42,6 +42,11 @@ public abstract class Capture {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
+     * The time this capture was created.
+     */
+    private Instant createdTime = Instant.now();
+    
+    /**
      * The time of the first sample.
      */
     protected Instant startTime = null;
@@ -154,6 +159,14 @@ public abstract class Capture {
     }
     
     /**
+     * Gets the time this Capture was created.
+     * @return The time this Capture was created.
+     */
+    public Instant getCreatedTime() {
+        return this.createdTime;
+    }
+    
+    /**
      * Gets the Instant representing the time this capture was started.
      * @return An Instant representing the time this capture was started.
      */
@@ -193,6 +206,9 @@ public abstract class Capture {
         Map<String, UUID> sensors = this.getSensorTypes();
         
         toWriteTo.writeStartElement("capture");
+        toWriteTo.writeStartElement("createdtime");
+        toWriteTo.writeCharacters(this.createdTime.toString());
+        toWriteTo.writeEndElement();
         toWriteTo.writeStartElement("starttime");
         toWriteTo.writeCharacters(this.getStartTime().toString());
         toWriteTo.writeEndElement();
@@ -237,6 +253,13 @@ public abstract class Capture {
         
         // read into start time element
         toReadFrom.next();
+        try {
+            this.createdTime = Instant.parse(XMLStreams.readElement("createdtime", toReadFrom));
+        } catch (DateTimeParseException ex) {
+            LOGGER.error("Error parsing created time when loading Capture from XML.", ex);
+            throw new XMLStreamException("Error parsing created time when loading Capture from XML.", toReadFrom.getLocation(), ex);
+        }
+        
         try {
             this.startTime = Instant.parse(XMLStreams.readElement("starttime", toReadFrom));
         } catch (DateTimeParseException ex) {

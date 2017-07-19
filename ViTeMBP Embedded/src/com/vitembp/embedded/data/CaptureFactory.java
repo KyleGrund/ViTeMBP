@@ -74,7 +74,7 @@ public class CaptureFactory {
      * Gets an Iterable of Capture objects for the captures in the store.
      * @param type The type of capture to load captures from.
      * @return An Iterable of Capture objects for the captures in the store.
-     * @throws java.lang.InstantiationException
+     * @throws java.lang.InstantiationException If there is an error instantiating a capture.
      */
     public static Iterable<Capture> getCaptures(CaptureTypes type) throws InstantiationException {
         switch (type) { 
@@ -87,7 +87,18 @@ public class CaptureFactory {
                     }
                     return toReturn;
                 } catch (IOException ex) {
-                    throw new InstantiationException("Could not load database capture index. " + ex.getLocalizedMessage());
+                    throw new InstantiationException("Could not load H2 database capture index. " + ex.getLocalizedMessage());
+                }
+            case AmazonDynamoDB:
+                try {
+                    UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+                    List<Capture> toReturn = new ArrayList<>();
+                    for (UUID id : ddbStore.getCaptureLocations()) {
+                        toReturn.add(new UuidStringStorePagingCapture(new UuidStringLocation(ddbStore, id)));
+                    }
+                    return toReturn;
+                } catch (IOException ex) {
+                    throw new InstantiationException("Could not load DynamoDB database capture index. " + ex.getLocalizedMessage());
                 }
         }
         

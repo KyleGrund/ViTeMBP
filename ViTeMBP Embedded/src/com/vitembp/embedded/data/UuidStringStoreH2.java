@@ -123,7 +123,7 @@ class UuidStringStoreH2 implements UuidStringStore {
         query.append("', '");
         query.append(SystemConfig.getConfig().getSystemUUID().toString());
         query.append("', '");
-        query.append(toAdd.getStartTime().toString());
+        query.append(toAdd.getCreatedTime().toString());
         query.append("', '");
         query.append(Double.toString(toAdd.getSampleFrequency()));
         query.append("')");
@@ -229,7 +229,7 @@ class UuidStringStoreH2 implements UuidStringStore {
         this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DATA(ID UUID PRIMARY KEY, VALUE CLOB)");
         // execute query to create the CAPTURES table which tracks the locations of captures in the data table
         // with the system that created them, the time they were created, and the frequency of the capture data
-        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM UUID, STARTTIME DATETIME, FREQUENCY DOUBLE)");
+        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM UUID, CREATEDTIME DATETIME, FREQUENCY DOUBLE)");
     }
 
     @Override
