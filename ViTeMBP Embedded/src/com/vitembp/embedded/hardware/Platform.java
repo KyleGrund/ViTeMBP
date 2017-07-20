@@ -21,18 +21,11 @@ import com.vitembp.embedded.data.ConsumerIOException;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Consumer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Class providing an interface to the ViTeMBP hardware platform.
  */
 abstract class Platform {
-    /**
-     * Class logger instance.
-     */
-    private static final Logger LOGGER = LogManager.getLogger();
-    
     /**
      * Lock object for singleton creation critical section.
      */
@@ -62,22 +55,6 @@ abstract class Platform {
      * @return A Map of String sensor names to their control interface object.
      */
     public abstract Set<Sensor> getSensors();
-    
-    /**
-     * Gets a path object indicating the directory to read and write config
-     * files from.
-     * @return A path object indicating the directory to read and write config
-     * files from.
-     */
-    public abstract Path getConfigDirectory();
-    
-    /**
-     * Gets a path object indicating the directory to read and write log
-     * files from.
-     * @return A path object indicating the directory to read and write log
-     * files from.
-     */
-    public abstract Path getLogDirectory();
     
     /**
      * Gets the path to the default configuration file for the platform.

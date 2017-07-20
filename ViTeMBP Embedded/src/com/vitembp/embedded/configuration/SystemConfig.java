@@ -19,7 +19,7 @@ package com.vitembp.embedded.configuration;
 
 import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.data.XMLStreams;
-import com.vitembp.embedded.hardware.HardwareInterface;
+import com.vitembp.embedded.hardware.SystemInfo;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -120,7 +120,9 @@ public class SystemConfig {
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {
-        Path configFile = HardwareInterface.getInterface().getConfigDirectory().resolve(SystemConfig.CONFIG_FILE_PATH);
+        // build the system board specific configuration path
+        Path configFile = SystemInfo.getConfigDirectory().resolve(SystemConfig.CONFIG_FILE_PATH);
+        
         // try to load config from disk
         if (Files.exists(configFile)) {
             LOGGER.info("Found system config on filesystem.");

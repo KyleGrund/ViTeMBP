@@ -120,22 +120,6 @@ public class HardwareInterface {
     }
     
     /**
-     * Gets the directory where configuration files are saved.
-     * @return The directory where configuration files are saved.
-     */
-    public Path getConfigDirectory() {
-        return this.platform.getConfigDirectory();
-    }
-    
-    /**
-     * Gets the directory where logs are saved.
-     * @return The directory where logs are saved.
-     */
-    public Path getLogDirectory() {
-        return this.platform.getLogDirectory();
-    }
-    
-    /**
      * Initializes resources such as resolving sensor bindings for system
      * interface.
      */
