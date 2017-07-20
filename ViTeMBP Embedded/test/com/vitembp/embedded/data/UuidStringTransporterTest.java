@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import java.time.Instant;
 import java.util.Random;
 import java.util.UUID;
 import org.junit.After;
@@ -63,15 +64,32 @@ public class UuidStringTransporterTest {
             from.write(UUID.randomUUID(), Long.toString(generator.nextLong()));
         }
         
+        for (int i = 0; i < 100; i++) {
+            from.addCaptureDescription(new CaptureDescription(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    Instant.now(),
+                    30));
+        }
+        
         UuidStringTransporter instance = new UuidStringTransporter(from, to, true);
         instance.startSync();
         
-        while (from.getKeys().count() > 0) {
+        // wait until all data is transported or timeout period expires
+        long start = System.nanoTime();
+        long timeout = 300 * 1000000000l;
+        while (from.getKeys().count() > 0 || from.getCaptureLocations().count() > 0) {
             Thread.sleep(100);
+            if (System.nanoTime() - start > timeout) {
+                fail("Timed out waiting for sync.");
+            }
         }
         
         assertEquals(0l, from.getKeys().count());
         assertEquals(100l, to.getKeys().count());
+        
+        assertEquals(0l, from.getCaptureLocations().count());
+        assertEquals(100l, to.getCaptureLocations().count());
     }
     
 }

@@ -100,20 +100,24 @@ class UuidStringStoreHashMap implements UuidStringStore {
     @Override
     public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
         // filter matching captures, and then remove them
-        this.captureList.stream().filter((cap) -> {
-            return cap.getCreated().equals(toRemove.getCreated()) &&
+        for (CaptureDescription desc : this.captureList.stream()
+                .filter((cap) ->
+                    cap.getCreated().equals(toRemove.getCreated()) &&
                     Math.abs(cap.getFrequency() - toRemove.getFrequency()) < 0.01 &&
                     cap.getLocation().equals(toRemove.getLocation()) &&
-                    cap.getSystem().equals(toRemove.getSystem());
-        }).forEach((cap) -> captureList.remove(cap));
+                    cap.getSystem().equals(toRemove.getSystem()))
+                .toArray(CaptureDescription[]::new))
+        {
+            captureList.remove(desc);
+        }
     }
 
     @Override
     public CaptureDescription getCaptureDescription(UUID location) throws IOException {
-        // return the first description with a matching location
+        // return the first description with a matching location or null if none
         return this.captureList.stream()
                 .filter((cap) -> cap.getLocation().equals(location))
                 .findFirst()
-                .get();
+                .orElse(null);
     }
 }

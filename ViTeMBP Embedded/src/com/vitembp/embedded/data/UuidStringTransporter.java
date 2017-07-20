@@ -185,14 +185,14 @@ public class UuidStringTransporter {
      */
     private void syncCapturesTask() {
         try {
-            CaptureDescription[] toSend = (CaptureDescription[])this.from.getCaptureLocations().toArray();
+            CaptureDescription[] toSend = this.from.getCaptureLocations().toArray(CaptureDescription[]::new);
             for (CaptureDescription desc : toSend) {
                 CaptureDescription existingDesc = to.getCaptureDescription(desc.getLocation());
                 if (existingDesc == null ||
                         !existingDesc.getCreated().equals(desc.getCreated()) ||
                         !(Math.abs(existingDesc.getFrequency() - desc.getFrequency()) < 0.0001) ||
                         !existingDesc.getCreated().equals(desc.getCreated()) ||
-                        existingDesc.getCreated().equals(desc.getCreated())) {
+                        !existingDesc.getCreated().equals(desc.getCreated())) {
                     // was not in destination, or needs updated
                     this.to.addCaptureDescription(desc);
                     LOGGER.debug("Synced capture description: " + desc.getLocation().toString());
