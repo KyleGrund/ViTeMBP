@@ -55,17 +55,27 @@ interface UuidStringStore {
     
     /**
      * Adds a description of a capture in the store.
+     * @param toAdd The description to add.
      * @throws IOException If an exception occurs while adding the UUID to the
      * list of captures in the persistent store.
      */
-    public abstract void addCaptureDescription(Capture toAdd, UUID location) throws IOException;
+    public abstract void addCaptureDescription(CaptureDescription toAdd) throws IOException;
     
     /**
      * Removes a description of a capture in the store.
+     * @param toRemove The capture to remove.
      * @throws IOException If an exception occurs while removing the UUID to the
      * list of captures in the persistent store.
      */
     public abstract void removeCaptureDescription(CaptureDescription toRemove) throws IOException;
+    
+    /**
+     * Returns a boolean description of a capture in the store.
+     * @param location The capture to find.
+     * @throws IOException If an exception occurs while removing the UUID to the
+     * list of captures in the persistent store.
+     */
+    public abstract CaptureDescription getCaptureDescription(UUID location) throws IOException;
     
     /**
      * Deletes a value from the location specified by the key.

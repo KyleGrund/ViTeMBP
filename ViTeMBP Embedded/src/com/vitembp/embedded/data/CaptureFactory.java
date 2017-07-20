@@ -49,7 +49,7 @@ public class CaptureFactory {
                     UUID locationID = UUID.randomUUID();
                     UuidStringLocation location = new UuidStringLocation(h2Store, locationID);
                     Capture toReturn = new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
-                    h2Store.addCaptureDescription(toReturn, locationID);
+                    h2Store.addCaptureDescription(new CaptureDescription(toReturn, locationID));
                     return toReturn;
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
@@ -60,7 +60,7 @@ public class CaptureFactory {
                     UUID locationID = UUID.randomUUID();
                     UuidStringLocation location = new UuidStringLocation(ddbStore, locationID);
                     Capture toReturn = new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
-                    ddbStore.addCaptureDescription(toReturn, locationID);
+                    ddbStore.addCaptureDescription(new CaptureDescription(toReturn, locationID));
                     return toReturn;
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());

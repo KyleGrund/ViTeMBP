@@ -55,8 +55,13 @@ class UuidStringStoreDeflate implements UuidStringStore {
     }
 
     @Override
-    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException {
-        this.store.addCaptureDescription(toAdd, locationID);
+    public void addCaptureDescription(CaptureDescription toAdd) throws IOException {
+        this.store.addCaptureDescription(toAdd);
+    }
+    
+    @Override
+    public CaptureDescription getCaptureDescription(UUID location) throws IOException {
+        return this.store.getCaptureDescription(location);
     }
 
     @Override

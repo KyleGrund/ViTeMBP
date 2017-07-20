@@ -20,6 +20,8 @@ package com.vitembp.embedded.data;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
 import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
+import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -131,17 +134,17 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     @Override
-    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException {       
+    public void addCaptureDescription(CaptureDescription toAdd) throws IOException {       
         // add capture data: location, system, start, frequency to captures table
         StringBuilder query = new StringBuilder();
         query.append("MERGE INTO CAPTURES VALUES('");
-        query.append(locationID.toString());
+        query.append(toAdd.getLocation().toString());
         query.append("', '");
         query.append(SystemConfig.getConfig().getSystemUUID().toString());
         query.append("', '");
-        query.append(toAdd.getCreatedTime().toString());
+        query.append(toAdd.getCreated().toString());
         query.append("', '");
-        query.append(Double.toString(toAdd.getSampleFrequency()));
+        query.append(Double.toString(toAdd.getFrequency()));
         query.append("')");
 
         try {
@@ -155,6 +158,33 @@ class UuidStringStoreH2 implements UuidStringStore {
         } catch (SQLException ex) {
             LOGGER.error("Could not write to database.", ex);
             throw new IOException("Exception writing to H2 database.", ex);
+        }
+    }
+    
+    @Override
+    public CaptureDescription getCaptureDescription(UUID location) throws IOException {
+        // create query to get value for UUID key
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT * FROM CAPTURES WHERE LOCATION='");
+        query.append(location.toString());
+        query.append("'");
+        
+        try {
+            // execute query and return the results
+            ResultSet results = this.connection.createStatement().executeQuery(query.toString());
+            // if next returns false there are no valid rows, return null
+            if (!results.next()) {
+                return null;
+            }
+            
+            UUID system = UUID.fromString(results.getString("SYSTEM"));
+            Instant created = Instant.parse(results.getString("CREATEDTIME"));
+            double frequency = results.getDouble("FREQUENCY");
+            
+            return new CaptureDescription(location, system, created, frequency);
+        } catch (SQLException ex) {
+            LOGGER.error("Could not read from database.", ex);
+            throw new IOException("Exception reading from H2 database.", ex);
         }
     }
     

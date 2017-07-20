@@ -116,52 +116,15 @@ public class UuidStringTransporter {
      * The method which executes the synchronization task.
      */
     private void syncTask() {
-        // look until this flag tells us to stop
+        // loop until this flag tells us to stop
         while (this.isRunning) {
             try {
-                try {
-                    // get batches of UUIDs to transport
-                    List<List<UUID>> batches = this.from.getKeys().collect(
-                            ArrayList::new,
-                            (List<List<UUID>> list, UUID toAdd) -> {
-                                List<UUID> last;
-                                while (list.isEmpty() || (last = list.get(list.size() - 1)).size() >= HASH_BATCH_SIZE) {
-                                    list.add(new ArrayList<>());
-                                }
-                                last.add(toAdd);
-                            },
-                            (a,b) -> a.addAll(b));
-
-                    // for each batch of UUIDs to process
-                    for (List<UUID> batch : batches) {
-                        // get their hashes
-                        Map<UUID, String> fromHashes = from.getHashes(batch);
-                        Map<UUID, String> toHashes = to.getHashes(batch);
-
-                        // for each key in this batch
-                        for (UUID key : batch) {
-                            if (!fromHashes.get(key).equals(toHashes.get(key))) {
-                                // the hashes don't match so copy the entry between
-                                // the stores
-                                to.write(key, from.read(key));
-                                LOGGER.debug("Synced key: " + key.toString());
-                            } else if (this.deleteAfterTransfer) {
-                                // the hashes match so delete if set to do so by the
-                                // deleteAfterTransfer parameter.
-                                from.delete(key);
-                                LOGGER.debug("Deleted key: " + key.toString());
-                            }
-                        }
-                    }
-
-                    Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
-
-                } catch (IOException ex) {
-                    LOGGER.error("Failed to access keys in store.", ex);
-                } catch (Exception ex) {
-                    LOGGER.error("Unexpected exception in synchronization thread.", ex);
-                    Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
-                }
+                // run the sync tasks for descriptor and data tables
+                this.syncCapturesTask();
+                this.syncDataTask();
+                
+                // do not tightly loop synchronization cycles
+                Thread.sleep(UuidStringTransporter.IO_FAIL_BACKOFF_TIME);
             } catch (InterruptedException ex) {
                 LOGGER.error("UuidStringTransporter thread interrupted.", ex);
                 // this exception indicates the thread holder wants the thread
@@ -171,5 +134,78 @@ public class UuidStringTransporter {
         }
         
         LOGGER.info("UuidStringTransporter thread exiting.");
+    }
+    /**
+     * The method which executes the synchronization task.
+     */
+    private void syncDataTask() {
+        try {
+            // get batches of UUIDs to transport
+            List<List<UUID>> batches = this.from.getKeys().collect(
+                    ArrayList::new,
+                    (List<List<UUID>> list, UUID toAdd) -> {
+                        List<UUID> last;
+                        while (list.isEmpty() || (last = list.get(list.size() - 1)).size() >= HASH_BATCH_SIZE) {
+                            list.add(new ArrayList<>());
+                        }
+                        last.add(toAdd);
+                    },
+                    (a,b) -> a.addAll(b));
+
+            // for each batch of UUIDs to process
+            for (List<UUID> batch : batches) {
+                // get their hashes
+                Map<UUID, String> fromHashes = from.getHashes(batch);
+                Map<UUID, String> toHashes = to.getHashes(batch);
+
+                // for each key in this batch
+                for (UUID key : batch) {
+                    if (!fromHashes.get(key).equals(toHashes.get(key))) {
+                        // the hashes don't match so copy the entry between
+                        // the stores
+                        to.write(key, from.read(key));
+                        LOGGER.debug("Synced key: " + key.toString());
+                    } else if (this.deleteAfterTransfer) {
+                        // the hashes match so delete if set to do so by the
+                        // deleteAfterTransfer parameter.
+                        from.delete(key);
+                        LOGGER.debug("Deleted key: " + key.toString());
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.error("Failed to access keys in store.", ex);
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected exception in synchronization thread.", ex);
+        }
+    }
+    
+    /**
+     * The method which executes the synchronization task.
+     */
+    private void syncCapturesTask() {
+        try {
+            CaptureDescription[] toSend = (CaptureDescription[])this.from.getCaptureLocations().toArray();
+            for (CaptureDescription desc : toSend) {
+                CaptureDescription existingDesc = to.getCaptureDescription(desc.getLocation());
+                if (existingDesc == null ||
+                        !existingDesc.getCreated().equals(desc.getCreated()) ||
+                        !(Math.abs(existingDesc.getFrequency() - desc.getFrequency()) < 0.0001) ||
+                        !existingDesc.getCreated().equals(desc.getCreated()) ||
+                        existingDesc.getCreated().equals(desc.getCreated())) {
+                    // was not in destination, or needs updated
+                    this.to.addCaptureDescription(desc);
+                    LOGGER.debug("Synced capture description: " + desc.getLocation().toString());
+                } else if (this.deleteAfterTransfer) {
+                    // was in destination, and set to delete after transfer
+                    this.from.removeCaptureDescription(desc);
+                    LOGGER.debug("Deleted capture description: " + desc.getLocation().toString());
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.error("Failed to access keys in store.", ex);
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected exception in synchronization thread.", ex);
+        }
     }
 }

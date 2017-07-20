@@ -89,13 +89,13 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     }
     
     @Override
-    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException { 
+    public void addCaptureDescription(CaptureDescription toAdd) throws IOException { 
         // add capture data: location, system, start, frequency to captures table
         Map<String, AttributeValue> attrs = new HashMap<>();
-        attrs.put("LOCATION", new AttributeValue(locationID.toString()));
+        attrs.put("LOCATION", new AttributeValue(toAdd.getLocation().toString()));
         attrs.put("SYSTEM", new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
-        attrs.put("CREATEDTIME", new AttributeValue(toAdd.getCreatedTime().toString()));
-        attrs.put("FREQUENCY", new AttributeValue(Double.toString(toAdd.getSampleFrequency())));
+        attrs.put("CREATEDTIME", new AttributeValue(toAdd.getCreated().toString()));
+        attrs.put("FREQUENCY", new AttributeValue(Double.toString(toAdd.getFrequency())));
         
         try {
             this.client.putItem("CAPTURES", attrs);
@@ -103,6 +103,33 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
             LOGGER.error("The database does not contain the captures index table.", e);
         } catch (AmazonServiceException e) {
             LOGGER.error("Exception occurred writing to database.", e);
+        }
+    }
+    
+    @Override
+    public CaptureDescription getCaptureDescription(UUID location) throws IOException {
+        Map<String, AttributeValue> reqkey = new HashMap<>();
+        reqkey.put("LOCATION", new AttributeValue().withS(location.toString()));
+        List<String> params = Arrays.asList(new String[] { "SYSTEM", "CREATEDTIME", "FREQUENCY" });
+        
+        GetItemRequest request = new GetItemRequest()
+                .withTableName("CAPTURES")
+                .withKey(reqkey)
+                .withAttributesToGet(params);
+        
+        GetItemResult result = client.getItem(request);
+        if (result != null && result.getItem() != null) {
+            UUID system = UUID.fromString(result.getItem().get("SYSTEM").getS());
+            Instant time = Instant.parse(result.getItem().get("CREATEDTIME").getS());
+            double frequency = Double.parseDouble(result.getItem().get("FREQUENCY").getS());
+            return new CaptureDescription(
+                    location,
+                    system,
+                    time,
+                    frequency);
+        } else {
+            // no items returned, so return null
+            return null;
         }
     }
     
@@ -187,7 +214,6 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
         Map<String, AttributeValue> attrs = new HashMap<>();
         attrs.put("LOCATION", new AttributeValue(toRemove.getLocation().toString()));
-        attrs.put("SYSTEM", new AttributeValue(toRemove.getSystem().toString()));
         DeleteItemRequest request = new DeleteItemRequest().withTableName("CAPTURES").withKey(attrs);
         DeleteItemResult result = client.deleteItem(request);
     }

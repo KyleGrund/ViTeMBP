@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -56,6 +57,18 @@ public class CaptureDescription {
         this.system = system;
         this.created = created;
         this.frequency = frequency;
+    }
+    
+    /**
+     * Initializes a new instance of the CaptureDescription class.
+     * @param capture The capture to create a description for.
+     * @param location The location of the capture data in the data store table.
+     */
+    public CaptureDescription(Capture capture, UUID location){
+        this.location = location;
+        this.system = SystemConfig.getConfig().getSystemUUID();
+        this.created = capture.getCreatedTime();
+        this.frequency = capture.getSampleFrequency();
     }
     
     /**

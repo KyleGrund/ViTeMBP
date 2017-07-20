@@ -261,7 +261,7 @@ public class UuidStringStoreDynamoDBTest {
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
-        instance.addCaptureDescription(toAdd, locationID);
+        instance.addCaptureDescription(new CaptureDescription(toAdd, locationID));
         Stream<CaptureDescription> result = instance.getCaptureLocations();
         assertTrue(result.anyMatch((cap) -> cap.getLocation().equals(locationID)));
         
@@ -283,7 +283,7 @@ public class UuidStringStoreDynamoDBTest {
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
-        instance.addCaptureDescription(toAdd, locationID);
+        instance.addCaptureDescription(new CaptureDescription(toAdd, locationID));
         
         // make sure it was added
         Stream<CaptureDescription> result = instance.getCaptureLocations();
@@ -298,5 +298,32 @@ public class UuidStringStoreDynamoDBTest {
         
         // ensure it was removed
         assertFalse(instance.getCaptureLocations().anyMatch((cap) -> cap.getLocation().equals(locationID)));
+    }
+    
+    /**
+     * Test of getCaptureDescription method, of class UuidStringStoreDynamoDB.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetCaptureDescription() throws Exception {
+        System.out.println("getCaptureDescription DynamoDB");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
+        UUID locationID = UUID.randomUUID();
+        Double freq = new Random().nextDouble();
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Capture toAdd = new UuidStringStoreCapture(
+                freq,
+                new UuidStringLocation(instance, locationID),
+                names);
+        
+        // make sure description is not present
+        CaptureDescription desc = instance.getCaptureDescription(locationID);
+        assertNull(desc);
+        
+        // add the capture and verify
+        instance.addCaptureDescription(new CaptureDescription(toAdd, locationID));
+        desc = instance.getCaptureDescription(locationID);
+        assertNotNull(desc);
     }
 }

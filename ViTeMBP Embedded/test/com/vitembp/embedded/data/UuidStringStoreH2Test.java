@@ -207,7 +207,7 @@ public class UuidStringStoreH2Test {
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
-        instance.addCaptureDescription(usspc, id);
+        instance.addCaptureDescription(new CaptureDescription(usspc, id));
         assertTrue(instance.getCaptureLocations().anyMatch((uid) -> id.equals(uid.getLocation())));
     }
 
@@ -221,7 +221,7 @@ public class UuidStringStoreH2Test {
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
-        instance.addCaptureDescription(usspc, id);
+        instance.addCaptureDescription(new CaptureDescription(usspc, id));
     }
 
     /**
@@ -234,7 +234,7 @@ public class UuidStringStoreH2Test {
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
         UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
-        instance.addCaptureDescription(usspc, id);
+        instance.addCaptureDescription(new CaptureDescription(usspc, id));
         List<UUID> locations = new ArrayList<>();
         instance.getCaptureLocations().map((d) -> d.getLocation()).forEach(locations::add);
         Map<UUID, String> hashes = instance.getHashes(locations);
@@ -257,10 +257,9 @@ public class UuidStringStoreH2Test {
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
-        instance.addCaptureDescription(toAdd, locationID);
+        instance.addCaptureDescription(new CaptureDescription(toAdd, locationID));
         Stream<CaptureDescription> result = instance.getCaptureLocations();
         assertTrue(result.anyMatch((cap) -> cap.getLocation().equals(locationID)));
-        
     }
 
     /**
@@ -279,7 +278,7 @@ public class UuidStringStoreH2Test {
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
-        instance.addCaptureDescription(toAdd, locationID);
+        instance.addCaptureDescription(new CaptureDescription(toAdd, locationID));
         
         // make sure it was added
         Stream<CaptureDescription> result = instance.getCaptureLocations();
@@ -294,5 +293,32 @@ public class UuidStringStoreH2Test {
         
         // ensure it was removed
         assertFalse(instance.getCaptureLocations().anyMatch((cap) -> cap.getLocation().equals(locationID)));
+    }
+
+    /**
+     * Test of getCaptureDescription method, of class UuidStringStoreH2.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetCaptureDescription() throws Exception {
+        System.out.println("getCaptureDescription H2");
+        UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
+        UUID locationID = UUID.randomUUID();
+        Double freq = new Random().nextDouble();
+        Map<String, UUID> names = new HashMap<>();
+        names.put("Sensor 1", UUID.randomUUID());
+        Capture toAdd = new UuidStringStoreCapture(
+                freq,
+                new UuidStringLocation(instance, locationID),
+                names);
+        
+        // make sure description is not present
+        CaptureDescription desc = instance.getCaptureDescription(locationID);
+        assertNull(desc);
+        
+        // add the capture and verify
+        instance.addCaptureDescription(new CaptureDescription(toAdd, locationID));
+        desc = instance.getCaptureDescription(locationID);
+        assertNotNull(desc);
     }
 }

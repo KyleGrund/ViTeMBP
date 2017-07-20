@@ -70,12 +70,8 @@ class UuidStringStoreHashMap implements UuidStringStore {
     }
     
     @Override
-    public void addCaptureDescription(Capture toAdd, UUID locationID) throws IOException {
-        this.captureList.add(new CaptureDescription(
-                locationID,
-                SystemConfig.getConfig().getSystemUUID(),
-                toAdd.getCreatedTime(),
-                toAdd.getSampleFrequency()));
+    public void addCaptureDescription(CaptureDescription toAdd) throws IOException {
+        this.captureList.add(toAdd);
     }
     
     @Override
@@ -110,5 +106,14 @@ class UuidStringStoreHashMap implements UuidStringStore {
                     cap.getLocation().equals(toRemove.getLocation()) &&
                     cap.getSystem().equals(toRemove.getSystem());
         }).forEach((cap) -> captureList.remove(cap));
+    }
+
+    @Override
+    public CaptureDescription getCaptureDescription(UUID location) throws IOException {
+        // return the first description with a matching location
+        return this.captureList.stream()
+                .filter((cap) -> cap.getLocation().equals(location))
+                .findFirst()
+                .get();
     }
 }
