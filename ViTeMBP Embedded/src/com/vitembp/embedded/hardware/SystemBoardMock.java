@@ -17,6 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,6 +35,16 @@ class SystemBoardMock extends SystemBoard {
     @Override
     public Set<GPIOPort> getGPIOPorts() {
         return new HashSet<>();
+    }
+
+    @Override
+    public Path getConfigDirectory() {
+        return Paths.get("");
+    }
+
+    @Override
+    public Path getLogDirectory() {
+        return Paths.get("");
     }
     
 }

@@ -48,6 +48,16 @@ class PlatformFunctor extends Platform {
     private final Supplier<Path> getDefaultConfigPath;
     
     /**
+     * A supplier of a Path to the configuration directory.
+     */
+    private final Supplier<Path> getConfigDirPath;
+    
+    /**
+     * A supplier of a Path to the log directory.
+     */
+    private final Supplier<Path> getLogDirPath;
+    
+    /**
      * Initializes a new instance of the PlatformFunctor class.
      * @param setSyncLightTarget Callback that controls the synchronization light.
      * @param getSensorsTarget Callback that provides a list of sensors.
@@ -57,11 +67,15 @@ class PlatformFunctor extends Platform {
             ConsumerIOException<Boolean> setSyncLightTarget,
             Consumer<Consumer<Character>> setKeypadCallback,
             Supplier<Set<Sensor>> getSensorsTarget,
-            Supplier<Path> getDefaultConfigPath) {
+            Supplier<Path> getDefaultConfigPath,
+            Supplier<Path> getConfigDirPath,
+            Supplier<Path> getLogDirPath) {
         this.setSyncLightTarget = setSyncLightTarget;
         this.setKeypadCallback = setKeypadCallback;
         this.getSensorsTarget = getSensorsTarget;
         this.getDefaultConfigPath = getDefaultConfigPath;
+        this.getConfigDirPath = getConfigDirPath;
+        this.getLogDirPath = getLogDirPath;
     }
     
     @Override
@@ -82,5 +96,15 @@ class PlatformFunctor extends Platform {
     @Override
     Path getDefaultConfigPath() {
         return this.getDefaultConfigPath.get();
+    }
+
+    @Override
+    public Path getConfigDirectory() {
+        return this.getConfigDirPath.get();
+    }
+
+    @Override
+    public Path getLogDirectory() {
+        return this.getLogDirPath.get();
     }
 }

@@ -64,6 +64,22 @@ abstract class Platform {
     public abstract Set<Sensor> getSensors();
     
     /**
+     * Gets a path object indicating the directory to read and write config
+     * files from.
+     * @return A path object indicating the directory to read and write config
+     * files from.
+     */
+    public abstract Path getConfigDirectory();
+    
+    /**
+     * Gets a path object indicating the directory to read and write log
+     * files from.
+     * @return A path object indicating the directory to read and write log
+     * files from.
+     */
+    public abstract Path getLogDirectory();
+    
+    /**
      * Gets the path to the default configuration file for the platform.
      */
     abstract Path getDefaultConfigPath();

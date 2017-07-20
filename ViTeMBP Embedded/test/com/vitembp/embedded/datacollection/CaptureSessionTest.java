@@ -83,7 +83,7 @@ public class CaptureSessionTest {
         
         // we should have taken 30 samples
         int count = 0;
-        for (Sample sam : capturedData.getSamples()) {
+        for (Sample sam : capturedData.getSamples().toArray(Sample[]::new)) {
             count ++;
         }
         Assert.assertEquals(30, count);

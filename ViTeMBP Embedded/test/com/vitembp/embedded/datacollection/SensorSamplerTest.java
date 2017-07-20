@@ -18,9 +18,7 @@
 package com.vitembp.embedded.datacollection;
 
 import com.vitembp.embedded.hardware.AccelerometerMock;
-import com.vitembp.embedded.hardware.HardwareInterface;
 import com.vitembp.embedded.hardware.Sensor;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;

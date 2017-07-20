@@ -88,7 +88,9 @@ class PlatformFactory {
                     toReturn.add(new AccelerometerMock("Accelerometer"));
                     return toReturn;
                 },
-                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"));
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"),
+                () -> Paths.get("config/"),
+                () -> Paths.get("logs/"));
     }
     
     /**
@@ -172,6 +174,8 @@ class PlatformFactory {
                     
                     return toReturn;
                 },
-                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
+                () -> Paths.get("/home/udooer/config/"),
+                () -> Paths.get("/home/udooer/logs/"));
     }
 }

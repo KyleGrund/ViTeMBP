@@ -19,6 +19,7 @@ package com.vitembp.embedded.configuration;
 
 import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.data.XMLStreams;
+import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -118,12 +119,13 @@ public class SystemConfig {
     /**
      * Initializes a new instance of the SystemConfig class.
      */
-    private SystemConfig() {       
+    private SystemConfig() {
+        Path configFile = HardwareInterface.getInterface().getConfigDirectory().resolve(SystemConfig.CONFIG_FILE_PATH);
         // try to load config from disk
-        if (Files.exists(SystemConfig.CONFIG_FILE_PATH)) {
+        if (Files.exists(configFile)) {
             LOGGER.info("Found system config on filesystem.");
             try {
-                loadConfigFromPath(SystemConfig.CONFIG_FILE_PATH);
+                loadConfigFromPath(configFile);
                 this.loadedConfigFromFile = true;
             } catch (IOException | XMLStreamException ex) {
                 LOGGER.error("Exception loading system config from file.", ex);

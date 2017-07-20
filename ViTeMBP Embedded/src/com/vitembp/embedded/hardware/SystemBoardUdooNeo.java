@@ -18,6 +18,7 @@
 package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
@@ -56,5 +57,15 @@ class SystemBoardUdooNeo extends SystemBoard{
     @Override
     public Set<GPIOPort> getGPIOPorts() {
         return this.gpioPorts;
+    }
+
+    @Override
+    public Path getConfigDirectory() {
+        return Paths.get("/home/udooer/config");
+    }
+
+    @Override
+    public Path getLogDirectory() {
+        return Paths.get("/home/udooer/logs");
     }
 }

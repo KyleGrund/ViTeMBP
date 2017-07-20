@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -89,7 +90,7 @@ public abstract class Capture {
      * data samples taken by the system.
      * @return The time ordered data samples taken by the system.
      */
-    public abstract Iterable<Sample> getSamples();
+    public abstract Stream<Sample> getSamples();
     
     /**
      * Adds a new sample to the sample set.

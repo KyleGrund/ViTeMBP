@@ -20,6 +20,7 @@ package com.vitembp.embedded.hardware;
 import com.vitembp.embedded.data.ConsumerIOException;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,22 @@ public class HardwareInterface {
      */
     public char getKeyPress() throws InterruptedException {
         return this.keyPresses.take();
+    }
+    
+    /**
+     * Gets the directory where configuration files are saved.
+     * @return The directory where configuration files are saved.
+     */
+    public Path getConfigDirectory() {
+        return this.platform.getConfigDirectory();
+    }
+    
+    /**
+     * Gets the directory where logs are saved.
+     * @return The directory where logs are saved.
+     */
+    public Path getLogDirectory() {
+        return this.platform.getLogDirectory();
     }
     
     /**

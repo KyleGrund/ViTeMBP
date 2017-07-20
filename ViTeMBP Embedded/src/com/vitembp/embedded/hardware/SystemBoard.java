@@ -57,6 +57,22 @@ abstract class SystemBoard {
     public abstract Set<GPIOPort> getGPIOPorts();
     
     /**
+     * Gets a path object indicating the directory to read and write config
+     * files from.
+     * @return A path object indicating the directory to read and write config
+     * files from.
+     */
+    public abstract Path getConfigDirectory();
+    
+    /**
+     * Gets a path object indicating the directory to read and write log
+     * files from.
+     * @return A path object indicating the directory to read and write log
+     * files from.
+     */
+    public abstract Path getLogDirectory();
+    
+    /**
      * Detects the current board the system is operating on and creates the
      * appropriate singleton instance.
      * @return The board instance for the system that the program is currently

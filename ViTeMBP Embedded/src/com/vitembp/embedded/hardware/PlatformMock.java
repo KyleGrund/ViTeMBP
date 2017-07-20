@@ -62,4 +62,14 @@ class PlatformMock extends Platform{
     Path getDefaultConfigPath() {
         return Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml");
     }
+
+    @Override
+    public Path getConfigDirectory() {
+        return Paths.get("config/");
+    }
+
+    @Override
+    public Path getLogDirectory() {
+        return Paths.get("logs/");
+    }
 }

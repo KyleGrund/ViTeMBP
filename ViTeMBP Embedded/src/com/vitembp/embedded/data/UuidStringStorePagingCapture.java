@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -105,10 +106,10 @@ class UuidStringStorePagingCapture extends Capture {
     }
     
     @Override
-    public Iterable<Sample> getSamples() {
+    public Stream<Sample> getSamples() {
         // if manager is null, return an empty iterable
         if (this.manager == null) {
-            return new ArrayList<>();
+            return new ArrayList<Sample>().stream();
         }
         
         // otherwise get it from the manager

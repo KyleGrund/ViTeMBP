@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -88,8 +90,8 @@ class UuidStringStoreCapture extends Capture {
     }
     
     @Override
-    public Iterable<Sample> getSamples() {
-        return Collections.unmodifiableList(this.samples);
+    public Stream<Sample> getSamples() {
+        return StreamSupport.stream(Collections.unmodifiableList(this.samples).spliterator(), false);
     }
 
     @Override
@@ -152,7 +154,7 @@ class UuidStringStoreCapture extends Capture {
 
     @Override
     protected void writeSamplesTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
-        for (Sample sample : this.getSamples()) {
+        for (Sample sample : this.getSamples().toArray(Sample[]::new)) {
             sample.writeTo(toWriteTo);
         }
     }

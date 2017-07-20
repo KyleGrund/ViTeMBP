@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -137,8 +139,8 @@ class SamplePageManager {
      * Gets an iterator for the samples in this set.
      * @return 
      */
-    Iterable<Sample> getSamples() {
-        return () -> new Iterator<Sample>() {
+    Stream<Sample> getSamples() {
+        return StreamSupport.stream(((Iterable<Sample>)() -> new Iterator<Sample>() {
             SamplePage currentPage = firstPage;
             SamplePage finalPage = lastPage;
             int finalPageIndex = (pageCount - 1) * pageSize;
@@ -172,7 +174,7 @@ class SamplePageManager {
                 // return the current item
                 return toReturn;
             }
-        };
+        }).spliterator(), false);
     }
     
     /**
