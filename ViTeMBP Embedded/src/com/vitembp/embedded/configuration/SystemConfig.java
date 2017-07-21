@@ -275,14 +275,17 @@ public class SystemConfig {
         this.readFrom(xmlReader);
     }
     
-    /**
+    /**19
      * Saves the configuration to a file.
      * @param configFile The file to save to.
      */
     private void saveConfigToPath(Path configFile) throws IOException, XMLStreamException {
-        // if the directory doesn't exits try create it or the writer can't be made
-        if (Files.isDirectory(configFile.getParent()) && !Files.exists(configFile.getParent())) {
-            Files.createDirectory(configFile.getParent());
+        Path configDir = configFile.getParent();
+        LOGGER.info("Saving configuration to: " + configFile.getFileName() + " in directory: " + configDir);
+        // if the directory doesn't exits try create it or the writer can't be made        
+        if (Files.isDirectory(configDir) && !Files.exists(configDir)) {
+            LOGGER.info("Config path not found, creating: " + configDir.toString());
+            Files.createDirectory(configDir);
         }
         
         // create a buffered writer to output the file to
