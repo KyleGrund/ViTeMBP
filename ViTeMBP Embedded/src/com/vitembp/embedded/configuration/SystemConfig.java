@@ -30,6 +30,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -275,15 +276,15 @@ public class SystemConfig {
         this.readFrom(xmlReader);
     }
     
-    /**19
+    /**
      * Saves the configuration to a file.
      * @param configFile The file to save to.
      */
     private void saveConfigToPath(Path configFile) throws IOException, XMLStreamException {
         Path configDir = configFile.getParent();
-        LOGGER.info("Saving configuration to: " + configFile.getFileName() + " in directory: " + configDir);
+        LOGGER.info("Saving configuration to: " + configFile);
         // if the directory doesn't exits try create it or the writer can't be made        
-        if (Files.isDirectory(configDir) && !Files.exists(configDir)) {
+        if (!Files.isDirectory(configDir)) {
             LOGGER.info("Config path not found, creating: " + configDir.toString());
             Files.createDirectory(configDir);
         }
