@@ -70,6 +70,11 @@ public class SystemConfig {
     private static final SystemConfig SINGLETON = new SystemConfig();
     
     /**
+     * The path to the configuration file.
+     */
+    private final Path configFile;
+    
+    /**
      * The sampling frequency to use when polling data from the sensors.
      */
     private double samplingFrequency = 29.97;
@@ -121,13 +126,13 @@ public class SystemConfig {
      */
     private SystemConfig() {
         // build the system board specific configuration path
-        Path configFile = SystemInfo.getConfigDirectory().resolve(SystemConfig.CONFIG_FILE_PATH);
+        this.configFile = SystemInfo.getConfigDirectory().resolve(SystemConfig.CONFIG_FILE_PATH);
         
         // try to load config from disk
-        if (Files.exists(configFile)) {
+        if (Files.exists(this.configFile)) {
             LOGGER.info("Found system config on filesystem.");
             try {
-                loadConfigFromPath(configFile);
+                loadConfigFromPath(this.configFile);
                 this.loadedConfigFromFile = true;
             } catch (IOException | XMLStreamException ex) {
                 LOGGER.error("Exception loading system config from file.", ex);
@@ -275,6 +280,11 @@ public class SystemConfig {
      * @param configFile The file to save to.
      */
     private void saveConfigToPath(Path configFile) throws IOException, XMLStreamException {
+        // if the directory doesn't exits try create it or the writer can't be made
+        if (Files.isDirectory(configFile.getParent()) && !Files.exists(configFile.getParent())) {
+            Files.createDirectory(configFile.getParent());
+        }
+        
         // create a buffered writer to output the file to
         try (BufferedWriter writer = Files.newBufferedWriter(configFile)) {
             // create a stream to write config to
@@ -315,9 +325,10 @@ public class SystemConfig {
         
         try {
             // save the configuraiton
-            this.saveConfigToPath(SystemConfig.CONFIG_FILE_PATH);
+            this.saveConfigToPath(this.configFile);
+            LOGGER.info("Saved default ocnfiguration to: " + this.configFile.toString());
         } catch (XMLStreamException ex) {
-            throw new IOException("Exception writing default configuration to: " + SystemConfig.CONFIG_FILE_PATH.toString(), ex);
+            throw new IOException("Exception writing default configuration to: " + this.configFile.toString(), ex);
         }
         
         this.loadedConfigFromFile = true;
