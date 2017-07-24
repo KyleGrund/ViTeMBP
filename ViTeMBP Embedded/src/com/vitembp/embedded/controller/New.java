@@ -35,33 +35,33 @@ class New implements ControllerState {
     
     @Override
     public Class execute(ExecutionContext state) {
+        SystemConfig config = state.getConfig();
+        
         // initialize all sensors
         HardwareInterface.getInterface().getSensors().forEach((name, sensor) -> {
-            SystemConfig config = state.getConfig();
-            
             if (sensor != null) {
                 LOGGER.debug("Initializing sensor \"" + name + "\".");
                 sensor.initialize();
             } else {
                 LOGGER.error("Configured sensor: \"" + name + "\" not bound to hardware.");
             }
-            
-            // initialize database synchronization
-            if (config.getUploadToCloud()) {
-                try {
-                    boolean deleteOnUpload = config.getDeleteOnUploadToCloud();
-                    
-                    // build the uploading transport using the DynamoDB as the target
-                    // as this is the cloud destination
-                    UuidStringTransporter transport = UuidStringTransporterFactory.build(config.getCaptureType(), CaptureTypes.AmazonDynamoDB, deleteOnUpload);
-                    
-                    // start the synchronization thread
-                    transport.startSync();
-                } catch (InstantiationException ex) {
-                    LOGGER.error("Could not start the cloud upload services.", ex);
-                }
-            }
         });
+        
+        // initialize database synchronization
+        if (config.getUploadToCloud()) {
+            try {
+                boolean deleteOnUpload = config.getDeleteOnUploadToCloud();
+
+                // build the uploading transport using the DynamoDB as the target
+                // as this is the cloud destination
+                UuidStringTransporter transport = UuidStringTransporterFactory.build(config.getCaptureType(), CaptureTypes.AmazonDynamoDB, deleteOnUpload);
+
+                // start the synchronization thread
+                transport.startSync();
+            } catch (InstantiationException ex) {
+                LOGGER.error("Could not start the cloud upload services.", ex);
+            }
+        }
         
         return WaitForStart.class;
     }

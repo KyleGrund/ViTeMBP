@@ -19,8 +19,6 @@ package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -47,7 +45,11 @@ public class DistanceVL53L0X extends Sensor {
      */
     private final SerialBus bus;
     
-    public DistanceVL53L0X(SerialBus bus) {
+    /**
+     * Initializes a new instance of the DistanceVL53L0X class.
+     * @param bus The bus this sensor is connected to.
+     */
+    DistanceVL53L0X(SerialBus bus) {
         this.bus = bus;
     }
 
