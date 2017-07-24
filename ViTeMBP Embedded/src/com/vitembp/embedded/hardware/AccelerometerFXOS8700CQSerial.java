@@ -70,19 +70,16 @@ class AccelerometerFXOS8700CQSerial extends Sensor {
         byte[] result;
         try {
             this.bus.writeBytes(new byte[] { (byte)'r' });
-            result = this.bus.readBytes(6);
-        } catch (IOException ex) {
-            LOGGER.error("Error reading from accelerometer.", ex);
-            return "";
-        }
+            //result = this.bus.readBytes(6);
+        
         
         // parse out bytes to their individual axis values
-        int xh = result[0];
-        int xl = result[1];
-        int yh = result[2];
-        int yl = result[3];
-        int zh = result[4];
-        int zl = result[5];
+        int xh = this.bus.readBytes(1)[0];
+        int xl = this.bus.readBytes(1)[0];
+        int yh = this.bus.readBytes(1)[0];
+        int yl = this.bus.readBytes(1)[0];
+        int zh = this.bus.readBytes(1)[0];
+        int zl = this.bus.readBytes(1)[0];
         
         // interpret bytes as signed 14bit values
         int signx = (xh & 0x20) == 0x20 ? -1 : 1;
@@ -101,6 +98,10 @@ class AccelerometerFXOS8700CQSerial extends Sensor {
                 "," +
                 Integer.toString(z) +
                 ")";
+        } catch (IOException ex) {
+            LOGGER.error("Error reading from accelerometer.", ex);
+            return "";
+        }
     }
 
     @Override

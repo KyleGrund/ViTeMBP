@@ -113,7 +113,12 @@ public class SensorSampler {
             // take data
             data.clear();
             this.sensors.forEach((sensorName, sensor) -> {
-                String sample = sensor.readSample();
+                String sample;
+                if (sensor != null) {
+                    sample = sensor.readSample();
+                } else {
+                    sample = "";
+                }
                 data.put(sensorName, sample);
                 LOGGER.debug("Sensor " + sensorName + ": " + sample);
             });
