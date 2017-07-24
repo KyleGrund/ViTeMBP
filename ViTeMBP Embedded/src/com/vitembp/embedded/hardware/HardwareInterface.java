@@ -138,6 +138,10 @@ public class HardwareInterface {
             }
         }
         
+        this.platform.getSensors().forEach((s) -> LOGGER.info(
+                "Found sensor, " + s.getSerial().toString() + ", of type, " +
+                s.getType().toString() + "."));
+        
         // names to sensor bindings
         Map<String, Sensor> bindings = new HashMap<>();
         

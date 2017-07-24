@@ -17,8 +17,8 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -81,18 +81,15 @@ class SystemBoardUdooNeo extends SystemBoard {
     @Override
     public Set<SerialBus> getSerialBusses() {
         Set<Path> busFiles = new HashSet<>();
-        try {
-        // builds a stream of files in /dev that start with ttyACM or ttyMMC
-        // and then adds them to toReturn with the foreach call
-        Files.find(
-                Paths.get("/dev/"),
-                0,
-                (elem, prop) -> 
-                        elem.getFileName().toString().startsWith("ttyACM") ||
-                        elem.getFileName().toString().startsWith("ttyMCC"))
-                .forEach(busFiles::add);
-        } catch (IOException ex) {
-            LOGGER.error("Unexpected error enumerating serial busses.", ex);
+  
+        // get an array of files in /dev that start with ttyACM or ttyMMC
+        File[] busses = Paths.get("/dev/")
+            .toFile()
+            .listFiles((dir, name) -> name.startsWith("ttyACM") || name.startsWith("ttyMCC"));
+        
+        // then add their paths to toReturn
+        for (File toAdd : busses) {
+            busFiles.add(toAdd.toPath());
         }
         
         // use factory to create and return bus instances
