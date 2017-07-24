@@ -88,7 +88,7 @@ public class SystemConfig {
     /**
      * The binding of sensor name to system resource.
      */
-    private Map<String, String> sensorBindings = new HashMap<>();
+    private Map<String, UUID> sensorBindings = new HashMap<>();
     
     /**
      * A boolean value indicating whether we loaded the configuration from
@@ -173,7 +173,7 @@ public class SystemConfig {
      * Gets a mapping of sensor names to their binding location.
      * @return A mapping of sensor names to their binding location.
      */
-    public Map<String, String> getSensorBindings() {
+    public Map<String, UUID> getSensorBindings() {
         return Collections.unmodifiableMap(this.sensorBindings);
     }
     
@@ -379,7 +379,7 @@ public class SystemConfig {
             
             // save binding
             toWriteTo.writeStartElement("binding");
-            toWriteTo.writeCharacters(this.sensorBindings.get(name));
+            toWriteTo.writeCharacters(this.sensorBindings.get(name).toString());
             toWriteTo.writeEndElement();
             
             toWriteTo.writeEndElement();
@@ -461,7 +461,7 @@ public class SystemConfig {
         }
         
         // map of sensor name to bindings
-        Map<String, String> readSensorBindings = new HashMap<>();
+        Map<String, UUID> readSensorBindings = new HashMap<>();
         
         // add a name element for each name entry
         while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "sensorbinding".equals(toReadFrom.getLocalName())) {
@@ -470,7 +470,7 @@ public class SystemConfig {
             String sensorName = XMLStreams.readElement("name", toReadFrom);
             
             // read binding            
-            String sensorBinding = XMLStreams.readElement("binding", toReadFrom);
+            UUID sensorBinding = UUID.fromString(XMLStreams.readElement("binding", toReadFrom));
             
             // successfully found a sensor name, save it
             readSensorBindings.put(sensorName, sensorBinding);

@@ -17,12 +17,15 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -85,7 +88,7 @@ class PlatformFactory {
                 },
                 () -> {
                     Set<Sensor> toReturn = new HashSet<>();
-                    toReturn.add(new AccelerometerMock("Accelerometer"));
+                    toReturn.add(new AccelerometerMock());
                     return toReturn;
                 },
                 () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"));
@@ -168,6 +171,14 @@ class PlatformFactory {
                     // use factory to build all devices
                     board.getI2CBusses().forEach((bus) -> {
                         toReturn.addAll(I2CSensorFactory.getI2CSensors(bus));
+                    });
+                    
+                    board.getSerialBusses().forEach((bus) -> {
+                        try { 
+                            toReturn.addAll(SerialBusSensorFactory.getSerialSensors(bus));
+                        } catch (IOException ex) {
+                            LOGGER.error("Error building sensor for: " + bus.getName(), ex);
+                        }
                     });
                     
                     return toReturn;

@@ -18,14 +18,23 @@
 package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A SystemBoard implementation for the UDOO NEO.
  */
-class SystemBoardUdooNeo extends SystemBoard{
+class SystemBoardUdooNeo extends SystemBoard {
+    /**
+     * Class logger instance.
+     */
+    private static final Logger LOGGER = LogManager.getLogger();
+    
     /**
      * The GPIO ports available for this system board.
      */
@@ -67,5 +76,26 @@ class SystemBoardUdooNeo extends SystemBoard{
     @Override
     public Path getLogDirectory() {
         return Paths.get("/home/udooer/logs");
+    }
+
+    @Override
+    public Set<SerialBus> getSerialBusses() {
+        Set<Path> busFiles = new HashSet<>();
+        try {
+        // builds a stream of files in /dev that start with ttyACM or ttyMMC
+        // and then adds them to toReturn with the foreach call
+        Files.find(
+                Paths.get("/dev/"),
+                0,
+                (elem, prop) -> 
+                        elem.getFileName().toString().startsWith("ttyACM") ||
+                        elem.getFileName().toString().startsWith("ttyMCC"))
+                .forEach(busFiles::add);
+        } catch (IOException ex) {
+            LOGGER.error("Unexpected error enumerating serial busses.", ex);
+        }
+        
+        // use factory to create and return bus instances
+        return SerialBusFactory.getSerialBusses(busFiles);
     }
 }

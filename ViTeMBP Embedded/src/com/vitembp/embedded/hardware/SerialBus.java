@@ -17,39 +17,30 @@
  */
 package com.vitembp.embedded.hardware;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
 
 /**
- * A mock system bus to be used when not running on a compatible system board.
+ * Provides a uniform interface to serial busses.
  */
-class SystemBoardMock extends SystemBoard {
-
-    @Override
-    public Set<I2CBus> getI2CBusses() {
-        return new HashSet<>();
-    }
-
-    @Override
-    public Set<GPIOPort> getGPIOPorts() {
-        return new HashSet<>();
-    }
-
-    @Override
-    public Path getConfigDirectory() {
-        return Paths.get("");
-    }
-
-    @Override
-    public Path getLogDirectory() {
-        return Paths.get("");
-    }
-
-    @Override
-    public Set<SerialBus> getSerialBusses() {
-        return new HashSet<>();
-    }
+abstract class SerialBus {
+    /**
+     * Writes bytes to a serial interface.
+     * @param toWrite An array of bytes to write.
+     * @throws IOException If there is an IO error writing to the port.
+     */
+    abstract void writeBytes(byte[] toWrite) throws IOException;
     
+    /**
+     * Reads bytes from a port.
+     * @param len The number of bytes to read.
+     * @return The array of bytes read from the port.
+     * @throws IOException If there is an IO error reading from the port.
+     */
+    abstract byte[] readBytes(int len) throws IOException;
+    
+    /**
+     * Gets the system unique name of the bus.
+     * @return The system unique name of the bus.
+     */
+    abstract String getName();
 }

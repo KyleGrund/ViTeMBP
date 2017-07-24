@@ -8,7 +8,7 @@
     <sensorbindings>
         <sensorbinding>
             <name>Frame Accelerometer</name>
-            <binding>i2c-3:32</binding>
+            <binding>728714d1-00a7-43fe-872a-591ad51dfb17</binding>
         </sensorbinding>
     </sensorbindings>
     <capturetype>EmbeddedH2</capturetype>

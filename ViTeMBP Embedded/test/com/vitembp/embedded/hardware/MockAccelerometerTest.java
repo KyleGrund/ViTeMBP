@@ -55,7 +55,7 @@ public class MockAccelerometerTest {
     @Test
     public void testGetType() {
         System.out.println("getType");
-        AccelerometerMock instance = new AccelerometerMock("Mock Acccelerometer");
+        AccelerometerMock instance = new AccelerometerMock();
         UUID expResult = UUID.fromString("3906c164-82c8-48f8-a154-a39a9d0269fa");
         UUID result = instance.getType();
         assertEquals(expResult, result);
@@ -67,7 +67,7 @@ public class MockAccelerometerTest {
     @Test
     public void testInitialize() {
         System.out.println("initialize");
-        AccelerometerMock instance = new AccelerometerMock("Mock Acccelerometer");
+        AccelerometerMock instance = new AccelerometerMock();
         instance.initialize();
     }
 
@@ -77,7 +77,7 @@ public class MockAccelerometerTest {
     @Test
     public void testReadSample() {
         System.out.println("readSample");
-        AccelerometerMock instance = new AccelerometerMock("Mock Acccelerometer");
+        AccelerometerMock instance = new AccelerometerMock();
         String result = instance.readSample().replace("(", "").replace(")", "");
         String[] values = result.split(",");
         assertEquals(3, values.length);

@@ -37,6 +37,11 @@ public class AccelerometerMock extends Sensor {
     private static final UUID TYPE_UUID = UUID.fromString("3906c164-82c8-48f8-a154-a39a9d0269fa");
     
     /**
+     * A UUID representing the serial number of this sensor.
+     */
+    private static final UUID SERIAL_UUID = UUID.fromString("62a37d20-6986-4273-92b0-3fbb4a0b7c77");
+    
+    /**
      * The maximum value to return.
      */
     private static final double MAX_SENSOR_VALUE = 5.0d;
@@ -48,10 +53,8 @@ public class AccelerometerMock extends Sensor {
     
     /**
      * Initializes a new instance of the MockAccelerometer class.
-     * @param name The name of the sensor as used in the system.
      */
-    public AccelerometerMock(String name) {
-        super(name);
+    public AccelerometerMock() {
     }
     
     @Override
@@ -76,5 +79,10 @@ public class AccelerometerMock extends Sensor {
         toReturn.append(")");
         
         return toReturn.toString();
+    }
+
+    @Override
+    public UUID getSerial() {
+        return SERIAL_UUID;
     }
 }

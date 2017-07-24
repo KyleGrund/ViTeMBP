@@ -84,15 +84,15 @@ public class InMemoryCaptureTest {
     @Before
     public void setUp() {
         // create some sensor data to use during tests
-        Sensor sensorOne = new AccelerometerMock(SENSOR_NAMES[0]);
-        Sensor sensorTwo = new AccelerometerMock(SENSOR_NAMES[1]);
+        Sensor sensorOne = new AccelerometerMock();
+        Sensor sensorTwo = new AccelerometerMock();
         
         // add some sensor data
         for (int i = 0; i < NUM_OF_SAMPLES; i++) {
             // create some sensor data
             Map<String, String> sensorData = new HashMap<>();
-            sensorData.put(sensorOne.getBinding(), sensorOne.readSample());
-            sensorData.put(sensorTwo.getBinding(), sensorTwo.readSample());
+            sensorData.put(sensorOne.getSerial().toString(), sensorOne.readSample());
+            sensorData.put(sensorTwo.getSerial().toString(), sensorTwo.readSample());
             data.add(sensorData);
             
             // create sample from data and add to samples

@@ -54,7 +54,7 @@ class PlatformMock extends Platform{
     @Override
     public Set<Sensor> getSensors() {
         Set<Sensor> toReturn = new HashSet<>();
-        toReturn.add(new AccelerometerMock("Accelerometer"));
+        toReturn.add(new AccelerometerMock());
         return toReturn;
     }
 

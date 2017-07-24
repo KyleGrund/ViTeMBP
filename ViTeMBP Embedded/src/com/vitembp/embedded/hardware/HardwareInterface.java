@@ -20,10 +20,10 @@ package com.vitembp.embedded.hardware;
 import com.vitembp.embedded.data.ConsumerIOException;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 
@@ -144,11 +144,11 @@ public class HardwareInterface {
         // for each name
         this.config.getSensorNames().forEach((name) -> {
             // get binding
-            String bindingAddress = this.config.getSensorBindings().get(name);
+            UUID bindingAddress = this.config.getSensorBindings().get(name);
 
             // get matching sensor if one is available, otherwise gets null
             Sensor match = this.platform.getSensors().stream()
-                    .filter((d) -> d.getBinding().equals(bindingAddress))
+                    .filter((d) -> d.getSerial().equals(bindingAddress))
                     .findFirst()
                     .orElse(null);
             

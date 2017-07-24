@@ -61,8 +61,8 @@ public class SensorSamplerTest {
     public void testStartStop() throws InterruptedException {
         System.out.println("start");
         Map<String, Sensor> sensors = new HashMap<>();
-        sensors.put("Sensor 1", new AccelerometerMock("Accelerometer 1"));
-        sensors.put("Sensor 2", new AccelerometerMock("Accelerometer 2"));
+        sensors.put("Sensor 1", new AccelerometerMock());
+        sensors.put("Sensor 2", new AccelerometerMock());
         
         final HashMap<String, Integer> counter = new HashMap<>();
         counter.put("samples", 0);

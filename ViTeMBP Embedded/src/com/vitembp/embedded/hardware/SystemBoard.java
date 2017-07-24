@@ -51,6 +51,12 @@ abstract class SystemBoard {
     public abstract Set<I2CBus> getI2CBusses();
     
     /**
+     * Gets the available serial port busses.
+     * @return The available serial port busses.
+     */
+    public abstract Set<SerialBus> getSerialBusses();
+    
+    /**
      * Gets the available system board GPIO ports.
      * @return The available system board GPIO ports.
      */

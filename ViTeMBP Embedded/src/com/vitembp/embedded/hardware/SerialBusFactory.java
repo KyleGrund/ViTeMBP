@@ -17,41 +17,38 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * This class creates Sensor instances for devices on an I2C bus.
+ * A factory class providing serial bus interfaces.
  */
-class I2CSensorFactory {
+class SerialBusFactory {
     /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
-     * Gets a set of devices built for the given I2C bus.
-     * @param bus The bus to build devices for.
-     * @return Set of devices built for the given I2C bus.
+     * Builds serial bus interfaces for available busses on the current system.
+     * @return A set of serial bus interfaces for available busses on the current system.
      */
-    public static Set<Sensor> getI2CSensors(I2CBus bus) {
-        Set<Sensor> found = new HashSet<>();
-        // go through all devices on the bus
-        for (I2CDevice dev : bus.getDevices()) {
-            LOGGER.info("Enumerating device: " + dev.getAddress());
-            
-            // create sensor interface objects based on device addresses
-            if (dev.getAddress() == 32) {
-                Sensor toAdd = new AccelerometerFXOS8700CQ(
-                        UUID.fromString("728714d1-00a7-43fe-872a-591ad51dfb17"),
-                        dev);
-                found.add(toAdd);
-                LOGGER.info("Added AccelerometerFXOS8700CQ at I2C address 32.");
-            }
-        }   
+    static Set<SerialBus> getSerialBusses(Set<Path> portFiles) {
+        Set<SerialBus> toReturn = new HashSet<>();
         
-        return found;
+        // try to open and add each to the toReturn set
+        portFiles.forEach((toOpen) -> {
+            try {
+                SerialBus instance = new SerialBusJssc(toOpen);
+                toReturn.add(instance);
+            } catch (IOException ex) {
+                LOGGER.info("Could not open serial port: " + toOpen.toString(), ex);
+            }
+        });
+
+        return toReturn;
     }
 }

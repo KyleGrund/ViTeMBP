@@ -24,19 +24,6 @@ import java.util.UUID;
  */
 public abstract class Sensor {
     /**
-     * The binding of this sensor instance.
-     */
-    private final String binding;
-    
-    /**
-     * Initializes a new instance of the Sensor class.
-     * @param binding The binding of this sensor instance as used in the system.
-     */
-    protected Sensor(String binding) {
-        this.binding = binding;
-    }
-    
-    /**
      * Gets the UUID which defines the type of sensor. This type can be used to
      * determine the format of the sample data that is created.
      * @return The UUID which defines the type of sensor.
@@ -44,14 +31,10 @@ public abstract class Sensor {
     public abstract UUID getType();
     
     /**
-     * Gets the binding of the sensor as used in the system. This defines the
-     * sensor uniquely to the system, similarly to how a URL identifies a 
-     * web server.
-     * @return The binding of the sensor as used in the system.
+     * Gets the serial number of this sensor.
+     * @return The serial number of the sensor.
      */
-    public String getBinding() {
-        return this.binding;
-    }
+    public abstract UUID getSerial();
     
     /**
      * The initialize function will be called when the system first starts.

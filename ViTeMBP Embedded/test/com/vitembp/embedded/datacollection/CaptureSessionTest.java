@@ -66,12 +66,12 @@ public class CaptureSessionTest {
     public void testStartAndStopSession() throws InterruptedException, InstantiationException {
         CaptureSession toTest;        
         Map<String, Sensor> sensors = new HashMap<>();
-        sensors.put("Sensor 1", new AccelerometerMock("Accelerometer 1"));
-        sensors.put("Sensor 2", new AccelerometerMock("Accelerometer 2"));
+        sensors.put("Sensor 1", new AccelerometerMock());
+        sensors.put("Sensor 2", new AccelerometerMock());
         
         // fill a hashmap with sensor types for crating capture
         Map<String, UUID> sensorTypes = new HashMap<>();
-        sensors.values().forEach((s) -> sensorTypes.put(s.getBinding(), s.getType()));
+        sensors.values().forEach((s) -> sensorTypes.put(s.getSerial().toString(), s.getType()));
         
         Capture capturedData = CaptureFactory.buildCapture(CaptureTypes.EmbeddedH2, 29.97, sensorTypes);
         toTest = new CaptureSession(sensors, capturedData);

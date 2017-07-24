@@ -41,14 +41,18 @@ class AccelerometerFXOS8700CQ extends Sensor {
     private final I2CDevice device;
     
     /**
+     * The UUID representing the serial number of this sensor.
+     */
+    private final UUID serial;
+    
+    /**
      * Initializes a new instance of the AccelerometerFXOS8700CQ class.
      * @param name The name of the sensor as used in the system.
      * @param device The device object used to communicate on the I2C bus.
      */
-    public AccelerometerFXOS8700CQ(String name, I2CDevice device) {
-        super(name);
-        
+    public AccelerometerFXOS8700CQ(UUID serial, I2CDevice device) {
         this.device = device;
+        this.serial = serial;
     }
 
     @Override
@@ -102,5 +106,10 @@ class AccelerometerFXOS8700CQ extends Sensor {
                 "," +
                 Integer.toString(z) +
                 ")";
+    }
+
+    @Override
+    public UUID getSerial() {
+        return this.serial;
     }
 }
