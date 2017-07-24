@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import jssc.SerialPort;
 import jssc.SerialPortException;
-import org.apache.logging.log4j.LogManager;
+import jssc.SerialPortTimeoutException;
 
 /**
  * SerialBus implementation using the jssc library.
@@ -40,6 +40,7 @@ class SerialBusJssc extends SerialBus {
         this.port = new SerialPort(file.toString());
         try {
             this.port.openPort();
+            this.port.setParams(115200, 8, 0, 1);
         } catch (SerialPortException ex) {
             throw new IOException("Could not open serial port for path: " + file.toString(), ex);
         }
@@ -57,9 +58,11 @@ class SerialBusJssc extends SerialBus {
     @Override
     byte[] readBytes(int len) throws IOException {
         try {
-            return port.readBytes(len);
+            return port.readBytes(len, 1000);
         } catch (SerialPortException ex) {
-            throw new IOException("Error writing to serial port: " + this.port.getPortName(), ex);
+            throw new IOException("Error reading from serial port: " + this.port.getPortName(), ex);
+        } catch (SerialPortTimeoutException ex) {
+            throw new IOException("Timed out reading from serial port: " + this.port.getPortName(), ex);
         }
     }
 
