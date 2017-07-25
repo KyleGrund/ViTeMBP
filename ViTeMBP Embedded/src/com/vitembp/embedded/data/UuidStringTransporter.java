@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -36,9 +34,15 @@ public class UuidStringTransporter {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
-     * The time to wait before retrying after an IO failure.
+     * The sleep time between upload checks.
      */
-    private static final int IO_FAIL_BACKOFF_TIME = 10000;
+    private static final int LONG_SLEEP = 10000;
+    
+    /**
+     * The sleep time during checks to allow for higher priority threads to
+     * execute if we are on a single core system.
+     */
+    private static final int SHORT_SLEEP = 20;
     
     /**
      * The number of hashes to create in one batch transaction.
@@ -148,7 +152,8 @@ public class UuidStringTransporter {
                     // get their hashes
                     Map<UUID, String> fromHashes = from.getHashes(batch);
                     Map<UUID, String> toHashes = to.getHashes(batch);
-
+                    Thread.sleep(SHORT_SLEEP);
+                    
                     // for each key in this batch
                     for (UUID key : batch) {
                         if (!fromHashes.get(key).equals(toHashes.get(key))) {
@@ -156,6 +161,7 @@ public class UuidStringTransporter {
                             // the stores
                             to.write(key, from.read(key));
                             LOGGER.debug("Synced key: " + key.toString());
+                            Thread.sleep(SHORT_SLEEP);
                         } else if (this.deleteAfterTransfer) {
                             // the hashes match so delete if set to do so by the
                             // deleteAfterTransfer parameter.
@@ -164,17 +170,15 @@ public class UuidStringTransporter {
                         }
                     }
                 }
+                
+                Thread.sleep(LONG_SLEEP);
             } catch (IOException ex) {
                 LOGGER.error("Failed to access keys in store.", ex);
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected exception in synchronization thread.", ex);
-            }
-            
-            try {
-                Thread.sleep(IO_FAIL_BACKOFF_TIME);
             } catch (InterruptedException ex) {
                 LOGGER.error("Thread interrupted.", ex);
                 this.stopSync();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected exception in synchronization thread.", ex);
             }
         }
         
@@ -190,6 +194,7 @@ public class UuidStringTransporter {
             try {
                 CaptureDescription[] toSend = this.from.getCaptureLocations().toArray(CaptureDescription[]::new);
                 for (CaptureDescription desc : toSend) {
+                    Thread.sleep(SHORT_SLEEP);
                     CaptureDescription existingDesc = to.getCaptureDescription(desc.getLocation());
                     if (existingDesc == null ||
                             !existingDesc.getCreated().equals(desc.getCreated()) ||
@@ -205,17 +210,16 @@ public class UuidStringTransporter {
                         LOGGER.debug("Deleted capture description: " + desc.getLocation().toString());
                     }
                 }
+                
+                Thread.sleep(LONG_SLEEP);
+                
             } catch (IOException ex) {
                 LOGGER.error("Failed to access keys in store.", ex);
-            } catch (Exception ex) {
-                LOGGER.error("Unexpected exception in synchronization thread.", ex);
-            }
-            
-            try {
-                Thread.sleep(IO_FAIL_BACKOFF_TIME);
             } catch (InterruptedException ex) {
                 LOGGER.error("Thread interrupted.", ex);
                 this.stopSync();
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected exception in synchronization thread.", ex);
             }
         }
         
