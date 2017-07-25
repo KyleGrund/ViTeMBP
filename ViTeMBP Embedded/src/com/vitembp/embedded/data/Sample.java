@@ -168,14 +168,17 @@ public class Sample {
             }
             String name = toReadFrom.getAttributeValue(0);
             
-            if (toReadFrom.next() != XMLStreamConstants.CHARACTERS) {
-                throw new XMLStreamException("Expected sensor data  string not found.", toReadFrom.getLocation());
+            // if the sensor caputred data there will be a characters event so
+            // save the data, otherwise just add a blank entry
+            if (toReadFrom.next() == XMLStreamConstants.CHARACTERS) {
+                // store the sensor data
+                readData.put(name, toReadFrom.getText());
+                toReadFrom.next();
+            } else {
+                readData.put(name, "");
             }
             
-            // store the sensor data
-            readData.put(name, toReadFrom.getText());
-            
-            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"sensor".equals(toReadFrom.getLocalName())) {
+            if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensor".equals(toReadFrom.getLocalName())) {
                 throw new XMLStreamException("Expected </sensor> not found.", toReadFrom.getLocation());
             }
             toReadFrom.next();
