@@ -47,6 +47,8 @@ class SerialBusSensorFactory {
                 toReturn.add(new DistanceVL53L0X(bus));
             } else if ("fe3c4af2-feb4-4c9b-a717-2d0db3052293".equals(resp)) {
                 toReturn.add(new AccelerometerFXOS8700CQSerial(bus));
+            } else if ("75d05ba8-639c-46e6-a940-591d920a2d86".equals(resp)) {
+                toReturn.add(new RotaryEncoderEAW0J(bus));
             }
             
             return toReturn;
