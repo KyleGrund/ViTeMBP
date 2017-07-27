@@ -33,7 +33,7 @@ public class RotaryEncoderEAW0J extends Sensor {
     /**
      * A UUID representing the un-initialized eeprom data.
      */
-    private static final UUID DEFAULT_UUID = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+    private static final UUID DEFAULT_UUID = UUID.fromString("8d79cbc9-a4ec-3de1-92fc-91ba625b13c2");
     
     /**
      * A UUID representing the type of this sensor.
