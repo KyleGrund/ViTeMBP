@@ -19,9 +19,10 @@ package com.vitembp.services;
 
 import com.vitembp.services.video.Processing;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * This class contains functions which act as the primary interface to
@@ -76,5 +77,23 @@ public final class ApiFunctions {
      */
     public List<Integer> findChannelSyncFramesDiag(String videoFile, COLOR_CHANNELS channel, Path outputFile) throws IOException {
         return Processing.findChannelSyncFrames(videoFile, channel, fileGenerator, outputFile);
+    }
+    
+    /**
+     * Returns a set of hashes of database entries to use when syncing.
+     * @param toHash The entries to hash.
+     * @return A Map of UUID keys to hash values.
+     */
+    public Map<UUID, String> getDataStoreHashes(List<UUID> toHash) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+    
+    /**
+     * Writes or updates a value to the data store.
+     * @param key The UUID key of the entry to write.
+     * @param value The data to store at the UUID key location.
+     */
+    public void writeDataStoreValue(UUID key, String value) {
+        throw new UnsupportedOperationException("Not yet implemented.");
     }
 }

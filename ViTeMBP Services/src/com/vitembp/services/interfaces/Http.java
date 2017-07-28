@@ -59,6 +59,7 @@ public class Http {
     public Http(int port, ApiFunctions functions) throws IOException {
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         this.server.createContext("/findsyncframes", this.getHandler(functions));
+        this.server.createContext("/getHashes", this.getHandler(functions));
         this.server.createContext("/healthcheck", this.getHealthCheckHandler());
         this.server.start();
     }
