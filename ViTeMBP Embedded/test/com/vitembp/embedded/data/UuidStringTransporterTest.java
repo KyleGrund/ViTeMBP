@@ -77,9 +77,9 @@ public class UuidStringTransporterTest {
         
         // wait until all data is transported or timeout period expires
         long start = System.nanoTime();
-        long timeout = 300 * 1000000000l;
+        long timeout = 40 * 1000000000l;
         while (from.getKeys().count() > 0 || from.getCaptureLocations().count() > 0) {
-            Thread.sleep(100);
+            Thread.sleep(10);
             if (System.nanoTime() - start > timeout) {
                 fail("Timed out waiting for sync.");
             }

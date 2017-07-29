@@ -109,6 +109,7 @@ public class UuidStringTransporter {
      */
     public void startSync() {
         this.dataSyncThread.start();
+        this.capturesSyncThread.start();
     }
     
     /**
