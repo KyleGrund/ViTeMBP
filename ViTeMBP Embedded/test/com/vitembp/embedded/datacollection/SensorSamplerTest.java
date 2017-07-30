@@ -75,6 +75,8 @@ public class SensorSamplerTest {
         Thread.sleep(1000);
         instance.stop();
         System.out.println("Got " + counter.get("samples") + " samples.");
-        Assert.assertEquals(30l, (long)counter.get("samples"));
+        // sample rate is 29.9 so, anything from 29 to 31 is acceptable
+        Assert.assertTrue((long)counter.get("samples") >= 29);
+        Assert.assertTrue((long)counter.get("samples") < 32);
     }
 }

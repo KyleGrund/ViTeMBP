@@ -17,15 +17,14 @@
  */
 package com.vitembp.embedded.data;
 
-import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Implementation of the UuidStringtStore class using a HashMap
@@ -66,7 +65,7 @@ class UuidStringStoreHashMap implements UuidStringStore {
     
     @Override
     public Stream<CaptureDescription> getCaptureLocations() throws IOException {
-        return this.captureList.stream();
+        return Collections.unmodifiableList(this.captureList).stream();
     }
     
     @Override
@@ -77,7 +76,7 @@ class UuidStringStoreHashMap implements UuidStringStore {
     @Override
     public Stream<UUID> getKeys() throws IOException {
         // generate a stream of the parsed UUIDs
-        return StreamSupport.stream(this.store.keySet().spliterator(), false);
+        return Collections.unmodifiableSet(this.store.keySet()).stream();
     }
 
     @Override
