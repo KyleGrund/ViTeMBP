@@ -15,20 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.vitembp.sensors;
+package com.vitembp.data;
 
-import com.vitembp.data.CaptureProcessor;
-import com.vitembp.data.SamplePipeline;
-import com.vitembp.data.SamplePipelineCount;
-import com.vitembp.data.SamplePipelineMaxValue;
 import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.CaptureFactory;
-import com.vitembp.embedded.data.CaptureTypes;
+import com.vitembp.sensors.Captures;
+import com.vitembp.sensors.RotarySensor;
+import com.vitembp.sensors.SensorFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,34 +63,29 @@ public class CaptureProcessorTest {
     @Test
     public void testProcess() throws InstantiationException {
         System.out.println("process");
-        Capture source = createCapture();
+        Capture source = Captures.createCapture();
         
+        // add some unique data
         for (int i = 0; i <= 127; i++) {
             Map<String, String> toAdd = new HashMap<>();
-            toAdd.put("Front Brake", Integer.toString(i));
-            toAdd.put("Rear Brake", Integer.toString(i));
+            toAdd.put("Front Brake", Integer.toString(i % 128));
+            toAdd.put("Rear Brake", Integer.toString(i % 128));
+            toAdd.put("Front Shock", Integer.toString(i % 151));
+            toAdd.put("Rear Shock", Integer.toString(i % 81));
+            toAdd.put("Frame Accelerometer",
+                    "(" + Integer.toString(i % 5) + "," +
+                    Integer.toString((i + 2) % 5) + "," +
+                    Integer.toString((i + 4) % 5) + ")");
             source.addSample(toAdd);
         }
         
         List<SamplePipeline> pipe = new ArrayList<>();
-        pipe.add(new SamplePipelineCount());
-        for (String name : source.getSensorNames()) {
-            pipe.add(new SamplePipelineMaxValue(((RotarySensor)SensorFactory.getSensor(name, source.getSensorTypes().get(name)))::getPositionDegrees));
-        }
+        pipe.add(new SamplePipelineCount("count"));
+        pipe.add(new SamplePipelineMaxValue(((RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake")))::getPositionDegrees, "max pos"));
         
-        SamplePipeline[] pipeline = pipe.toArray(new SamplePipeline[] {});
-        CaptureProcessor.process(source, pipeline);
+        Map<String, Object> result = CaptureProcessor.process(source, pipe);
         
-        assertEquals(128, ((SamplePipelineCount)pipeline[0]).getCount());
-        assertEquals(365d, ((SamplePipelineMaxValue)pipeline[1]).getMaxValue(), 0.001);
-        assertEquals(365d, ((SamplePipelineMaxValue)pipeline[1]).getMaxValue(), 0.001);
-    }
-    
-    
-    private Capture createCapture() throws InstantiationException {
-        Map<String, UUID> nameToIds = new HashMap<>();
-        nameToIds.put("Front Brake", com.vitembp.sensors.RotaryEncoderEAW0J.TYPE_UUID);
-        nameToIds.put("Rear Brake", com.vitembp.sensors.RotaryEncoderEAW0J.TYPE_UUID);
-        return CaptureFactory.buildCapture(CaptureTypes.InMemory, 29.9, nameToIds);
+        assertEquals(128L, (long)result.get("count"));
+        assertEquals(365d, (double)result.get("max pos"), 0.001);
     }
 }

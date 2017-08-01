@@ -18,8 +18,9 @@
 package com.vitembp.data;
 
 import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.Sample;
-import java.util.function.Function;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides an interface to process data in a capture.
@@ -29,25 +30,24 @@ public class CaptureProcessor {
      * Processes the data in the capture using the pipeline.
      * @param source The capture containing the data to process.
      * @param pipeline The pipeline of elements used to process the data.
+     * @return The results of the pipeline application.
      */
-    public static void process(Capture source, final SamplePipeline[] pipeline) {
+    public static Map<String, Object> process(Capture source, final List<SamplePipeline> pipeline) {
+        Map<String, Object> toReturn = new HashMap<>();
+        
         // processing an empty pipeline does nothing
-        if (pipeline.length < 1) {
-            return;
+        if (pipeline.isEmpty()) {
+            return toReturn;
         }
         
-        // compose a pipeline by combining all the elements in the array
-        Function<Sample, Sample> composed = s -> pipeline[0].accept(s);
-        
-        for (int i = 1; i < pipeline.length; i++) {
-            final int index = i;
-            Function<Sample, Sample> prev = composed;
-            composed = s -> prev.apply(pipeline[index].accept(s));
-        }
-        
-        final Function<Sample, Sample> pipe = composed;
-        
-        // put all samples through the pipeline
-        source.getSamples().forEach(pipe::apply);
+        // go through samples, and for each one process it with each pipeline
+        // element in order
+        source.getSamples().forEach((toAccept) -> 
+                pipeline.forEach((element) -> 
+                        element.accept(toAccept, toReturn)));
+
+        return toReturn;
     }
+    
+    
 }

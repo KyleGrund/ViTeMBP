@@ -94,15 +94,20 @@ public class AmazonSimpleQueueService {
      * Accepts a command from the queue.
      */
     private void acceptCommand() {
-        ReceiveMessageResult result = this.queue.receiveMessage(this.queueUrl);
-        int count = 1;
-        for (Message msg : result.getMessages()) {
-            System.out.println("Got message " + count++ + ": " + msg.getBody());
-            // process command
-            this.callback.accept(msg.getBody());
-            
-            // dequeue command
-            this.queue.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+        try {
+            ReceiveMessageResult result = this.queue.receiveMessage(this.queueUrl);
+            int count = 1;
+            for (Message msg : result.getMessages()) {
+                LOGGER.info("SQS message " + count++ + ": " + msg.getBody());
+                // process command
+                this.callback.accept(msg.getBody());
+
+                // dequeue command
+                this.queue.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+            }
+        }
+        catch (Exception ex) {
+            LOGGER.error("Unexpected exception processing SQS queue: " + this.queueName, ex);
         }
     }
 }

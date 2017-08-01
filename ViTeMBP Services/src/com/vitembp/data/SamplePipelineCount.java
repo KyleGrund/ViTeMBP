@@ -18,6 +18,7 @@
 package com.vitembp.data;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Map;
 
 /**
  * Counts the elements that went through the pipeline.
@@ -26,19 +27,27 @@ public class SamplePipelineCount implements SamplePipeline {
     /**
      * The number of data samples that have been processed.
      */
-    private long count = 0;
-    
-    @Override
-    public Sample accept(Sample toAccept) {
-        this.count++;
-        return toAccept;
-    }
+    private final String countBinding;
     
     /**
-     * Gets the number of elements that went through the pipeline.
-     * @return The number of elements that went through the pipeline.
+     * Initializes a new instance of the SamplePipelineCount class.
+     * @param countBinding The binding for the sample count in the data collection.
      */
-    public long getCount() {
-        return this.count;
+    public SamplePipelineCount(String countBinding) {
+        this.countBinding = countBinding;
+    }
+    
+    @Override
+    public void accept(Sample toAccept, Map<String, Object> data) {
+        Long count = (Long)data.get(this.countBinding);
+        
+        // the count will be missing on the first applicaiton
+        if (count == null) {
+            count = 0L;
+        }
+        
+        // increment the count, then save it
+        count++;
+        data.put(this.countBinding, count);
     }
 }

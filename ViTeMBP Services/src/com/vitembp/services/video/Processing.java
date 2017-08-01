@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,7 +88,6 @@ public class Processing {
         // create histogram list from images
         HistogramList histograms = HistogramList.loadFromDirectory(tempDir, fileGenerator);
         
-        
         // get stats for diagnostics
         double stdDev = histograms.getPosStdev(selector);
         double average = histograms.getAverage(selector);
@@ -108,6 +108,24 @@ public class Processing {
         
         // return synchronization frames
         return outliers;
+    }
+    
+    /**
+     * Processes a video with a capture.
+     * @param capture The capture containing data to overlay on the video.
+     * @param videoFile The video file to overlay data on.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public static void processVideo(UUID capture, String videoFile) throws IOException {
+        LOGGER.info("Processing: " + videoFile);
+        List<Integer> frames = Processing.findChannelSyncFrames(videoFile, ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT);
+        
+        if (frames.isEmpty()) {
+            throw new IOException("No sync frames detected.");
+        }
+        
+        
     }
 
     /**

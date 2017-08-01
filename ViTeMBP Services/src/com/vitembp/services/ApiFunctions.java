@@ -23,12 +23,19 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This class contains functions which act as the primary interface to
  * the functionality provided by the service classes.
  */
 public final class ApiFunctions {
+    /**
+     * Class logger instance.
+     */
+    private static final Logger LOGGER = LogManager.getLogger();
+    
     /**
      * The possible color channels to perform operations with.
      */
@@ -77,6 +84,18 @@ public final class ApiFunctions {
      */
     public List<Integer> findChannelSyncFramesDiag(String videoFile, COLOR_CHANNELS channel, Path outputFile) throws IOException {
         return Processing.findChannelSyncFrames(videoFile, channel, fileGenerator, outputFile);
+    }
+    
+    /**
+     * Triggers a video to be processed by putting the command message on a queue.
+     * @param capture The capture to process.
+     * @param videoFile The associated video file.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public void processCaptureVideo(UUID capture, String videoFile) throws IOException {
+        // this is a long running task, so enqueue it for async processing
+        Processing.processVideo(capture, videoFile);
     }
     
     /**

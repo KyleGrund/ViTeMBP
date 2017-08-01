@@ -18,6 +18,7 @@
 package com.vitembp.data;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -30,39 +31,51 @@ public class SamplePipelineAverage implements SamplePipeline {
     private final Function<Sample, Double> parser;
     
     /**
-     * The average of parsed values.
+     * The binding of the element count in the data collection.
      */
-    private double average = 0;
+    private final String elementCountBinding;
     
     /**
-     * The count of values averaged.
+     * The binding of the output of the average in the data collection.
      */
-    private long count = 0;
-    
+    private final String averageOutputBinding;
+       
     /**
      * Initializes a new instance of the SamplePipelineAverage class.
      * @param parser The function which parses the value from the sample data.
+     * @param elementCount The binding for input of the count of elements.
+     * @param averageOutput The binding for the averaged output.
      */
-    public SamplePipelineAverage(Function<Sample, Double> parser) {
+    public SamplePipelineAverage(Function<Sample, Double> parser, String elementCount, String averageOutput) {
         this.parser = parser;
+        this.elementCountBinding = elementCount;
+        this.averageOutputBinding = averageOutput;
     }
     
     @Override
-    public Sample accept(Sample toAccept) {
+    public void accept(Sample toAccept, Map<String, Object> data) {
         Double value = parser.apply(toAccept);
-        if (value != null) {
-            average *= (this.count / ++this.count);
-            average += value / count;
+        Double average = (Double)data.get(this.averageOutputBinding);
+        Long count = (Long)data.get(this.elementCountBinding);
+        
+        // the item count is a required input
+        if (count == null) {
+            throw new IllegalStateException("Average function cannot find count in data variable. Check pipeline composition.");
         }
         
-        return toAccept;
-    }
-    
-    /**
-     * Gets the average of the parsed data values.
-     * @return The average of the parsed data values.
-     */
-    public double getAverage() {
-        return this.average;
+        // the average will be missing if this is the first sample application
+        if (average == null) {
+            average = 0.0;
+        }
+        
+        // the value will be null if no data was taken for a particular sample
+        if (value == null) {
+            value = 0.0d;
+        }
+        
+        // perform the running average calculation
+        average = (average * (count - 1) + value) / count;
+        
+        data.put(this.averageOutputBinding, average);
     }
 }

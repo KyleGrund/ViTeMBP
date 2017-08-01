@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -111,11 +112,11 @@ public class CommandLine {
                             found.set(i, toProc.substring(1, toProc.length() - 1));
                         }
                         
-                        System.out.println(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
+                        LOGGER.info(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
                     }
                     
                     String[] foundArgs = found.toArray(new String[0]);
-                    System.out.println("Got args: " + Arrays.toString(foundArgs));
+                    LOGGER.info("Got args: " + Arrays.toString(foundArgs));
                     
                     // execute command
                     boolean result = processStandardCommands(
@@ -123,9 +124,9 @@ public class CommandLine {
                             functions);
                     
                     if (result) {
-                        System.out.println("Execution succeeded.");
+                        LOGGER.info("Execution succeeded.");
                     } else {
-                        System.out.println("Execution failed.");
+                        LOGGER.info("Execution failed.");
                     }
                 };
                 
@@ -173,7 +174,7 @@ public class CommandLine {
                 return true;
             }
         } else if (args[0].toUpperCase().equals("-FSD")) {
-            // command: -fs <filename> <outputFilename> [<color channel>]
+            // command: -fsd <filename> <outputFilename> [<color channel>]
             if (args.length >= 3) {
                 // gets the input video file name
                 Path videoFile = Paths.get(args[1]);
@@ -206,6 +207,25 @@ public class CommandLine {
                 }
                 // display results to console
                 System.out.println("Frames: " + Arrays.toString(frames.toArray()));
+                return true;
+            }
+        } else if (args[0].toUpperCase().equals("-PV")) {
+            // command: -pv <uuid> <videoLocation>
+            if (args.length >= 2) {
+                // gets the input video file name
+                UUID captureLocation = UUID.fromString(args[1]);
+                
+                // gets the input video file name
+                String videoFile = (args[2]);
+                
+                try {
+                    // process the video
+                    functions.processCaptureVideo(captureLocation, videoFile);
+                } catch (IOException ex) {
+                    LOGGER.error("IOException processing video for capture.", ex);
+                }
+
+                // no exceptions, return success
                 return true;
             }
         }

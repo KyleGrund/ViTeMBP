@@ -1,4 +1,8 @@
 ViTeMPB Services command line interface usage.
 Switches: 
 -fs <filename> [<color channel>]
-    finds synchronization frames for the green, or specified, color channel.
+    Finds synchronization frames for the green, or specified, color channel.
+-pv <UUID> <filename>
+    Processes a video for the corresponding capture UUID.
+-sqs <queue_name>
+    Starts a worker instance for the specified queue.

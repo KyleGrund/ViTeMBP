@@ -18,6 +18,7 @@
 package com.vitembp.data;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Map;
 
 /**
  * Represents an element in a processing pipeline for performing calculations
@@ -28,7 +29,7 @@ public abstract interface SamplePipeline {
     /**
      * Performs a calculation in a pipeline.
      * @param toAccept The sample stream which will be processed.
-     * @return The sample which was just processed.
+     * @param state The state containing necessary data and results.
      */
-    public abstract Sample accept(Sample toAccept);
+    public abstract void accept(final Sample toAccept, final Map<String, Object> state);
 }
