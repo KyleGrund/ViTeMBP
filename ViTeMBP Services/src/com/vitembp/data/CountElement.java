@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Counts the elements that went through the pipeline.
  */
-public class SamplePipelineCount implements SamplePipeline {
+public class CountElement implements PipelineElement {
     /**
      * The number of data samples that have been processed.
      */
@@ -33,12 +33,13 @@ public class SamplePipelineCount implements SamplePipeline {
      * Initializes a new instance of the SamplePipelineCount class.
      * @param countBinding The binding for the sample count in the data collection.
      */
-    public SamplePipelineCount(String countBinding) {
+    public CountElement(String countBinding) {
         this.countBinding = countBinding;
     }
     
     @Override
-    public void accept(Sample toAccept, Map<String, Object> data) {
+    public Map<String, Object> accept(Map<String, Object> data) {
+        // get necessary values from the data object
         Long count = (Long)data.get(this.countBinding);
         
         // the count will be missing on the first applicaiton
@@ -49,5 +50,7 @@ public class SamplePipelineCount implements SamplePipeline {
         // increment the count, then save it
         count++;
         data.put(this.countBinding, count);
+        
+        return data;
     }
 }

@@ -17,19 +17,16 @@
  */
 package com.vitembp.data;
 
-import com.vitembp.embedded.data.Sample;
 import java.util.Map;
 
 /**
- * Represents an element in a processing pipeline for performing calculations
- * on samples.
+ * The element creates an image with data to be overlaid onto a video frame.
  */
-@FunctionalInterface
-public abstract interface SamplePipeline {
-    /**
-     * Performs a calculation in a pipeline.
-     * @param toAccept The sample stream which will be processed.
-     * @param state The state containing necessary data and results.
-     */
-    public abstract void accept(final Sample toAccept, final Map<String, Object> state);
+public class FrameDataOverlayGeneratorElement implements PipelineElement {
+
+    @Override
+    public Map<String, Object> accept(Map<String, Object> state) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
 }

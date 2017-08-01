@@ -79,7 +79,8 @@ public class StandardPipelinesTest {
             source.addSample(toAdd);
         }
         
-        Function<Capture, Map<String, Object>> pipe = StandardPipelines.getVideoCaptureProcessingPipeline(source);
+        Function<Capture, Map<String, Object>> pipe = (cap) -> 
+                CaptureProcessor.process(cap, StandardPipelines.captureStatisticsPipeline(source));
         Map<String, Object> results = pipe.apply(source);
         
         assertEquals(366L, (long)results.get(StandardPipelines.ELEMENT_COUNT_BINDING));

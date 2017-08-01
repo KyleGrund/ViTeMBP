@@ -22,46 +22,50 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Finds the maximum value of the elements that went through the pipeline.
+ * Finds the minimum value of the elements that went through the pipeline.
  */
-public class SamplePipelineMaxValue implements SamplePipeline {
+public class SampleMinValueElement implements PipelineElement {
     /**
      * The function which parses values from the sample data.
      */
     private final Function<Sample, Double> parser;
     
     /**
-     * The binding of the max value in the data collection.
+     * The binding of the min value in the data collection.
      */
-    private final String maxBinding;
+    private final String minBinding;
     
     /**
      * Initializes a new instance of the SamplePipelineMaxValue class.
      * @param parser The function which parses the value from the sample data.
-     * @param maxBinding The binding of the maximum value in the data collection.
+     * @param minBinding The binding of the maximum value in the data collection.
      */
-    public SamplePipelineMaxValue(Function<Sample, Double> parser, String maxBinding) {
+    public SampleMinValueElement(Function<Sample, Double> parser, String minBinding) {
         this.parser = parser;
-        this.maxBinding = maxBinding;
+        this.minBinding = minBinding;
     }
     
     @Override
-    public void accept(Sample toAccept, Map<String, Object> data) {
-        Double maxValue = (Double)data.get(this.maxBinding);
+    public Map<String, Object> accept(Map<String, Object> data) {
+        // get necessary values from the data object
+        Sample toAccept = (Sample)data.get("sample");
+        Double minValue = (Double)data.get(this.minBinding);
         Double value = parser.apply(toAccept);
         
-        // the maxValue will be null until the first sample is processed
-        if (maxValue == null) {
-            maxValue = Double.MIN_VALUE;
+        // the minValue will be null until the first sample is processed
+        if (minValue == null) {
+            minValue = Double.MAX_VALUE;
         }
         
         // the value may be null if a sample is not taken
         if (value != null) {
-            if (value > maxValue) {
-                maxValue = value;
+            if (value < minValue) {
+                minValue = value;
             }
             
-            data.put(this.maxBinding, maxValue);
+            data.put(this.minBinding, minValue);
         }
+        
+        return data;
     }
 }

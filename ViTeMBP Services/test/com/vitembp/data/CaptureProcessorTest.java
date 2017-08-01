@@ -79,11 +79,11 @@ public class CaptureProcessorTest {
             source.addSample(toAdd);
         }
         
-        List<SamplePipeline> pipe = new ArrayList<>();
-        pipe.add(new SamplePipelineCount("count"));
-        pipe.add(new SamplePipelineMaxValue(((RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake")))::getPositionDegrees, "max pos"));
+        List<PipelineElement> pipe = new ArrayList<>();
+        pipe.add(new CountElement("count"));
+        pipe.add(new SampleMaxValueElement(((RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake")))::getPositionDegrees, "max pos"));
         
-        Map<String, Object> result = CaptureProcessor.process(source, pipe);
+        Map<String, Object> result = CaptureProcessor.process(source, new Pipeline(pipe));
         
         assertEquals(128L, (long)result.get("count"));
         assertEquals(365d, (double)result.get("max pos"), 0.001);

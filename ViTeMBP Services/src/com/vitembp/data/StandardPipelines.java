@@ -59,21 +59,21 @@ public class StandardPipelines {
      * @return A pipeline for processing a data capture for video
      * overlay generation
      */
-    public static Function<Capture, Map<String, Object>> getVideoCaptureProcessingPipeline(Capture toBuildFor) {
-        List<SamplePipeline> toBuild = new ArrayList<>();
+    public static Pipeline captureStatisticsPipeline(Capture toBuildFor) {
+        List<PipelineElement> toBuild = new ArrayList<>();
         
         // use the sensor factory to build sensor objects for all known sensor types
         List<Sensor> sensors = buildSensors(toBuildFor);
         
         // add a count for number of elements
-        toBuild.add(new SamplePipelineCount(ELEMENT_COUNT_BINDING));
+        toBuild.add(new CountElement(ELEMENT_COUNT_BINDING));
         
         // for each sensor calculate min, max, and average elements
         sensors.forEach((sensor) -> addAverages(sensor, toBuild));
         sensors.forEach((sensor) -> addMaximums(sensor, toBuild));
         sensors.forEach((sensor) -> addMinimums(sensor, toBuild));
         
-        return (cap) -> CaptureProcessor.process(cap, toBuild);
+        return new Pipeline(toBuild);
     }
 
     /**
@@ -81,23 +81,23 @@ public class StandardPipelines {
      * @param sensor The sensor to add the average for.
      * @param toBuild The pipeline being built.
      */
-    private static void addAverages(Sensor sensor, List<SamplePipeline> toBuild) {
+    private static void addAverages(Sensor sensor, List<PipelineElement> toBuild) {
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineAverage(
+            toBuild.add(new SampleAverageElement(
                     ((RotarySensor)sensor)::getPositionDegrees, ELEMENT_COUNT_BINDING,
                     sensor.getName() + AVERAGE_SUFFIX));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineAverage(
+            toBuild.add(new SampleAverageElement(
                     ((DistanceSensor)sensor)::getDistanceMilimeters, ELEMENT_COUNT_BINDING,
                     sensor.getName() + AVERAGE_SUFFIX));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineAverage(
+            toBuild.add(new SampleAverageElement(
                     ((AccelerometerThreeAxis)sensor)::getXAxisG, ELEMENT_COUNT_BINDING,
                     sensor.getName() + AVERAGE_X_SUFFIX));
-            toBuild.add(new SamplePipelineAverage(
+            toBuild.add(new SampleAverageElement(
                     ((AccelerometerThreeAxis)sensor)::getYAxisG, ELEMENT_COUNT_BINDING,
                     sensor.getName() + AVERAGE_Y_SUFFIX));
-            toBuild.add(new SamplePipelineAverage(
+            toBuild.add(new SampleAverageElement(
                     ((AccelerometerThreeAxis)sensor)::getZAxisG, ELEMENT_COUNT_BINDING,
                     sensor.getName() + AVERAGE_Z_SUFFIX));
         }
@@ -108,23 +108,23 @@ public class StandardPipelines {
      * @param sensor The sensor to add the average for.
      * @param toBuild The pipeline being built.
      */
-    private static void addMaximums(Sensor sensor, List<SamplePipeline> toBuild) {
+    private static void addMaximums(Sensor sensor, List<PipelineElement> toBuild) {
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineMaxValue(
+            toBuild.add(new SampleMaxValueElement(
                     ((RotarySensor)sensor)::getPositionDegrees,
                     sensor.getName() + MAX_SUFFIX));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineMaxValue(
+            toBuild.add(new SampleMaxValueElement(
                     ((DistanceSensor)sensor)::getDistanceMilimeters,
                     sensor.getName() + MAX_SUFFIX));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineMaxValue(
+            toBuild.add(new SampleMaxValueElement(
                     ((AccelerometerThreeAxis)sensor)::getXAxisG,
                     sensor.getName() + MAX_X_SUFFIX));
-            toBuild.add(new SamplePipelineMaxValue(
+            toBuild.add(new SampleMaxValueElement(
                     ((AccelerometerThreeAxis)sensor)::getYAxisG,
                     sensor.getName() + MAX_Y_SUFFIX));
-            toBuild.add(new SamplePipelineMaxValue(
+            toBuild.add(new SampleMaxValueElement(
                     ((AccelerometerThreeAxis)sensor)::getZAxisG,
                     sensor.getName() + MAX_Z_SUFFIX));
         }
@@ -135,23 +135,23 @@ public class StandardPipelines {
      * @param sensor The sensor to add the average for.
      * @param toBuild The pipeline being built.
      */
-    private static void addMinimums(Sensor sensor, List<SamplePipeline> toBuild) {
+    private static void addMinimums(Sensor sensor, List<PipelineElement> toBuild) {
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineMinValue(
+            toBuild.add(new SampleMinValueElement(
                     ((RotarySensor)sensor)::getPositionDegrees,
                     sensor.getName() + MIN_SUFFIX));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineMinValue(
+            toBuild.add(new SampleMinValueElement(
                     ((DistanceSensor)sensor)::getDistanceMilimeters,
                     sensor.getName() + MIN_SUFFIX));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
-            toBuild.add(new SamplePipelineMinValue(
+            toBuild.add(new SampleMinValueElement(
                     ((AccelerometerThreeAxis)sensor)::getXAxisG,
                     sensor.getName() + MIN_X_SUFFIX));
-            toBuild.add(new SamplePipelineMinValue(
+            toBuild.add(new SampleMinValueElement(
                     ((AccelerometerThreeAxis)sensor)::getYAxisG,
                     sensor.getName() + MIN_Y_SUFFIX));
-            toBuild.add(new SamplePipelineMinValue(
+            toBuild.add(new SampleMinValueElement(
                     ((AccelerometerThreeAxis)sensor)::getZAxisG,
                     sensor.getName() + MIN_Z_SUFFIX));
         }

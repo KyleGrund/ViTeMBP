@@ -24,7 +24,7 @@ import java.util.function.Function;
 /**
  * Finds the maximum value of the elements that went through the pipeline.
  */
-public class SamplePipelineAverage implements SamplePipeline {
+public class SampleAverageElement implements PipelineElement {
     /**
      * The function which parses values from the sample data.
      */
@@ -46,14 +46,16 @@ public class SamplePipelineAverage implements SamplePipeline {
      * @param elementCount The binding for input of the count of elements.
      * @param averageOutput The binding for the averaged output.
      */
-    public SamplePipelineAverage(Function<Sample, Double> parser, String elementCount, String averageOutput) {
+    public SampleAverageElement(Function<Sample, Double> parser, String elementCount, String averageOutput) {
         this.parser = parser;
         this.elementCountBinding = elementCount;
         this.averageOutputBinding = averageOutput;
     }
     
     @Override
-    public void accept(Sample toAccept, Map<String, Object> data) {
+    public Map<String, Object> accept(Map<String, Object> data) {
+        // get necessary values from the data object
+        Sample toAccept = (Sample)data.get("sample");
         Double value = parser.apply(toAccept);
         Double average = (Double)data.get(this.averageOutputBinding);
         Long count = (Long)data.get(this.elementCountBinding);
@@ -77,5 +79,7 @@ public class SamplePipelineAverage implements SamplePipeline {
         average = (average * (count - 1) + value) / count;
         
         data.put(this.averageOutputBinding, average);
+        
+        return data;
     }
 }
