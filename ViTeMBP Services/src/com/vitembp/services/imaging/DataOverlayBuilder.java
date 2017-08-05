@@ -31,7 +31,7 @@ import javax.imageio.ImageIO;
  * This class provides the necessary functions to create video frame data
  * overlays.
  */
-public class DataOverlayBuilder {
+class DataOverlayBuilder {
     /**
      * The image which is being created
      */
@@ -42,7 +42,7 @@ public class DataOverlayBuilder {
      * @param width The width of the overlay to create in pixels.
      * @param height The height of the overlay to create in pixels.
      */
-    public DataOverlayBuilder(int width, int height) {
+    DataOverlayBuilder(int width, int height) {
         // create the blank images
         this.frame = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics2D graphics = this.frame.createGraphics();
@@ -151,5 +151,13 @@ public class DataOverlayBuilder {
     public void saveImage(File destination) throws IOException {
         // retrieve image
         ImageIO.write(this.frame, "png", destination);
+    }
+    
+    /**
+     * Returns the constructed BufferedImage.
+     * @return The constructed BufferedImage.
+     */
+    public BufferedImage getImage() {
+        return this.frame;
     }
 }

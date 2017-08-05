@@ -22,7 +22,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,9 +50,15 @@ public class Conversion {
      * video file.
      */
     public static void extractFrames(String source, Path destination, int start, int count, FilenameGenerator nameGenerator) throws IOException {
+        VideoFileInfo info = new VideoFileInfo(Paths.get(source).toFile());
+        
+        double startTime = ((double)start) / info.getFrameRate();
+        
         // build the FFmpeg process that will extract the frames        
         ProcessBuilder pb = new ProcessBuilder(
                 "ffmpeg",
+                "-ss",
+                Double.toString(startTime),
                 "-i",
                 source,
                 "-vframes",
@@ -78,6 +86,17 @@ public class Conversion {
                 while (line != null) {
                     LOGGER.error(line);
                     line = br.readLine();
+                }
+            } else {
+                // if we didn't start at frame 0, we need to rename the files
+                // as ffmpeg always starts numbering at 1.
+                if (start > 0) {
+                    for (int i = count; i > 0 ; i--) {
+                        Path toFind = destination.resolve(nameGenerator.getPath(i));
+                        if (Files.exists(toFind)) {
+                            Files.move(toFind, destination.resolve(nameGenerator.getPath(i + start)));
+                        }
+                    }
                 }
             }
         } catch (InterruptedException ex) {

@@ -17,6 +17,7 @@
  */
 package com.vitembp.services.video;
 
+import com.vitembp.services.imaging.SyncDiagFrameProcessor;
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.FilenameGenerator;
 import com.vitembp.services.imaging.Histogram;
@@ -83,7 +84,7 @@ public class Processing {
         }
         
         // crate images with ffmpeg
-        Conversion.extractFrames(videoFile, tempDir, 1, 300, fileGenerator);
+        Conversion.extractFrames(videoFile, tempDir, 0, 300, fileGenerator);
         
         // create histogram list from images
         HistogramList histograms = HistogramList.loadFromDirectory(tempDir, fileGenerator);

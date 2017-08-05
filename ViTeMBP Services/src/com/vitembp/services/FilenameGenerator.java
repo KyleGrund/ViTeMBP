@@ -26,7 +26,7 @@ import java.nio.file.Paths;
  */
 public abstract class FilenameGenerator {
     /**
-     * A filename generator for the format "outXXXXX.png".
+     * A filename generator for the format "outXXXXXXXXX.png".
      */
     public static FilenameGenerator PNG_NUMERIC_OUT = new FilenameGenerator() {
         @Override
@@ -34,7 +34,7 @@ public abstract class FilenameGenerator {
             StringBuilder fileName = new StringBuilder();
             String fileNum = Integer.toString(index);
             fileName.append("out");
-            while (fileName.length() + fileNum.length() < 8) {
+            while (fileName.length() + fileNum.length() < 12) {
                 fileName.append("0");
             }
             fileName.append(fileNum);
@@ -44,7 +44,7 @@ public abstract class FilenameGenerator {
 
         @Override
         public String getFFmpegString() {
-            return "out%05d.png";
+            return "out%09d.png";
         } 
     };
     
