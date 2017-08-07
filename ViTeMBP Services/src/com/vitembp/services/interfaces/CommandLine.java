@@ -19,6 +19,7 @@ package com.vitembp.services.interfaces;
 
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.ApiFunctions.COLOR_CHANNELS;
+import com.vitembp.services.config.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -27,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,84 +64,29 @@ public class CommandLine {
 
     private static boolean processServerCommands(String[] args, ApiFunctions functions) {
         if (args[0].toUpperCase().equals("-HS")) {
-            System.out.println("Starting HTTP server.");
-            try {
-                Http server = new Http(8080, functions);
-            } catch (IOException ex) {
-                LOGGER.error("Exception starting web server.", ex);
+            if (args.length >= 2) {
+                // get the queue name
+                int port = Integer.parseInt(args[1]);
+                
+                // set the service config to match command line args
+                SystemConfig.getConfig().setEnableHttpInterface(true);
+                SystemConfig.getConfig().setHttpInterfacePort(port);
             }
-            return true;
         } else if (args[0].toUpperCase().equals("-SQS")) {
             // command: -sqs <queue_name>
             if (args.length >= 2) {
                 // get the queue name
                 String name = args[1];
                 
-                //create callback consumer which processes commands on the queue
-                Consumer<String> callback = (str) -> {
-                    // we will process the strings from toProcess and put them
-                    // into found
-                    List<String> toProcess = new ArrayList<>(Arrays.asList(str.split(" ")));
-                    ArrayList<String> found = new ArrayList<>();
-                    
-                    // prime our algorithm by putting the first element to
-                    // process into found
-                    if (!toProcess.isEmpty()) {
-                        found.add(toProcess.remove(0));
-                    }
-                    
-                    while (!toProcess.isEmpty()) {
-                        // if the last found element starts with a quote and
-                        // doesn't end with one, just append the next element
-                        // as we are still inside a quote region othwerwise
-                        // just add the element
-                        if (found.get(found.size() - 1).startsWith("\"") &&
-                                !found.get(found.size() - 1).endsWith("\"")) {
-                            found.set(
-                                    found.size() - 1,
-                                    found.get(found.size() - 1) + " " + toProcess.remove(0));
-                        } else {
-                            found.add(toProcess.remove(0));
-                        }
-                    }
-                    
-                    // trim open and closed quotes
-                    for (int i = 0; i < found.size(); i++) {
-                        String toProc = found.get(i);
-                        if (toProc.startsWith("\"") && toProc.endsWith("\"")) {
-                            found.set(i, toProc.substring(1, toProc.length() - 1));
-                        }
-                        
-                        LOGGER.info(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
-                    }
-                    
-                    String[] foundArgs = found.toArray(new String[0]);
-                    LOGGER.info("Got args: " + Arrays.toString(foundArgs));
-                    
-                    // execute command
-                    boolean result = processStandardCommands(
-                            foundArgs,
-                            functions);
-                    
-                    if (result) {
-                        LOGGER.info("Execution succeeded.");
-                    } else {
-                        LOGGER.info("Execution failed.");
-                    }
-                };
-                
-                // create the SQS interface
-                AmazonSimpleQueueService sqs = new AmazonSimpleQueueService(
-                        functions,
-                        callback,
-                        name);
-                return true;
+                // set the service config to match command line args
+                SystemConfig.getConfig().setEnableSqsInterface(true);
+                SystemConfig.getConfig().setSqsQueueName(name);
             }
         }
         return false;
     }
 
-    private static boolean processStandardCommands(String[] args, ApiFunctions functions) {
+    public static boolean processStandardCommands(String[] args, ApiFunctions functions) {
         if (args[0].toUpperCase().equals("-FS")) {
             // command: -fs <filename> [<color channel>]
             if (args.length >= 2) {

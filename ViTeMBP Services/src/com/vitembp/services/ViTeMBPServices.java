@@ -18,6 +18,7 @@
 package com.vitembp.services;
 
 import com.vitembp.services.interfaces.CommandLine;
+import com.vitembp.services.interfaces.ServiceControl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,9 +39,15 @@ public class ViTeMBPServices {
     public static void main(String[] args) {       
         LOGGER.info("ViTeMBPServies starting.");
         
-        // build up the API interface and a command line interface for it
+        // build up the API interface
         ApiFunctions funcs = new ApiFunctions(FilenameGenerator.PNG_NUMERIC_OUT);
+        
+        // processes command line arguments and sets the SystemConfig properties
+        // with the values of the arguments
         CommandLine.acceptArgs(args, funcs);
+        
+        // star the services as needed
+        ServiceControl.startServices(funcs);
         
         LOGGER.info("ViTeMBPServies exiting.");
     }

@@ -100,8 +100,14 @@ public class AmazonSimpleQueueService {
             for (Message msg : result.getMessages()) {
                 LOGGER.info("SQS message " + count++ + ": " + msg.getBody());
                 // process command
-                this.callback.accept(msg.getBody());
-
+                try {
+                    this.callback.accept(msg.getBody());
+                } catch (Exception ex) {
+                    LOGGER.error("Unexpected exception processing SQS message: " + msg.getBody(), ex);
+                    // dequeue failed command
+                    this.queue.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+                }
+                    
                 // dequeue command
                 this.queue.deleteMessage(this.queueUrl, msg.getReceiptHandle());
             }
