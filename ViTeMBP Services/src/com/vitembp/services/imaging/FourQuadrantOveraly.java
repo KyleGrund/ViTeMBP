@@ -18,13 +18,11 @@
 package com.vitembp.services.imaging;
 
 import com.vitembp.embedded.data.Sample;
-import com.vitembp.services.sensors.AccelerometerThreeAxis;
-import com.vitembp.services.sensors.DistanceSensor;
-import com.vitembp.services.sensors.RotarySensor;
 import com.vitembp.services.sensors.Sensor;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An OverlayFrameCreator which organizes a four quadrant layout.
@@ -64,21 +62,79 @@ class FourQuadrantOveraly implements Overlay {
      * Initializes a new instance of the FourQuadrantOveralyCreator class.
      * @param width The width of the overlay.
      * @param height The height of the overlay.
-     * @param upperLeft The upper-left overlay element.
-     * @param upperRight The upper-right overlay element.
-     * @param lowerLeft The lower-left overlay element.
-     * @param lowerRight The lower-right overlay element.
+     * @param elements Element definitions.
      */
-    FourQuadrantOveraly(int width, int height, List<Sensor> upperLeft, List<Sensor> upperRight, List<Sensor> lowerLeft, List<Sensor> lowerRight) {
+    FourQuadrantOveraly(int width, int height, List<Sensor> sensors, Map<Sensor, Double> minimumValues, Map<Sensor, Double> maximumValues, List<ElementDefinition> elements) throws InstantiationException {
         // save elements
         this.width = width;
         this.height = height;
         
-        // build elements for sensors
-        this.upperLeft = getElementForSensors(upperLeft);
-        this.upperRight = getElementForSensors(upperLeft);
-        this.lowerLeft = getElementForSensors(upperLeft);
-        this.lowerRight = getElementForSensors(upperLeft);
+        // build elements
+        if (elements.size() > 4) {
+            throw new InstantiationException("FourQuadrantOverlay can only contain 4 elements.");
+        }
+        
+        ElementDefinition topLeft = elements.stream()
+                .filter(e -> e.getLocation() == ElementLocation.TopLeft)
+                .findFirst()
+                .get();
+        ElementDefinition topRight = elements.stream()
+                .filter(e -> e.getLocation() == ElementLocation.TopRight)
+                .findFirst()
+                .get();
+        ElementDefinition bottomLeft = elements.stream()
+                .filter(e -> e.getLocation() == ElementLocation.BottomLeft)
+                .findFirst()
+                .get();
+        ElementDefinition bottomRight = elements.stream()
+                .filter(e -> e.getLocation() == ElementLocation.BottomRight)
+                .findFirst()
+                .get();
+        
+        int centerXShort = width / 2;
+        int centerXLong = (int)Math.ceil(((double)width) / 2.0d);
+        int centerYShort = width / 2;
+        int centerYLong = (int)Math.ceil(((double)width) / 2.0d);
+        
+        this.upperLeft = OverlayElementFactory.buildElement(
+                topLeft,
+                sensors,
+                minimumValues,
+                maximumValues,
+                0,
+                0,
+                centerXShort,
+                centerYShort);
+        
+        this.upperRight = OverlayElementFactory.buildElement(
+                topRight,
+                sensors,
+                minimumValues,
+                maximumValues,
+                centerXLong,
+                0,
+                width,
+                centerYShort);
+        
+        this.lowerLeft = OverlayElementFactory.buildElement(
+                bottomLeft,
+                sensors,
+                minimumValues,
+                maximumValues,
+                0,
+                centerYLong,
+                centerXShort,
+                height);
+        
+        this.lowerRight = OverlayElementFactory.buildElement(
+                bottomRight,
+                sensors,
+                minimumValues,
+                maximumValues,
+                centerXLong,
+                centerYLong,
+                width,
+                height);
     }
             
     @Override
@@ -103,22 +159,4 @@ class FourQuadrantOveraly implements Overlay {
         
         builder.saveImage(inputImage.toFile());
     }
-
-    private OverlayElement getElementForSensors(List<Sensor> sensors) {
-        if (sensors == null || sensors.isEmpty()) {
-            return null;
-        }
-        
-        Sensor first = sensors.get(0);
-        if (first instanceof AccelerometerThreeAxis) {
-            //return new ThreeAxisGOverlayElement(first);
-        } else if (first instanceof DistanceSensor) {
-            //return new ShockOverlayElement(first);
-        } else if (first instanceof RotarySensor) {
-            
-        }
-        
-        return null;
-    }
-    
 }

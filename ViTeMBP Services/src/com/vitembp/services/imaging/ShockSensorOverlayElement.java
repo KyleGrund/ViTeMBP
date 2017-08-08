@@ -18,13 +18,12 @@
 package com.vitembp.services.imaging;
 
 import com.vitembp.embedded.data.Sample;
-import com.vitembp.services.sensors.AccelerometerThreeAxis;
 import com.vitembp.services.sensors.DistanceSensor;
 
 /**
  * Creates an overlay for a linear shock sensor.
  */
-public class ShockOverlayElement extends OverlayElement {
+public class ShockSensorOverlayElement extends OverlayElement {
 /**
      * The minimum possible value the sensor can read in Gs.
      */
@@ -50,7 +49,7 @@ public class ShockOverlayElement extends OverlayElement {
      * @param maxValue The maximum possible value of the sensor data in Gs.
      * @param sensor The sensor which will read data from the sample.
      */
-    ShockOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, double minValue, double maxValue, DistanceSensor sensor) {
+    ShockSensorOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, double minValue, double maxValue, DistanceSensor sensor) {
         super(upperLeftX, upperLeftY, lowerRightX, lowerRightY);
         this.minValue = minValue;
         this.maxValue = maxValue;

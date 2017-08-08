@@ -17,11 +17,34 @@
  */
 package com.vitembp.services.imaging;
 
+import com.vitembp.services.sensors.Sensor;
+import com.vitembp.services.video.VideoFileInfo;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 /**
  * A factory class that builds an overlay from a definition.
  */
 public class OverlayFactory {
-    public static Overlay buildOverlay(String definition) throws InstantiationException {
+    public static Overlay buildOverlay(String definition, List<Sensor> sensors, Map<Sensor, Double> minimumValues, Map<Sensor, Double> maximumValues, VideoFileInfo videoInfo) throws InstantiationException {
+        OverlayDefinition def;
+        try {
+            def = OverlayDefinition.getDefinition(definition);
+        } catch(IOException ex) {
+            throw new InstantiationException("Exception loading definition.");
+        }
+        
+        switch (def.getOverlayType()) {
+            case FourQuadrant:
+                return new FourQuadrantOveraly(
+                        videoInfo.getHorizontalResolution(),
+                        videoInfo.getVerticalResolution(),
+                        sensors,
+                        minimumValues,
+                        maximumValues,
+                        def.getElementDefinitions());
+        }
         
         throw new InstantiationException("Invalid overlay definition.");
     }

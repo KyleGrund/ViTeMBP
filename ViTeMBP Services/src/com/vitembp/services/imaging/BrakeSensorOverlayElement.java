@@ -18,7 +18,7 @@
 package com.vitembp.services.imaging;
 
 import com.vitembp.embedded.data.Sample;
-import com.vitembp.services.sensors.AccelerometerThreeAxis;
+import com.vitembp.services.sensors.RotarySensor;
 
 /**
  *
@@ -26,19 +26,34 @@ import com.vitembp.services.sensors.AccelerometerThreeAxis;
  */
 class BrakeSensorOverlayElement extends OverlayElement {
     /**
-     * The minimum possible value the sensor can read in Gs.
+     * The minimum possible value the sensor can read.
      */
-    private final double minValue;
+    private final double leftMinValue;
     
     /**
-     * The maximum possible value the sensor can read in Gs.
+     * The maximum possible value the sensor can read.
      */
-    private final double maxValue;
+    private final double leftMaxValue;
+    
+    /**
+     * The minimum possible value the sensor can read.
+     */
+    private final double rightMinValue;
+    
+    /**
+     * The maximum possible value the sensor can read.
+     */
+    private final double rightMaxValue;
     
     /**
      * The sensor that will read data to overlay.
      */
-    private final AccelerometerThreeAxis sensor;
+    private final RotarySensor leftSensor;
+    
+    /**
+     * The sensor that will read data to overlay.
+     */
+    private final RotarySensor rightSensor;
     
     /**
      * Initializes a new instance of the ThreeAxisGOverlayElement class.
@@ -48,13 +63,17 @@ class BrakeSensorOverlayElement extends OverlayElement {
      * @param lowerRightY The Y-coordinate of the lower right bounding point.
      * @param minValue The minimum possible value of the sensor data in Gs.
      * @param maxValue The maximum possible value of the sensor data in Gs.
-     * @param sensor The sensor which will read data from the sample.
+     * @param leftBrakeSensor The sensor which will read data from the sample.
+     * @param rightBrakeSensor The sensor which will read data from the sample.
      */
-    BrakeSensorOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, double minValue, double maxValue, AccelerometerThreeAxis sensor) {
+    BrakeSensorOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, double leftMinValue, double leftMaxValue, RotarySensor leftBrakeSensor, double rightMinValue, double rightMaxValue, RotarySensor rightBrakeSensor) {
         super(upperLeftX, upperLeftY, lowerRightX, lowerRightY);
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.sensor = sensor;
+        this.leftMinValue = leftMinValue;
+        this.leftMaxValue = leftMaxValue;
+        this.rightMinValue = rightMinValue;
+        this.rightMaxValue = rightMaxValue;
+        this.leftSensor = leftBrakeSensor;
+        this.rightSensor = rightBrakeSensor;
     }
     
     @Override
