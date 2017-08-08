@@ -18,7 +18,7 @@
 package com.vitembp.services.interfaces;
 
 import com.vitembp.services.ApiFunctions;
-import com.vitembp.services.config.SystemConfig;
+import com.vitembp.services.config.ServicesConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class ServiceControl {
      * @param functions The API functions to expose to the interfaces.
      */
     public static void startServices(ApiFunctions functions) {
-        SystemConfig config = SystemConfig.getConfig();
+        ServicesConfig config = ServicesConfig.getConfig();
         
         // start the HTTP interface if enabled
         if (config.getEnableHttpInterface()) {

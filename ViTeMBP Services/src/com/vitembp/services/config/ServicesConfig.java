@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Provides a set of system configuration data to use during system operation.
  */
-public class SystemConfig {
+public class ServicesConfig {
     /**
      * Class logger instance.
      */
@@ -49,12 +49,12 @@ public class SystemConfig {
     /**
      * The name of the file to save and load configuration from.
      */
-    private static final Path CONFIG_FILE_PATH = Paths.get("vitembp_config.xml");
+    private static final Path CONFIG_FILE_PATH = Paths.get("vitembp_services_config.xml");
     
     /**
      * The singleton instance for this class.
      */
-    private static final SystemConfig SINGLETON = new SystemConfig();
+    private static final ServicesConfig SINGLETON = new ServicesConfig();
     
     /**
      * The path to the configuration file.
@@ -90,9 +90,9 @@ public class SystemConfig {
     /**
      * Initializes a new instance of the SystemConfig class.
      */
-    private SystemConfig() {
+    private ServicesConfig() {
         // build the system board specific configuration path
-        this.configFile = SystemConfig.CONFIG_FILE_PATH;
+        this.configFile = ServicesConfig.CONFIG_FILE_PATH;
         
         // try to load config from disk
         if (Files.exists(this.configFile)) {
@@ -106,7 +106,7 @@ public class SystemConfig {
         } else {
             LOGGER.info("System configuration not found on filesystem.");
             try {
-                this.saveConfigToPath(SystemConfig.CONFIG_FILE_PATH);
+                this.saveConfigToPath(ServicesConfig.CONFIG_FILE_PATH);
             } catch (IOException | XMLStreamException ex) {
                 LOGGER.error("Exception saving default configuraiton.", ex);
             }
@@ -181,8 +181,8 @@ public class SystemConfig {
      * Gets the SystemConfig singleton instance.
      * @return The SystemConfig singleton instance.
      */
-    public static SystemConfig getConfig() {
-        return SystemConfig.SINGLETON;
+    public static ServicesConfig getConfig() {
+        return ServicesConfig.SINGLETON;
     }
     
     /**

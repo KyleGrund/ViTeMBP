@@ -29,31 +29,50 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 
 /**
  * Class providing standard pipeline implementations.
  */
 public class StandardPipelines {
-    public static final String ELEMENT_COUNT_BINDING = "ElementCount";
-    public static final String MIN_Z_SUFFIX = "MinZ";
-    public static final String MIN_Y_SUFFIX = "MinY";
-    public static final String MIN_X_SUFFIX = "MinX";
-    public static final String MIN_SUFFIX = "Min";
-    public static final String MAX_Z_SUFFIX = "MaxZ";
-    public static final String MAX_Y_SUFFIX = "MaxY";
-    public static final String MAX_X_SUFFIX = "MaxX";
-    public static final String MAX_SUFFIX = "Max";
-    public static final String AVERAGE_Z_SUFFIX = "AverageZ";
-    public static final String AVERAGE_Y_SUFFIX = "AverageY";
-    public static final String AVERAGE_X_SUFFIX = "AverageX";
-    public static final String AVERAGE_SUFFIX = "Average";
+    /**
+     * The binding location on the data object of the element count results.
+     */
+    public static final String ELEMENT_COUNT_BINDING = "elementCount";
+    
+    /**
+     * The binding location on the data object of the sensor minimums results.
+     */
+    public static final String MIN_BINDING = "minimums";
+    
+    /**
+     * The binding location on the data object of the sensor maximums results.
+     */
+    public static final String MAX_BINDING = "maximums";
+    
+    /**
+     * The binding location on the data object of the sensor averages results.
+     */
+    public static final String AVERAGE_BINDING = "averages";
+    
+    /**
+     * The binding location on the data object of the sensors list.
+     */
+    public static final String SENSORS_BINDING = "sensors";
     
     /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
+    /**
+     * Creates a video overlay generation pipeline.
+     * @param capture The capture to build an overlay generator for.
+     * @param videoFile The video file to build the overlay generator for.
+     * @return The built up overlay.
+     * @throws IOException If there is an error accessing the video or capture.
+     */
     public static Pipeline captureVideoOverlayPipeline(Capture capture, Path videoFile) throws IOException {
         List<PipelineElement> toBuild = new ArrayList<>();
         Path outDir = Files.createTempDirectory("vitembp");
@@ -67,22 +86,23 @@ public class StandardPipelines {
      * Builds and returns a pipeline for processing a data capture for video
      * overlay generation.
      * @param toBuildFor The capture to build the pipeline for.
+     * @param sensors The sensors used to decode the capture data.
      * @return A pipeline for processing a data capture for video
      * overlay generation
      */
-    public static Pipeline captureStatisticsPipeline(Capture toBuildFor) {
+    public static Pipeline captureStatisticsPipeline(Capture toBuildFor, Map<String, Sensor> sensors) {
         List<PipelineElement> toBuild = new ArrayList<>();
-        
-        // use the sensor factory to build sensor objects for all known sensor types
-        List<Sensor> sensors = buildSensors(toBuildFor);
+                
+        // add a seed for the sensors data
+        toBuild.add(new SeedValueElement(SENSORS_BINDING, sensors));
         
         // add a count for number of elements
         toBuild.add(new CountElement(ELEMENT_COUNT_BINDING));
         
         // for each sensor calculate min, max, and average elements
-        sensors.forEach((sensor) -> addAverages(sensor, toBuild));
-        sensors.forEach((sensor) -> addMaximums(sensor, toBuild));
-        sensors.forEach((sensor) -> addMinimums(sensor, toBuild));
+        sensors.values().forEach((sensor) -> addAverages(sensor, toBuild));
+        sensors.values().forEach((sensor) -> addMaximums(sensor, toBuild));
+        sensors.values().forEach((sensor) -> addMinimums(sensor, toBuild));
         
         return new Pipeline(toBuild);
     }
@@ -96,21 +116,21 @@ public class StandardPipelines {
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
                     ((RotarySensor)sensor)::getPositionDegrees, ELEMENT_COUNT_BINDING,
-                    sensor.getName() + AVERAGE_SUFFIX));
+                    AVERAGE_BINDING, sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
                     ((DistanceSensor)sensor)::getDistanceMilimeters, ELEMENT_COUNT_BINDING,
-                    sensor.getName() + AVERAGE_SUFFIX));
+                    AVERAGE_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
                     ((AccelerometerThreeAxis)sensor)::getXAxisG, ELEMENT_COUNT_BINDING,
-                    sensor.getName() + AVERAGE_X_SUFFIX));
+                    AVERAGE_BINDING, sensor));
             toBuild.add(new SampleAverageElement(
                     ((AccelerometerThreeAxis)sensor)::getYAxisG, ELEMENT_COUNT_BINDING,
-                    sensor.getName() + AVERAGE_Y_SUFFIX));
+                    AVERAGE_BINDING, sensor));
             toBuild.add(new SampleAverageElement(
                     ((AccelerometerThreeAxis)sensor)::getZAxisG, ELEMENT_COUNT_BINDING,
-                    sensor.getName() + AVERAGE_Z_SUFFIX));
+                    AVERAGE_BINDING, sensor));
         }
     }
 
@@ -123,21 +143,21 @@ public class StandardPipelines {
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
                     ((RotarySensor)sensor)::getPositionDegrees,
-                    sensor.getName() + MAX_SUFFIX));
+                    MAX_BINDING, sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
                     ((DistanceSensor)sensor)::getDistanceMilimeters,
-                    sensor.getName() + MAX_SUFFIX));
+                    MAX_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
                     ((AccelerometerThreeAxis)sensor)::getXAxisG,
-                    sensor.getName() + MAX_X_SUFFIX));
+                    MAX_BINDING, sensor));
             toBuild.add(new SampleMaxValueElement(
                     ((AccelerometerThreeAxis)sensor)::getYAxisG,
-                    sensor.getName() + MAX_Y_SUFFIX));
+                    MAX_BINDING, sensor));
             toBuild.add(new SampleMaxValueElement(
                     ((AccelerometerThreeAxis)sensor)::getZAxisG,
-                    sensor.getName() + MAX_Z_SUFFIX));
+                    MAX_BINDING, sensor));
         }
     }
     
@@ -150,43 +170,21 @@ public class StandardPipelines {
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
                     ((RotarySensor)sensor)::getPositionDegrees,
-                    sensor.getName() + MIN_SUFFIX));
+                    MIN_BINDING, sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
                     ((DistanceSensor)sensor)::getDistanceMilimeters,
-                    sensor.getName() + MIN_SUFFIX));
+                    MIN_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
                     ((AccelerometerThreeAxis)sensor)::getXAxisG,
-                    sensor.getName() + MIN_X_SUFFIX));
+                    MIN_BINDING, sensor));
             toBuild.add(new SampleMinValueElement(
                     ((AccelerometerThreeAxis)sensor)::getYAxisG,
-                    sensor.getName() + MIN_Y_SUFFIX));
+                    MIN_BINDING, sensor));
             toBuild.add(new SampleMinValueElement(
                     ((AccelerometerThreeAxis)sensor)::getZAxisG,
-                    sensor.getName() + MIN_Z_SUFFIX));
+                    MIN_BINDING, sensor));
         }
-    }
-    
-    /**
-     * Builds sensor objects for all known sensors in the capture.
-     * @param toBuildFor The capture to build sensors for.
-     * @return A list containing sensor objects for all known sensors.
-     */
-    private static List<Sensor> buildSensors(Capture toBuildFor) {
-        List<Sensor> toReturn = new ArrayList<>();
-        
-        toBuildFor.getSensorTypes().entrySet().stream()
-                .map((entry) -> {
-                    try {
-                        return SensorFactory.getSensor(entry.getKey(), entry.getValue());
-                    } catch (InstantiationException ex) {
-                        LOGGER.error("Unknown sensor: " + entry.getKey() + ", " + entry.getValue().toString() + ".", ex);
-                        return null;
-                    }
-                })
-                .forEach(toReturn::add);
-        
-        return toReturn;
     }
 }

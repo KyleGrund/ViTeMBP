@@ -17,12 +17,29 @@
  */
 package com.vitembp.services.sensors;
 
+import com.vitembp.embedded.data.Capture;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A factory class which creates sensor objects.
  */
 public class SensorFactory {
+    /**
+     * Class logger instance.
+     */
+    private static final Logger LOGGER = LogManager.getLogger();
+    
+    /**
+     * Gets a sensor for the name and type provided.
+     * @param name The name of the sensor to build.
+     * @param type The type of the sensor to build.
+     * @return A sensor object for the provided name and type.
+     * @throws InstantiationException If the sensor type is unknown.
+     */
     public static Sensor getSensor(String name, UUID type) throws InstantiationException {
         // build sensor object based on type UUID
         if (RotaryEncoderEAW0J.TYPE_UUID.equals(type)) {
@@ -40,5 +57,27 @@ public class SensorFactory {
                 "\" with ID \"" +
                 type.toString() +
                 "\".");
+    }
+    
+    /**
+     * Builds sensor objects for all known sensors in the capture.
+     * @param toBuildFor The capture to build sensors for.
+     * @return A list containing sensor objects for all known sensors.
+     */
+    public static Map<String, Sensor> getSensors(Capture toBuildFor) {
+        Map<String, Sensor> toReturn = new HashMap<>();
+        
+        toBuildFor.getSensorTypes().entrySet().stream()
+                .map((entry) -> {
+                    try {
+                        return SensorFactory.getSensor(entry.getKey(), entry.getValue());
+                    } catch (InstantiationException ex) {
+                        LOGGER.error("Unknown sensor: " + entry.getKey() + ", " + entry.getValue().toString() + ".", ex);
+                        return null;
+                    }
+                })
+                .forEach(s -> toReturn.put(s.getName(), s));
+        
+        return toReturn;
     }
 }

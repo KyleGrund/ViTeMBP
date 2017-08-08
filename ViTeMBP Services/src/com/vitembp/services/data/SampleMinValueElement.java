@@ -18,6 +18,8 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.sensors.Sensor;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -33,37 +35,50 @@ class SampleMinValueElement implements PipelineElement {
     /**
      * The binding of the min value in the data collection.
      */
-    private final String minBinding;
+    private final String outputBinding;
+    
+    /**
+     * The sensor this element is bound to.
+     */
+    private final Sensor sensorBinding;
     
     /**
      * Initializes a new instance of the SamplePipelineMaxValue class.
      * @param parser The function which parses the value from the sample data.
-     * @param minBinding The binding of the maximum value in the data collection.
+     * @param outputBinding The binding of the maximum value in the data collection.
      */
-    SampleMinValueElement(Function<Sample, Double> parser, String minBinding) {
+    SampleMinValueElement(Function<Sample, Double> parser, String outputBinding, Sensor sensorBinding) {
         this.parser = parser;
-        this.minBinding = minBinding;
+        this.outputBinding = outputBinding;
+        this.sensorBinding = sensorBinding;
     }
     
     @Override
     public Map<String, Object> accept(Map<String, Object> data) {
         // get necessary values from the data object
         Sample toAccept = (Sample)data.get("sample");
-        Double minValue = (Double)data.get(this.minBinding);
+        
+        // the first time this is executed there will be no map on the data element
+        if (!data.containsKey(this.outputBinding)) {
+            data.put(this.outputBinding, new HashMap<>());
+        }
+        
+        Map<Sensor, Double> minValues = (Map<Sensor, Double>)data.get(this.outputBinding);
+        Double minValue = minValues.get(this.sensorBinding);
         Double value = parser.apply(toAccept);
         
         // the minValue will be null until the first sample is processed
         if (minValue == null) {
             minValue = Double.MAX_VALUE;
+            minValues.put(this.sensorBinding, minValue);
         }
         
         // the value may be null if a sample is not taken
         if (value != null) {
             if (value < minValue) {
-                minValue = value;
+                minValues.put(this.sensorBinding, value);
+                data.put(this.outputBinding, minValues);
             }
-            
-            data.put(this.minBinding, minValue);
         }
         
         return data;

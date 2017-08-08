@@ -17,9 +17,6 @@
  */
 package com.vitembp.services.sensors;
 
-import com.vitembp.services.sensors.AccelerometerFXOS8700CQSerial;
-import com.vitembp.services.sensors.RotaryEncoderEAW0J;
-import com.vitembp.services.sensors.DistanceVL53L0X;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.data.CaptureFactory;
 import com.vitembp.embedded.data.CaptureTypes;

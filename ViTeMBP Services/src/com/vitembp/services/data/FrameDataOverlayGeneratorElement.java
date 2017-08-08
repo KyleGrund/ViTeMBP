@@ -18,10 +18,13 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Capture;
+import com.vitembp.services.imaging.OverlayFactory;
 import com.vitembp.services.sensors.Sensor;
 import com.vitembp.services.sensors.SensorFactory;
+import com.vitembp.services.video.VideoFileInfo;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -38,19 +41,23 @@ class FrameDataOverlayGeneratorElement implements PipelineElement {
      * @throws InstantiationException If sensor instances cannot be built for
      * all sensors in the capture.
      */
-    FrameDataOverlayGeneratorElement(Capture toBuildFor, String framePathBinding) throws InstantiationException {
+    FrameDataOverlayGeneratorElement(Capture toBuildFor, VideoFileInfo videoInfo, String overlayDefinition, String framePathBinding) throws InstantiationException {
         // save parameters
         this.framePathBinding = framePathBinding;
         
-        // build up sensor objects for each 
-        Map<String, Sensor> sensors = new HashMap<>();
-        for (Entry<String, UUID> entry : toBuildFor.getSensorTypes().entrySet()) {
-                sensors.put(
-                        entry.getKey(),
-                        SensorFactory.getSensor(entry.getKey(), entry.getValue()));
-        }
+        // build sensors used to decode the data from the capture
+        Map<String, Sensor> sensors = SensorFactory.getSensors(toBuildFor);
         
+        // calculate basic statistics for capture
+        Pipeline statsPipe = StandardPipelines.captureStatisticsPipeline(toBuildFor, sensors);
+        Map<String, Object> stats = CaptureProcessor.process(toBuildFor, statsPipe);
         
+        OverlayFactory.buildOverlay(
+                overlayDefinition,
+                (List<Sensor>)stats.get(StandardPipelines.SENSORS_BINDING),
+                (Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING),
+                (Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING),
+                videoInfo);
     }
     
     @Override

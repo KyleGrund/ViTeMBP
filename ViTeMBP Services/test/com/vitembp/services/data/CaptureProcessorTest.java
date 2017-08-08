@@ -17,14 +17,10 @@
  */
 package com.vitembp.services.data;
 
-import com.vitembp.services.data.CountElement;
-import com.vitembp.services.data.Pipeline;
-import com.vitembp.services.data.CaptureProcessor;
-import com.vitembp.services.data.PipelineElement;
-import com.vitembp.services.data.SampleMaxValueElement;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.services.sensors.Captures;
 import com.vitembp.services.sensors.RotarySensor;
+import com.vitembp.services.sensors.Sensor;
 import com.vitembp.services.sensors.SensorFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,11 +82,12 @@ public class CaptureProcessorTest {
         
         List<PipelineElement> pipe = new ArrayList<>();
         pipe.add(new CountElement("count"));
-        pipe.add(new SampleMaxValueElement(((RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake")))::getPositionDegrees, "max pos"));
+        RotarySensor brakeSensor = (RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake"));
+        pipe.add(new SampleMaxValueElement(brakeSensor::getPositionDegrees, "max pos", brakeSensor));
         
         Map<String, Object> result = CaptureProcessor.process(source, new Pipeline(pipe));
         
         assertEquals(128L, (long)result.get("count"));
-        assertEquals(365d, (double)result.get("max pos"), 0.001);
+        assertEquals(365d, (double)((Map<Sensor, Double>)result.get("max pos")).get(brakeSensor), 0.001);
     }
 }

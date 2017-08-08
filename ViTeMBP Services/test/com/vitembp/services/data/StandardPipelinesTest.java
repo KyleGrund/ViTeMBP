@@ -17,11 +17,10 @@
  */
 package com.vitembp.services.data;
 
-import com.vitembp.services.data.Pipeline;
-import com.vitembp.services.data.StandardPipelines;
-import com.vitembp.services.data.CaptureProcessor;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.services.sensors.Captures;
+import com.vitembp.services.sensors.Sensor;
+import com.vitembp.services.sensors.SensorFactory;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -70,7 +69,9 @@ public class StandardPipelinesTest {
     public void testCaptureStatisticsPipeline() throws InstantiationException {
         System.out.println("getVideoCaptureProcessingPipeline");
         
+        // create capture and sesnors
         Capture source = Captures.createCapture();
+        Map<String, Sensor> sensors = SensorFactory.getSensors(source);
         
         // add some unique data
         for (int i = 0; i <= 365; i++) {
@@ -87,38 +88,35 @@ public class StandardPipelinesTest {
         }
         
         Function<Capture, Map<String, Object>> pipe = (cap) -> 
-                CaptureProcessor.process(cap, StandardPipelines.captureStatisticsPipeline(source));
+                CaptureProcessor.process(cap, StandardPipelines.captureStatisticsPipeline(source, sensors));
         Map<String, Object> results = pipe.apply(source);
+        
+        // get resutls collections
+        Map<Sensor, Double> averages = (Map<Sensor, Double>)results.get(StandardPipelines.AVERAGE_BINDING);
+        Map<Sensor, Double> minimums = (Map<Sensor, Double>)results.get(StandardPipelines.MIN_BINDING);
+        Map<Sensor, Double> maximums = (Map<Sensor, Double>)results.get(StandardPipelines.MAX_BINDING);
         
         assertEquals(366L, (long)results.get(StandardPipelines.ELEMENT_COUNT_BINDING));
         
-        assertEquals(174.72d, (double)results.get("Front Brake" + StandardPipelines.AVERAGE_SUFFIX), 0.01);
-        assertEquals(0.0d, (double)results.get("Front Brake" + StandardPipelines.MIN_SUFFIX), 0.01);
-        assertEquals(365.0d, (double)results.get("Front Brake" + StandardPipelines.MAX_SUFFIX), 0.01);
+        assertEquals(174.72d, (double)averages.get(sensors.get("Front Brake")), 0.01);
+        assertEquals(0.0d, (double)minimums.get(sensors.get("Front Brake")), 0.01);
+        assertEquals(365.0d, (double)maximums.get(sensors.get("Front Brake")), 0.01);
         
-        assertEquals(174.72d, (double)results.get("Rear Brake" + StandardPipelines.AVERAGE_SUFFIX), 0.01);
-        assertEquals(0.0d, (double)results.get("Rear Brake" + StandardPipelines.MIN_SUFFIX), 0.01);
-        assertEquals(365.0d, (double)results.get("Rear Brake" + StandardPipelines.MAX_SUFFIX), 0.01);
+        assertEquals(174.72d, (double)averages.get(sensors.get("Rear Brake")), 0.01);
+        assertEquals(0.0d, (double)minimums.get(sensors.get("Rear Brake")), 0.01);
+        assertEquals(365.0d, (double)maximums.get(sensors.get("Rear Brake")), 0.01);
         
-        assertEquals(67.39d, (double)results.get("Front Shock" + StandardPipelines.AVERAGE_SUFFIX), 0.01);
-        assertEquals(0.0d, (double)results.get("Front Shock" + StandardPipelines.MIN_SUFFIX), 0.01);
-        assertEquals(150.0d, (double)results.get("Front Shock" + StandardPipelines.MAX_SUFFIX), 0.01);
+        assertEquals(67.39d, (double)averages.get(sensors.get("Front Shock")), 0.01);
+        assertEquals(0.0d, (double)minimums.get(sensors.get("Front Shock")), 0.01);
+        assertEquals(150.0d, (double)maximums.get(sensors.get("Front Shock")), 0.01);
         
-        assertEquals(37.76d, (double)results.get("Rear Shock" + StandardPipelines.AVERAGE_SUFFIX), 0.01);
-        assertEquals(0.0d, (double)results.get("Rear Shock" + StandardPipelines.MIN_SUFFIX), 0.01);
-        assertEquals(80.0d, (double)results.get("Rear Shock" + StandardPipelines.MAX_SUFFIX), 0.01);
+        assertEquals(37.76d, (double)averages.get(sensors.get("Rear Shock")), 0.01);
+        assertEquals(0.0d, (double)minimums.get(sensors.get("Rear Shock")), 0.01);
+        assertEquals(80.0d, (double)maximums.get(sensors.get("Rear Shock")), 0.01);
         
-        assertEquals(2.00d, (double)results.get("Frame Accelerometer" + StandardPipelines.AVERAGE_X_SUFFIX), 0.1);
-        assertEquals(0.0d, (double)results.get("Frame Accelerometer" + StandardPipelines.MIN_X_SUFFIX), 0.01);
-        assertEquals(4.0d, (double)results.get("Frame Accelerometer" + StandardPipelines.MAX_X_SUFFIX), 0.01);
-        
-        assertEquals(2.00d, (double)results.get("Frame Accelerometer" + StandardPipelines.AVERAGE_Y_SUFFIX), 0.1);
-        assertEquals(0.0d, (double)results.get("Frame Accelerometer" + StandardPipelines.MIN_Y_SUFFIX), 0.01);
-        assertEquals(4.0d, (double)results.get("Frame Accelerometer" + StandardPipelines.MAX_Y_SUFFIX), 0.01);
-        
-        assertEquals(2.00d, (double)results.get("Frame Accelerometer" + StandardPipelines.AVERAGE_Y_SUFFIX), 0.1);
-        assertEquals(0.0d, (double)results.get("Frame Accelerometer" + StandardPipelines.MIN_Y_SUFFIX), 0.01);
-        assertEquals(4.0d, (double)results.get("Frame Accelerometer" + StandardPipelines.MAX_Y_SUFFIX), 0.01);
+        assertEquals(2.00d, (double)averages.get(sensors.get("Frame Accelerometer")), 0.1);
+        assertEquals(0.0d, (double)minimums.get(sensors.get("Frame Accelerometer")), 0.01);
+        assertEquals(4.0d, (double)maximums.get(sensors.get("Frame Accelerometer")), 0.01);
     }
 
     /**

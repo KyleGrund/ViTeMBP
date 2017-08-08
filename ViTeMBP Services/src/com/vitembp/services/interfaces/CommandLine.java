@@ -19,7 +19,7 @@ package com.vitembp.services.interfaces;
 
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.ApiFunctions.COLOR_CHANNELS;
-import com.vitembp.services.config.SystemConfig;
+import com.vitembp.services.config.ServicesConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -69,8 +69,8 @@ public class CommandLine {
                 int port = Integer.parseInt(args[1]);
                 
                 // set the service config to match command line args
-                SystemConfig.getConfig().setEnableHttpInterface(true);
-                SystemConfig.getConfig().setHttpInterfacePort(port);
+                ServicesConfig.getConfig().setEnableHttpInterface(true);
+                ServicesConfig.getConfig().setHttpInterfacePort(port);
             }
         } else if (args[0].toUpperCase().equals("-SQS")) {
             // command: -sqs <queue_name>
@@ -79,8 +79,8 @@ public class CommandLine {
                 String name = args[1];
                 
                 // set the service config to match command line args
-                SystemConfig.getConfig().setEnableSqsInterface(true);
-                SystemConfig.getConfig().setSqsQueueName(name);
+                ServicesConfig.getConfig().setEnableSqsInterface(true);
+                ServicesConfig.getConfig().setSqsQueueName(name);
             }
         }
         return false;

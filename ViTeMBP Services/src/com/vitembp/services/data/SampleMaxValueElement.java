@@ -18,6 +18,8 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.sensors.Sensor;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -33,37 +35,51 @@ class SampleMaxValueElement implements PipelineElement {
     /**
      * The binding of the max value in the data collection.
      */
-    private final String maxBinding;
+    private final String outputBinding;
+    
+    /**
+     * The sensor that this element is calculating maximum values for.
+     */
+    private final Sensor sensorBinding;
     
     /**
      * Initializes a new instance of the SamplePipelineMaxValue class.
      * @param parser The function which parses the value from the sample data.
-     * @param maxBinding The binding of the maximum value in the data collection.
+     * @param outputBinding The binding of the maximum value in the data collection.
+     * @param sensorBinding The sensor that this element is bound to.
      */
-    SampleMaxValueElement(Function<Sample, Double> parser, String maxBinding) {
+    SampleMaxValueElement(Function<Sample, Double> parser, String outputBinding, Sensor sensorBinding) {
         this.parser = parser;
-        this.maxBinding = maxBinding;
+        this.outputBinding = outputBinding;
+        this.sensorBinding = sensorBinding;
     }
     
     @Override
     public Map<String, Object> accept(Map<String, Object> data) {
         // get necessary values from the data object
         Sample toAccept = (Sample)data.get("sample");
-        Double maxValue = (Double)data.get(this.maxBinding);
+        
+        // the first time this is executed there will be no map on the data element
+        if (!data.containsKey(this.outputBinding)) {
+            data.put(this.outputBinding, new HashMap<>());
+        }
+        
+        Map<Sensor, Double> maxValues = (Map<Sensor, Double>)data.get(this.outputBinding);
+        Double maxValue = maxValues.get(this.sensorBinding);
         Double value = parser.apply(toAccept);
         
         // the maxValue will be null until the first sample is processed
         if (maxValue == null) {
             maxValue = Double.MIN_VALUE;
+            maxValues.put(this.sensorBinding, maxValue);
         }
         
         // the value may be null if a sample is not taken
         if (value != null) {
             if (value > maxValue) {
-                maxValue = value;
+                maxValues.put(this.sensorBinding, value);
+                data.put(this.outputBinding, maxValues);
             }
-            
-            data.put(this.maxBinding, maxValue);
         }
         
         return data;

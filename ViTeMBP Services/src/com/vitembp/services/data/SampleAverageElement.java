@@ -18,6 +18,8 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.sensors.Sensor;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -38,18 +40,25 @@ class SampleAverageElement implements PipelineElement {
     /**
      * The binding of the output of the average in the data collection.
      */
-    private final String averageOutputBinding;
+    private final String outputBinding;
+    
+    /**
+     * The sensor we are collecting data for.
+     */
+    private final Sensor sensorBinding;
        
     /**
      * Initializes a new instance of the SamplePipelineAverage class.
      * @param parser The function which parses the value from the sample data.
      * @param elementCount The binding for input of the count of elements.
-     * @param averageOutput The binding for the averaged output.
+     * @param outputBinding The binding for the averaged output.
+     * @param sensorBinding The sensor this element is bound to.
      */
-    SampleAverageElement(Function<Sample, Double> parser, String elementCount, String averageOutput) {
+    SampleAverageElement(Function<Sample, Double> parser, String elementCount, String outputBinding, Sensor sensorBinding) {
         this.parser = parser;
         this.elementCountBinding = elementCount;
-        this.averageOutputBinding = averageOutput;
+        this.outputBinding = outputBinding;
+        this.sensorBinding = sensorBinding;
     }
     
     @Override
@@ -57,7 +66,15 @@ class SampleAverageElement implements PipelineElement {
         // get necessary values from the data object
         Sample toAccept = (Sample)data.get("sample");
         Double value = parser.apply(toAccept);
-        Double average = (Double)data.get(this.averageOutputBinding);
+        
+        // the first time this is executed there will be no map on the data element
+        if (!data.containsKey(this.outputBinding)) {
+            data.put(this.outputBinding, new HashMap<>());
+        }
+        
+        // get the average for our sensor from the averages collection
+        Map<Sensor, Double> averages = (Map<Sensor, Double>)data.get(this.outputBinding);
+        Double average = averages.get(this.sensorBinding);
         Long count = (Long)data.get(this.elementCountBinding);
         
         // the item count is a required input
@@ -78,7 +95,9 @@ class SampleAverageElement implements PipelineElement {
         // perform the running average calculation
         average = (average * (count - 1) + value) / count;
         
-        data.put(this.averageOutputBinding, average);
+        // save the average back to the data binding
+        averages.put(sensorBinding, average);
+        data.put(this.outputBinding, averages);
         
         return data;
     }
