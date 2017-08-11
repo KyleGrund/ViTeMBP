@@ -58,6 +58,12 @@ class ThreeAxisGOverlayElement extends OverlayElement {
 
     @Override
     public void apply(DataOverlayBuilder builder, Sample data) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        double xValue = this.sensor.getXAxisG(data);
+        double yValue = this.sensor.getYAxisG(data);
+        double zValue = this.sensor.getZAxisG(data);
+        
+        builder.addText("X: " + Double.toString(xValue), this.upperLeftX + 4, this.upperLeftY + 4);
+        builder.addText("Y: " + Double.toString(yValue), this.upperLeftX + 4, this.upperLeftY + 24);
+        builder.addText("Z: " + Double.toString(zValue), this.upperLeftX + 4, this.upperLeftY + 44);
     }
 }

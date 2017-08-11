@@ -21,11 +21,13 @@ import com.vitembp.embedded.data.Capture;
 import com.vitembp.services.sensors.Captures;
 import com.vitembp.services.sensors.Sensor;
 import com.vitembp.services.sensors.SensorFactory;
+import com.vitembp.services.video.VideoFileInfo;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -121,6 +123,7 @@ public class StandardPipelinesTest {
 
     /**
      * Test of captureVideoOverlayPipeline method, of class StandardPipelines.
+     * @throws java.lang.Exception
      */
     @Test
     public void testCaptureVideoOverlayPipeline() throws Exception {
@@ -150,8 +153,10 @@ public class StandardPipelinesTest {
             fail("Unexpected exception: " + ex.getMessage());
         }
         
-        Pipeline toTest = StandardPipelines.captureVideoOverlayPipeline(source, videoFile);
+        Path outFile = Paths.get("D:\\temp\\GOPR0054_1.mp4");
         
-        Map<String, Object> results = CaptureProcessor.process(source, toTest);
-    }    
+        Pipeline toTest = StandardPipelines.captureVideoOverlayPipeline(source, videoFile, outFile, StandardOverlayDefinitions.getStandardFourQuadrant());
+        
+        Map<String, Object> results = CaptureProcessor.processUntilFlush(source, toTest);
+    }
 }

@@ -22,6 +22,7 @@ import com.vitembp.embedded.data.Sample;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Provides an interface to process data in a capture.
@@ -44,6 +45,42 @@ public class CaptureProcessor {
                 return null;
             }
         });
+        
+        return toReturn;
+    }
+    
+    /**
+     * Processes the data in the capture using the pipeline and then puts empty
+     * data through until a flush condition is found.
+     * @param source The capture containing the data to process.
+     * @param pipeline The pipeline of elements used to process the data.
+     * @return The results of the pipeline application.
+     */
+    public static Map<String, Object> processUntilFlush(Capture source, Pipeline pipeline) {
+        Map<String, Object> toReturn = new HashMap<>();
+        Iterator<Sample> samples = source.getSamples().iterator();
+        pipeline.execute(() -> {
+            if (samples.hasNext()) {
+                toReturn.put("sample", samples.next());
+                return toReturn;
+            } else {
+                return null;
+            }
+        });
+        
+        // feed empty data until pipeline detects end of video frames and
+        // flushes itself
+        pipeline.execute(new Supplier<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> get() {
+                if (!toReturn.containsKey("Flush")) {
+                    return toReturn;
+                } else {
+                    return null;
+                }
+            }
+        });
+        
         return toReturn;
     }
 }

@@ -78,6 +78,13 @@ class BrakeSensorOverlayElement extends OverlayElement {
     
     @Override
     public void apply(DataOverlayBuilder builder, Sample data) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        double leftDegrees = this.leftSensor.getPositionDegrees(data);
+        double rightDegrees = this.rightSensor.getPositionDegrees(data);
+        
+        double leftPercent = (leftDegrees - leftMinValue) / (leftMaxValue - leftMinValue);
+        double rightPercent = (rightDegrees - rightMinValue) / (rightMaxValue - rightMinValue);
+        
+        builder.addText("L: " + Double.toString(leftPercent), this.upperLeftX + 4, this.upperLeftY + 4);
+        builder.addText("R: " + Double.toString(rightPercent), this.upperLeftX + 4, this.upperLeftY + 24);
     }
 }

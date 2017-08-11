@@ -38,6 +38,11 @@ class CountElement implements PipelineElement {
     
     @Override
     public Map<String, Object> accept(Map<String, Object> data) {
+        // do not process data if the pipeline is flushing
+        if (data.containsKey("Flush")) {
+            return data;
+        }
+        
         // get necessary values from the data object
         Long count = (Long)data.get(this.countBinding);
         

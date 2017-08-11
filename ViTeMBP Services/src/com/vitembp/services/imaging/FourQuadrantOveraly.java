@@ -93,8 +93,8 @@ class FourQuadrantOveraly implements Overlay {
         
         int centerXShort = width / 2;
         int centerXLong = (int)Math.ceil(((double)width) / 2.0d);
-        int centerYShort = width / 2;
-        int centerYLong = (int)Math.ceil(((double)width) / 2.0d);
+        int centerYShort = height / 2;
+        int centerYLong = (int)Math.ceil(((double)height) / 2.0d);
         
         this.upperLeft = OverlayElementFactory.buildElement(
                 topLeft,

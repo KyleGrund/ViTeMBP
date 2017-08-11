@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -195,22 +196,39 @@ public class VideoFileInfo {
         // split up the video data entry around commas 
         String[] values = line.split("Video:")[1].split(",");
         
+        boolean foundResolution = false;
+        
+        Pattern findRes = Pattern.compile("^\\s\\d+x\\d+$");
         // find the entry with resolution
         for (String val : values) {
-            if (val.contains("SAR")) {
+            if (val.contains("SAR") || findRes.matcher(val).find()) {
                 String[] res = val.trim().split(" ")[0].split("x");
                 this.horizontalResolution = Integer.parseInt(res[0]);
                 this.verticalResolution = Integer.parseInt(res[1]);
+                foundResolution = true;
                 break;
             }
         }
+        
+        if (!foundResolution) {
+            LOGGER.error("Resolution not found.");
+            return;
+        }
+        
+        boolean foundFPS = false;
         
         // find framerate
         for (String val : values) {
             if (val.contains("fps")) {
                 this.frameRate = Double.parseDouble(val.trim().split(" ")[0]);
+                foundFPS = true;
                 break;
             }
+        }
+        
+        if (!foundFPS) {
+            LOGGER.error("Frame rate not found.");
+            return;
         }
     }
 }

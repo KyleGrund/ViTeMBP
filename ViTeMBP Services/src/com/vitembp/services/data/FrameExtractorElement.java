@@ -21,8 +21,6 @@ import com.vitembp.services.FilenameGenerator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,10 +54,9 @@ class FrameExtractorElement implements PipelineElement {
     private final String frameNameBinding;
     
     /**
-     * Keeps track of the files that were created so that they can later be
-     * deleted.
+     * The key of the sample count on the state object.
      */
-    private final List<Path> generatedFiles = new ArrayList<>();
+    private final String countBinding;
     
     /**
      * Initializes a new instance of the FrameExtractorElement class.
@@ -69,32 +66,37 @@ class FrameExtractorElement implements PipelineElement {
      * @param frameBatchSize The number of frames to extract in a single extraction process as they
      * are expensive in time and disk space.
      */
-    FrameExtractorElement(Path inputFile, Path outputDir, FilenameGenerator nameGenerator, int frameBatchSize, String frameNameBinding) {
+    FrameExtractorElement(Path inputFile, Path outputDir, FilenameGenerator nameGenerator, int frameBatchSize, String frameNameBinding, String countBinding) {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.nameGenerator = nameGenerator;
         this.frameBatchSize = frameBatchSize;
         this.frameNameBinding = frameNameBinding;
+        this.countBinding = countBinding;
     }
     
     @Override
     public Map<String, Object> accept(Map<String, Object> state) throws PipelineExecutionException {
+        // do not process data if the pipeline is flushing
+        if (state.containsKey("Flush")) {
+            return state;
+        }
+        
         // get current frame number
-        long frame = (long)state.get("count");
+        long frame = (long)state.get(this.countBinding);
+        
+        long expectedFileNum = frame;
+        while (expectedFileNum > this.frameBatchSize) {
+            expectedFileNum -= this.frameBatchSize;
+        }
         
         // get expected file name
-        Path expectedFile = this.outputDir.resolve(this.nameGenerator.getPath((int)frame));
+        Path expectedFile = this.outputDir.resolve(this.nameGenerator.getPath((int)expectedFileNum));
         
-        // check if that is already extracted
+        // if the current file doesn't exist extract the next batch
         if (!Files.exists(expectedFile))
         {
             try {
-                // delete files already used
-                for (Path toDelete : this.generatedFiles) {
-                    Files.delete(toDelete);
-                }
-                this.generatedFiles.clear();
-                
                 // extract the next group
                 com.vitembp.services.video.Conversion.extractFrames(
                         inputFile.toString(),
@@ -107,11 +109,14 @@ class FrameExtractorElement implements PipelineElement {
             }
         }
         
-        // output frame filename to data object
-        state.put(this.frameNameBinding, expectedFile);
-        
-        // save name for later deletion
-        this.generatedFiles.add(expectedFile);
+        // if the file wasn't extracted indicate to the rest of the pipeline
+        // that it should flush and clean up
+        if (!Files.exists(expectedFile)) {
+            state.put("Flush", Boolean.TRUE);
+        } else {
+            // output frame filename to data object
+            state.put(this.frameNameBinding, expectedFile);
+        }
         
         return state;
     }

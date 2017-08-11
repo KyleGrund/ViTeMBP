@@ -62,20 +62,25 @@ class SampleAverageElement implements PipelineElement {
     }
     
     @Override
-    public Map<String, Object> accept(Map<String, Object> data) {
+    public Map<String, Object> accept(Map<String, Object> state) {
+        // do not process data if the pipeline is flushing
+        if (state.containsKey("Flush")) {
+            return state;
+        }
+        
         // get necessary values from the data object
-        Sample toAccept = (Sample)data.get("sample");
+        Sample toAccept = (Sample)state.get("sample");
         Double value = parser.apply(toAccept);
         
         // the first time this is executed there will be no map on the data element
-        if (!data.containsKey(this.outputBinding)) {
-            data.put(this.outputBinding, new HashMap<>());
+        if (!state.containsKey(this.outputBinding)) {
+            state.put(this.outputBinding, new HashMap<>());
         }
         
         // get the average for our sensor from the averages collection
-        Map<Sensor, Double> averages = (Map<Sensor, Double>)data.get(this.outputBinding);
+        Map<Sensor, Double> averages = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double average = averages.get(this.sensorBinding);
-        Long count = (Long)data.get(this.elementCountBinding);
+        Long count = (Long)state.get(this.elementCountBinding);
         
         // the item count is a required input
         if (count == null) {
@@ -97,8 +102,8 @@ class SampleAverageElement implements PipelineElement {
         
         // save the average back to the data binding
         averages.put(sensorBinding, average);
-        data.put(this.outputBinding, averages);
+        state.put(this.outputBinding, averages);
         
-        return data;
+        return state;
     }
 }

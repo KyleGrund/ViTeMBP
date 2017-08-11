@@ -18,22 +18,36 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.imaging.Overlay;
 import com.vitembp.services.imaging.OverlayFactory;
 import com.vitembp.services.sensors.Sensor;
 import com.vitembp.services.sensors.SensorFactory;
 import com.vitembp.services.video.VideoFileInfo;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * The element creates an image with data to be overlaid onto a video frame.
  */
 class FrameDataOverlayGeneratorElement implements PipelineElement {
+    /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    
+    /**
+     * The location on the data object with the frame Path to process.
+     */
     private final String framePathBinding;
+    
+    /**
+     * The overlay to apply.
+     */
+    private final Overlay overlay;
     
     /**
      * Initializes a new instance of the FrameDataOverlayGeneratorElement class.
@@ -52,9 +66,9 @@ class FrameDataOverlayGeneratorElement implements PipelineElement {
         Pipeline statsPipe = StandardPipelines.captureStatisticsPipeline(toBuildFor, sensors);
         Map<String, Object> stats = CaptureProcessor.process(toBuildFor, statsPipe);
         
-        OverlayFactory.buildOverlay(
+        this.overlay = OverlayFactory.buildOverlay(
                 overlayDefinition,
-                (List<Sensor>)stats.get(StandardPipelines.SENSORS_BINDING),
+                new ArrayList<>(((Map<String, Sensor>)stats.get(StandardPipelines.SENSORS_BINDING)).values()),
                 (Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING),
                 (Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING),
                 videoInfo);
@@ -62,21 +76,26 @@ class FrameDataOverlayGeneratorElement implements PipelineElement {
     
     @Override
     public Map<String, Object> accept(Map<String, Object> state) {
+        // do not process data if the pipeline is flushing
+        if (state.containsKey("Flush")) {
+            return state;
+        }
+        
         // get the current file to process
         Path frame = (Path)state.get(this.framePathBinding);
         
-        // get the graphics processing generator
+        // get the data to apply
+        Sample toAccept = (Sample)state.get("sample");
         
-        
-        // create the target filename
-        
-        // build the overlay
-        
-        // save the overlay
-        
-        // put overlay file name in state variable
+        if (toAccept != null) {
+            try {
+                // apply the overlay
+                this.overlay.addOverlay(frame, toAccept);
+            } catch (IOException ex) {
+                LOGGER.error("IOException occurred generating overlay for: " + frame.toString(), ex);
+            }
+        }
         
         return state;
     }
-    
 }

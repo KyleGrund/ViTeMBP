@@ -19,6 +19,7 @@ package com.vitembp.services.video;
 
 import com.vitembp.services.FilenameGenerator;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -87,17 +88,6 @@ public class Conversion {
                     LOGGER.error(line);
                     line = br.readLine();
                 }
-            } else {
-                // if we didn't start at frame 0, we need to rename the files
-                // as ffmpeg always starts numbering at 1.
-                if (start > 0) {
-                    for (int i = count; i > 0 ; i--) {
-                        Path toFind = destination.resolve(nameGenerator.getPath(i));
-                        if (Files.exists(toFind)) {
-                            Files.move(toFind, destination.resolve(nameGenerator.getPath(i + start)));
-                        }
-                    }
-                }
             }
         } catch (InterruptedException ex) {
             LOGGER.error("Interrupted while waiting for frame extraction process completion.", ex);
@@ -149,9 +139,163 @@ public class Conversion {
             if (result != 0) {
                 // result is exit level, log anything > 0 as an error
                 LOGGER.error("Frame assembly completed with exit level: " + Integer.toString(result));
+                BufferedReader er = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                String erline = er.readLine();
+                while (line != null) {
+                    LOGGER.error(erline);
+                    line = er.readLine();
+                }
             }
         } catch (InterruptedException ex) {
             LOGGER.error("Interrupted while waiting for frame assembly process completion.", ex);
         }
+    }
+    
+    /**
+     * This method concatenates the two specified videos.
+     * @param destination The video to append to.
+     * @param toAppend The video to append.
+     */
+    public static void combineVideos(Path destination, Path toAppend) throws IOException {
+        // get two temp files
+        Path outputPath = destination.getParent();
+
+        Path fileList = outputPath.resolve("files.txt");
+        for (int i = 0; Files.exists(fileList); i++) {
+            fileList = outputPath.resolve(Integer.toString(i) + "files.txt");
+        }
+        
+        // get the video file extension
+        String[] splitName = destination.toString().split("\\.");
+        String extension = splitName[splitName.length - 1];
+        
+        Path vidOut = outputPath.resolve("out." + extension);
+        for (int i = 0; Files.exists(vidOut); i++) {
+            vidOut = outputPath.resolve(Integer.toString(i) + "out." + extension);
+        }
+        
+        // write files list
+        try (BufferedWriter writer = Files.newBufferedWriter(fileList)) {
+            writer.write("file '" + destination.toString() + "'");
+            writer.newLine();
+            writer.write("file '" + toAppend.toString() + "'");
+            writer.newLine();
+        }
+        
+        // build the FFmpeg process that will assemble the frames        
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                fileList.toString(),
+                "-c",
+                "copy",
+                vidOut.toString());
+        
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        
+        // execute the FFmpeg program
+        Process proc = pb.start();
+
+        try {
+            // execute and wait for the command
+            BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            String line = br.readLine();
+            while (proc.isAlive() && line != null) {
+                LOGGER.trace(line);
+                line = br.readLine();
+            }
+            
+            int result = proc.waitFor();
+            if (result != 0) {
+                // result is exit level, log anything > 0 as an error
+                LOGGER.error("Video concatenation completed with exit level: " + Integer.toString(result));
+                BufferedReader er = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                String erline = er.readLine();
+                while (line != null) {
+                    LOGGER.error(erline);
+                    line = er.readLine();
+                }
+                return;
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while waiting for video concatenation process completion.", ex);
+            return;
+        }
+        
+        // delete original files and rename output to destination
+        Files.delete(destination);
+        Files.delete(toAppend);
+        Files.move(vidOut, destination);
+        
+        // delete files list
+        Files.delete(fileList);
+    }
+
+    public static void copyAudio(Path sourceFile, Path destFile) throws IOException {
+        // get two temp files
+        Path outputPath = destFile.getParent();
+        
+        // get the video file extension
+        String[] splitName = destFile.toString().split("\\.");
+        String extension = splitName[splitName.length - 1];
+        
+        Path vidOut = outputPath.resolve("out." + extension);
+        for (int i = 0; Files.exists(vidOut); i++) {
+            vidOut = outputPath.resolve(Integer.toString(i) + "out." + extension);
+        }
+        
+        // build the FFmpeg process that will assemble the frames        
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg",
+                "-i",
+                destFile.toString(),
+                "-i",
+                sourceFile.toString(),
+                "-c",
+                "copy",
+                "-map",
+                "0:v:0",
+                "-map",
+                "1:a:0",
+                vidOut.toString());
+        
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        
+        // execute the FFmpeg program
+        Process proc = pb.start();
+
+        try {
+            // execute and wait for the command
+            BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            String line = br.readLine();
+            while (proc.isAlive() && line != null) {
+                LOGGER.trace(line);
+                line = br.readLine();
+            }
+            
+            int result = proc.waitFor();
+            if (result != 0) {
+                // result is exit level, log anything > 0 as an error
+                LOGGER.error("Video audio copy completed with exit level: " + Integer.toString(result));
+                BufferedReader er = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                String erline = er.readLine();
+                while (line != null) {
+                    LOGGER.error(erline);
+                    line = er.readLine();
+                }
+                return;
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while waiting for video audio copy process completion.", ex);
+            return;
+        }
+        
+        // delete the original without audio and rename output to destination
+        Files.delete(destFile);
+        Files.move(vidOut, destFile);
     }
 }

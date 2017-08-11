@@ -55,16 +55,21 @@ class SampleMaxValueElement implements PipelineElement {
     }
     
     @Override
-    public Map<String, Object> accept(Map<String, Object> data) {
-        // get necessary values from the data object
-        Sample toAccept = (Sample)data.get("sample");
-        
-        // the first time this is executed there will be no map on the data element
-        if (!data.containsKey(this.outputBinding)) {
-            data.put(this.outputBinding, new HashMap<>());
+    public Map<String, Object> accept(Map<String, Object> state) {
+        // do not process data if the pipeline is flushing
+        if (state.containsKey("Flush")) {
+            return state;
         }
         
-        Map<Sensor, Double> maxValues = (Map<Sensor, Double>)data.get(this.outputBinding);
+        // get necessary values from the data object
+        Sample toAccept = (Sample)state.get("sample");
+        
+        // the first time this is executed there will be no map on the data element
+        if (!state.containsKey(this.outputBinding)) {
+            state.put(this.outputBinding, new HashMap<>());
+        }
+        
+        Map<Sensor, Double> maxValues = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double maxValue = maxValues.get(this.sensorBinding);
         Double value = parser.apply(toAccept);
         
@@ -78,10 +83,10 @@ class SampleMaxValueElement implements PipelineElement {
         if (value != null) {
             if (value > maxValue) {
                 maxValues.put(this.sensorBinding, value);
-                data.put(this.outputBinding, maxValues);
+                state.put(this.outputBinding, maxValues);
             }
         }
         
-        return data;
+        return state;
     }
 }

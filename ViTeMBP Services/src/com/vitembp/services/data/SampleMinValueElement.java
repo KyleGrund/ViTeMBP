@@ -54,16 +54,21 @@ class SampleMinValueElement implements PipelineElement {
     }
     
     @Override
-    public Map<String, Object> accept(Map<String, Object> data) {
-        // get necessary values from the data object
-        Sample toAccept = (Sample)data.get("sample");
-        
-        // the first time this is executed there will be no map on the data element
-        if (!data.containsKey(this.outputBinding)) {
-            data.put(this.outputBinding, new HashMap<>());
+    public Map<String, Object> accept(Map<String, Object> state) {
+        // do not process data if the pipeline is flushing
+        if (state.containsKey("Flush")) {
+            return state;
         }
         
-        Map<Sensor, Double> minValues = (Map<Sensor, Double>)data.get(this.outputBinding);
+        // get necessary values from the data object
+        Sample toAccept = (Sample)state.get("sample");
+        
+        // the first time this is executed there will be no map on the data element
+        if (!state.containsKey(this.outputBinding)) {
+            state.put(this.outputBinding, new HashMap<>());
+        }
+        
+        Map<Sensor, Double> minValues = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double minValue = minValues.get(this.sensorBinding);
         Double value = parser.apply(toAccept);
         
@@ -77,10 +82,10 @@ class SampleMinValueElement implements PipelineElement {
         if (value != null) {
             if (value < minValue) {
                 minValues.put(this.sensorBinding, value);
-                data.put(this.outputBinding, minValues);
+                state.put(this.outputBinding, minValues);
             }
         }
         
-        return data;
+        return state;
     }
 }

@@ -22,8 +22,8 @@ import com.vitembp.services.sensors.AccelerometerThreeAxis;
 import com.vitembp.services.sensors.DistanceSensor;
 import com.vitembp.services.sensors.RotarySensor;
 import com.vitembp.services.sensors.Sensor;
-import com.vitembp.services.sensors.SensorFactory;
 import com.vitembp.services.FilenameGenerator;
+import com.vitembp.services.video.VideoFileInfo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,14 +70,31 @@ public class StandardPipelines {
      * Creates a video overlay generation pipeline.
      * @param capture The capture to build an overlay generator for.
      * @param videoFile The video file to build the overlay generator for.
+     * @param overlayDefinition The definition of the overlay to add.
      * @return The built up overlay.
-     * @throws IOException If there is an error accessing the video or capture.
+     * @throws InstantiationException If the pipeline cannot be built.
      */
-    public static Pipeline captureVideoOverlayPipeline(Capture capture, Path videoFile) throws IOException {
+    public static Pipeline captureVideoOverlayPipeline(Capture capture, Path videoFile, Path outputFile, String overlayDefinition) throws InstantiationException {
         List<PipelineElement> toBuild = new ArrayList<>();
-        Path outDir = Files.createTempDirectory("vitembp");
-        toBuild.add(new CountElement("count"));
-        toBuild.add(new FrameExtractorElement(videoFile, outDir, FilenameGenerator.PNG_NUMERIC_OUT, 300, "ProcessingFrame"));
+        Path outDir;
+        try {
+            outDir = Files.createTempDirectory("vitembp");
+        } catch (IOException ex) {
+            LOGGER.error("Exception getting video file information.", ex);
+            throw new InstantiationException("Could not load video file information.");
+        }
+        
+        // create file properties objects
+        VideoFileInfo videoInfo = new VideoFileInfo(videoFile.toFile());
+        FilenameGenerator filenameGenerator = FilenameGenerator.PNG_NUMERIC_OUT;
+        toBuild.add(new SeedValueElement("VideoOutputFile", outputFile));
+        toBuild.add(new SeedValueElement("VideoInputFile", videoFile));
+        toBuild.add(new CountElement("Count"));
+        toBuild.add(new FrameExtractorElement(videoFile, outDir, filenameGenerator, 300, "ProcessingFrame", "Count"));
+        toBuild.add(new FrameDataOverlayGeneratorElement(capture, videoInfo, overlayDefinition, "ProcessingFrame"));
+        toBuild.add(new FrameCollectorElement(filenameGenerator, "ProcessingFrame", "NewVideoSegment", "VideoOutputFile", 300, videoInfo.getFrameRate()));
+        toBuild.add(new VideoCollectorElement("NewVideoSegment", "VideoOutputFile"));
+        toBuild.add(new CopyAudioElement("VideoInputFile", "VideoOutputFile"));
         
         return new Pipeline(toBuild);
     }
