@@ -1,6 +1,7 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
 import java.util.UUID;
 
 /*
@@ -39,9 +40,12 @@ class DistanceVL53L0X extends DistanceSensor {
     }
 
     @Override
-    public double getDistanceMilimeters(Sample toDecode) {
+    public Optional<Double> getDistanceMilimeters(Sample toDecode) {
         String data = this.getData(toDecode);
-        return Double.parseDouble(data);
-    }
-    
+        if (data == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(Double.parseDouble(data));
+        }
+    }    
 }

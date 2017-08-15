@@ -58,7 +58,7 @@ public class ShockSensorOverlayElement extends OverlayElement {
     
     @Override
     public void apply(DataOverlayBuilder builder, Sample data) {
-        double distance = this.sensor.getDistanceMilimeters(data);
+        double distance = this.sensor.getDistanceMilimeters(data).orElse(minValue);
         
         builder.addText(
                 this.sensor.getName() + ": " + Double.toString(distance),

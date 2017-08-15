@@ -18,6 +18,7 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
 
 /**
  * A class providing an interface to a three axis accelerometer sensor.
@@ -35,19 +36,19 @@ public abstract class AccelerometerThreeAxis extends Sensor {
      * @param toDecode The sample containing data to decode.
      * @return The acceleration in the X axis in Gs.
      */
-    public abstract double getXAxisG(Sample toDecode);
+    public abstract Optional<Double> getXAxisG(Sample toDecode);
     
     /**
      * Gets the acceleration in the Y axis in Gs.
      * @param toDecode The sample containing data to decode.
      * @return The acceleration in the Y axis in Gs.
      */
-    public abstract double getYAxisG(Sample toDecode);
+    public abstract Optional<Double> getYAxisG(Sample toDecode);
     
     /**
      * Gets the acceleration in the Z axis in Gs.
      * @param toDecode The sample containing data to decode.
      * @return The acceleration in the Z axis in Gs.
      */
-    public abstract double getZAxisG(Sample toDecode);
+    public abstract Optional<Double> getZAxisG(Sample toDecode);
 }

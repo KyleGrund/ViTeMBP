@@ -58,9 +58,9 @@ class ThreeAxisGOverlayElement extends OverlayElement {
 
     @Override
     public void apply(DataOverlayBuilder builder, Sample data) {
-        double xValue = this.sensor.getXAxisG(data);
-        double yValue = this.sensor.getYAxisG(data);
-        double zValue = this.sensor.getZAxisG(data);
+        double xValue = this.sensor.getXAxisG(data).orElse(minValue);
+        double yValue = this.sensor.getYAxisG(data).orElse(minValue);
+        double zValue = this.sensor.getZAxisG(data).orElse(minValue);
         
         builder.addText("X: " + Double.toString(xValue), this.upperLeftX + 4, this.upperLeftY + 4);
         builder.addText("Y: " + Double.toString(yValue), this.upperLeftX + 4, this.upperLeftY + 24);

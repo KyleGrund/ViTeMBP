@@ -21,6 +21,7 @@ import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.sensors.Sensor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -30,7 +31,7 @@ class SampleAverageElement implements PipelineElement {
     /**
      * The function which parses values from the sample data.
      */
-    private final Function<Sample, Double> parser;
+    private final Function<Sample, Optional<Double>> parser;
     
     /**
      * The binding of the element count in the data collection.
@@ -54,7 +55,7 @@ class SampleAverageElement implements PipelineElement {
      * @param outputBinding The binding for the averaged output.
      * @param sensorBinding The sensor this element is bound to.
      */
-    SampleAverageElement(Function<Sample, Double> parser, String elementCount, String outputBinding, Sensor sensorBinding) {
+    SampleAverageElement(Function<Sample, Optional<Double>> parser, String elementCount, String outputBinding, Sensor sensorBinding) {
         this.parser = parser;
         this.elementCountBinding = elementCount;
         this.outputBinding = outputBinding;
@@ -70,7 +71,7 @@ class SampleAverageElement implements PipelineElement {
         
         // get necessary values from the data object
         Sample toAccept = (Sample)state.get("sample");
-        Double value = parser.apply(toAccept);
+        Optional<Double> value = parser.apply(toAccept);
         
         // the first time this is executed there will be no map on the data element
         if (!state.containsKey(this.outputBinding)) {
@@ -93,12 +94,12 @@ class SampleAverageElement implements PipelineElement {
         }
         
         // the value will be null if no data was taken for a particular sample
-        if (value == null) {
-            value = 0.0d;
+        if (!value.isPresent()) {
+            value = Optional.of(average);
         }
         
         // perform the running average calculation
-        average = (average * (count - 1) + value) / count;
+        average = (average * (count - 1) + value.get()) / count;
         
         // save the average back to the data binding
         averages.put(sensorBinding, average);

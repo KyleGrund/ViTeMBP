@@ -18,6 +18,7 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
 
 /**
  * Base class providing an interface to distance based sensors.
@@ -36,5 +37,5 @@ public abstract class DistanceSensor extends Sensor {
      * @param toDecode The sample containing the data to decode.
      * @return The distance the sensor is reading in millimeters.
      */
-    public abstract double getDistanceMilimeters(Sample toDecode);
+    public abstract Optional<Double> getDistanceMilimeters(Sample toDecode);
 }

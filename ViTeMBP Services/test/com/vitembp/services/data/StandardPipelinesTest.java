@@ -21,7 +21,6 @@ import com.vitembp.embedded.data.Capture;
 import com.vitembp.services.sensors.Captures;
 import com.vitembp.services.sensors.Sensor;
 import com.vitembp.services.sensors.SensorFactory;
-import com.vitembp.services.video.VideoFileInfo;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -157,6 +156,6 @@ public class StandardPipelinesTest {
         
         Pipeline toTest = StandardPipelines.captureVideoOverlayPipeline(source, videoFile, outFile, StandardOverlayDefinitions.getStandardFourQuadrant());
         
-        Map<String, Object> results = CaptureProcessor.processUntilFlush(source, toTest);
+        Map<String, Object> results = CaptureProcessor.processUntilFlush(source, toTest, 75);
     }
 }

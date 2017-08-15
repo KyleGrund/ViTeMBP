@@ -18,6 +18,7 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
 
 /**
  * Provides an implementation for rotary sensors.
@@ -36,12 +37,12 @@ public abstract class RotarySensor extends Sensor {
      * @param toDecode The sample containing the data to decode.
      * @return The position of the sensor in degrees.
      */
-    public abstract double getPositionDegrees(Sample toDecode);
+    public abstract Optional<Double> getPositionDegrees(Sample toDecode);
     
     /**
      * Gets the position of the sensor in radians.
      * @param toDecode The sample containing the data to decode.
      * @return The position of the sensor in radians.
      */
-    public abstract double getPositionRadians(Sample toDecode);
+    public abstract Optional<Double> getPositionRadians(Sample toDecode);
 }

@@ -70,6 +70,7 @@ public class StandardPipelines {
      * Creates a video overlay generation pipeline.
      * @param capture The capture to build an overlay generator for.
      * @param videoFile The video file to build the overlay generator for.
+     * @param outputFile The file to output the overlaid video to.
      * @param overlayDefinition The definition of the overlay to add.
      * @return The built up overlay.
      * @throws InstantiationException If the pipeline cannot be built.

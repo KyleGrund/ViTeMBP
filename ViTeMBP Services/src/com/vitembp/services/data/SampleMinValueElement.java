@@ -21,6 +21,7 @@ import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.sensors.Sensor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -30,7 +31,7 @@ class SampleMinValueElement implements PipelineElement {
     /**
      * The function which parses values from the sample data.
      */
-    private final Function<Sample, Double> parser;
+    private final Function<Sample, Optional<Double>> parser;
     
     /**
      * The binding of the min value in the data collection.
@@ -47,7 +48,7 @@ class SampleMinValueElement implements PipelineElement {
      * @param parser The function which parses the value from the sample data.
      * @param outputBinding The binding of the maximum value in the data collection.
      */
-    SampleMinValueElement(Function<Sample, Double> parser, String outputBinding, Sensor sensorBinding) {
+    SampleMinValueElement(Function<Sample, Optional<Double>> parser, String outputBinding, Sensor sensorBinding) {
         this.parser = parser;
         this.outputBinding = outputBinding;
         this.sensorBinding = sensorBinding;
@@ -70,7 +71,7 @@ class SampleMinValueElement implements PipelineElement {
         
         Map<Sensor, Double> minValues = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double minValue = minValues.get(this.sensorBinding);
-        Double value = parser.apply(toAccept);
+        Optional<Double> value = parser.apply(toAccept);
         
         // the minValue will be null until the first sample is processed
         if (minValue == null) {
@@ -79,9 +80,9 @@ class SampleMinValueElement implements PipelineElement {
         }
         
         // the value may be null if a sample is not taken
-        if (value != null) {
-            if (value < minValue) {
-                minValues.put(this.sensorBinding, value);
+        if (value.isPresent()) {
+            if (value.get() < minValue) {
+                minValues.put(this.sensorBinding, value.get());
                 state.put(this.outputBinding, minValues);
             }
         }

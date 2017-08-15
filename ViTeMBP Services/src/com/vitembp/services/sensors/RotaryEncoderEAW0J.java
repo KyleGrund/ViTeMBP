@@ -18,6 +18,7 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -43,13 +44,21 @@ class RotaryEncoderEAW0J extends RotarySensor {
     }
     
     @Override
-    public double getPositionDegrees(Sample toDecode) {
-        return getPositionPercentage(toDecode) * 365.0d;
+    public Optional<Double> getPositionDegrees(Sample toDecode) {
+        Optional<Double> value = getPositionPercentage(toDecode);
+        if (value.isPresent()) {
+            return Optional.of(value.get() * 365.0d);
+        }
+        return Optional.empty();
     }
 
     @Override
-    public double getPositionRadians(Sample toDecode) {
-        return getPositionPercentage(toDecode) * Math.PI * 2.0d;
+    public Optional<Double> getPositionRadians(Sample toDecode) {
+        Optional<Double> value = getPositionPercentage(toDecode);
+        if (value.isPresent()) {
+            return Optional.of(value.get() * Math.PI * 2.0d);
+        }
+        return Optional.empty();
     }
     
     /**
@@ -58,10 +67,16 @@ class RotaryEncoderEAW0J extends RotarySensor {
      * @return The position of the encoder as a value from 0 to 1.
      * @throws NumberFormatException If the sensor data is corrupt.
      */
-    private double getPositionPercentage(Sample toDecode) throws NumberFormatException {
+    private Optional<Double> getPositionPercentage(Sample toDecode) throws NumberFormatException {
         String data = this.getData(toDecode);
+        
+        // handle missing samples
+        if (data == null) {
+            return Optional.empty();
+        }
+        
         int position = Integer.parseInt(data);
         double percent = ((double)position) / MAXIMUM_ENCODER_VALUE;
-        return percent;
+        return Optional.of(percent);
     }
 }

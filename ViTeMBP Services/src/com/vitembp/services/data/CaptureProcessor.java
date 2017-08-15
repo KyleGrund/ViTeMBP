@@ -19,10 +19,11 @@ package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.data.Sample;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Provides an interface to process data in a capture.
@@ -56,9 +57,19 @@ public class CaptureProcessor {
      * @param pipeline The pipeline of elements used to process the data.
      * @return The results of the pipeline application.
      */
-    public static Map<String, Object> processUntilFlush(Capture source, Pipeline pipeline) {
+    public static Map<String, Object> processUntilFlush(Capture source, Pipeline pipeline, int syncFrame) {
         Map<String, Object> toReturn = new HashMap<>();
-        Iterator<Sample> samples = source.getSamples().iterator();
+        
+        // create empty samples to pad before sync frame
+        Stream.Builder<Sample> skipElements = Stream.builder();
+        for (int i = syncFrame; i > 0; i--) {
+            skipElements.accept(new Sample(-1 * i, Instant.MIN, new HashMap<>()));
+        }
+        
+        // combine the empty sample and capture streams into an iterator
+        Iterator<Sample> samples = Stream.concat(skipElements.build(), source.getSamples()).iterator();
+        
+        // execute the pipeline
         pipeline.execute(() -> {
             if (samples.hasNext()) {
                 toReturn.put("sample", samples.next());
@@ -70,14 +81,11 @@ public class CaptureProcessor {
         
         // feed empty data until pipeline detects end of video frames and
         // flushes itself
-        pipeline.execute(new Supplier<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> get() {
-                if (!toReturn.containsKey("Flush")) {
-                    return toReturn;
-                } else {
-                    return null;
-                }
+        pipeline.execute(() -> {
+            if (!toReturn.containsKey("Flush")) {
+                return toReturn;
+            } else {
+                return null;
             }
         });
         

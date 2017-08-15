@@ -18,6 +18,7 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -38,27 +39,48 @@ class AccelerometerFXOS8700CQSerial extends AccelerometerThreeAxis {
     }
 
     @Override
-    public double getXAxisG(Sample toDecode) {
-        String[] values = this.getData(toDecode).split(",");
+    public Optional<Double> getXAxisG(Sample toDecode) {
+        String data = this.getData(toDecode);
+        
+        // handle missing samples
+        if (data == null) {
+            return Optional.empty();
+        }
+        
+        String[] values = data.split(",");
         String trimmed = values[0].trim().substring(1);
         double value = Double.parseDouble(trimmed);
-        return value;
+        return Optional.of(value);
     }
 
     @Override
-    public double getYAxisG(Sample toDecode) {
-        String[] values = this.getData(toDecode).split(",");
+    public Optional<Double> getYAxisG(Sample toDecode) {
+        String data = this.getData(toDecode);
+        
+        // handle missing samples
+        if (data == null) {
+            return Optional.empty();
+        }
+        
+        String[] values = data.split(",");
         String trimmed = values[1].trim();
         double value = Double.parseDouble(trimmed);
-        return value;
+        return Optional.of(value);
     }
 
     @Override
-    public double getZAxisG(Sample toDecode) {
-        String[] values = this.getData(toDecode).split(",");
+    public Optional<Double> getZAxisG(Sample toDecode) {
+        String data = this.getData(toDecode);
+        
+        // handle missing samples
+        if (data == null) {
+            return Optional.empty();
+        }
+        
+        String[] values = data.split(",");
         String trimmed = values[2].trim();
         trimmed = trimmed.substring(0, trimmed.length() - 1);
         double value = Double.parseDouble(trimmed);
-        return value;
+        return Optional.of(value);
     }
 }

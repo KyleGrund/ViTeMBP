@@ -21,6 +21,7 @@ import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.sensors.Sensor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -30,7 +31,7 @@ class SampleMaxValueElement implements PipelineElement {
     /**
      * The function which parses values from the sample data.
      */
-    private final Function<Sample, Double> parser;
+    private final Function<Sample, Optional<Double>> parser;
     
     /**
      * The binding of the max value in the data collection.
@@ -48,7 +49,7 @@ class SampleMaxValueElement implements PipelineElement {
      * @param outputBinding The binding of the maximum value in the data collection.
      * @param sensorBinding The sensor that this element is bound to.
      */
-    SampleMaxValueElement(Function<Sample, Double> parser, String outputBinding, Sensor sensorBinding) {
+    SampleMaxValueElement(Function<Sample, Optional<Double>> parser, String outputBinding, Sensor sensorBinding) {
         this.parser = parser;
         this.outputBinding = outputBinding;
         this.sensorBinding = sensorBinding;
@@ -71,7 +72,7 @@ class SampleMaxValueElement implements PipelineElement {
         
         Map<Sensor, Double> maxValues = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double maxValue = maxValues.get(this.sensorBinding);
-        Double value = parser.apply(toAccept);
+        Optional<Double> value = parser.apply(toAccept);
         
         // the maxValue will be null until the first sample is processed
         if (maxValue == null) {
@@ -80,9 +81,9 @@ class SampleMaxValueElement implements PipelineElement {
         }
         
         // the value may be null if a sample is not taken
-        if (value != null) {
-            if (value > maxValue) {
-                maxValues.put(this.sensorBinding, value);
+        if (value.isPresent()) {
+            if (value.get() > maxValue) {
+                maxValues.put(this.sensorBinding, value.get());
                 state.put(this.outputBinding, maxValues);
             }
         }

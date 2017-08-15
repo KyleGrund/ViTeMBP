@@ -78,8 +78,8 @@ class BrakeSensorOverlayElement extends OverlayElement {
     
     @Override
     public void apply(DataOverlayBuilder builder, Sample data) {
-        double leftDegrees = this.leftSensor.getPositionDegrees(data);
-        double rightDegrees = this.rightSensor.getPositionDegrees(data);
+        double leftDegrees = this.leftSensor.getPositionDegrees(data).orElse(leftMinValue);
+        double rightDegrees = this.rightSensor.getPositionDegrees(data).orElse(rightMinValue);
         
         double leftPercent = (leftDegrees - leftMinValue) / (leftMaxValue - leftMinValue);
         double rightPercent = (rightDegrees - rightMinValue) / (rightMaxValue - rightMinValue);
