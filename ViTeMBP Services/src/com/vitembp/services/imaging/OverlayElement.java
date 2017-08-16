@@ -44,17 +44,25 @@ abstract class OverlayElement {
     protected final int lowerRightY;
     
     /**
+     * The location to render the element if it does not fill the bounding box.
+     */
+    protected final ElementLocation location;
+    
+    /**
      * Initializes a new instance of the OverlayElement class.
      * @param upperLeftX The X-coordinate of the upper left bounding point.
      * @param upperLeftY The Y-coordinate of the upper left bounding point.
      * @param lowerRightX The X-coordinate of the lower right bounding point.
      * @param lowerRightY The Y-coordinate of the lower right bounding point.
+     * @param location The location to render the element if it does not fill
+     * the bounding box.
      */
-    OverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY) {
+    OverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, ElementLocation location) {
         this.upperLeftX = upperLeftX;
         this.upperLeftY = upperLeftY;
         this.lowerRightX = lowerRightX;
         this.lowerRightY = lowerRightY;
+        this.location = location;
     }
     
     /**

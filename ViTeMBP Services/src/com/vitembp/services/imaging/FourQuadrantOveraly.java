@@ -98,6 +98,7 @@ class FourQuadrantOveraly implements Overlay {
         
         this.upperLeft = OverlayElementFactory.buildElement(
                 topLeft,
+                ElementLocation.TopLeft,
                 sensors,
                 minimumValues,
                 maximumValues,
@@ -108,6 +109,7 @@ class FourQuadrantOveraly implements Overlay {
         
         this.upperRight = OverlayElementFactory.buildElement(
                 topRight,
+                ElementLocation.TopRight,
                 sensors,
                 minimumValues,
                 maximumValues,
@@ -118,6 +120,7 @@ class FourQuadrantOveraly implements Overlay {
         
         this.lowerLeft = OverlayElementFactory.buildElement(
                 bottomLeft,
+                ElementLocation.BottomLeft,
                 sensors,
                 minimumValues,
                 maximumValues,
@@ -128,6 +131,7 @@ class FourQuadrantOveraly implements Overlay {
         
         this.lowerRight = OverlayElementFactory.buildElement(
                 bottomRight,
+                ElementLocation.BottomRight,
                 sensors,
                 minimumValues,
                 maximumValues,

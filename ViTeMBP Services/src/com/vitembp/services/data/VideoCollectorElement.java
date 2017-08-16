@@ -46,7 +46,8 @@ class VideoCollectorElement implements PipelineElement {
     
     /**
      * Initializes a new instance of the FrameCollectorEelement.
-     * @param nameGenerator The generator which creates the file names to be collected.
+     * @param fileNameBinding The location on the data object of file name of
+     * the image to be collected.
      * @param outputFile The name of the output video file.
      */
     VideoCollectorElement(String fileNameBinding, String outputFileBinding) {

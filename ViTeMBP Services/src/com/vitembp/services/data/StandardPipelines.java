@@ -69,14 +69,23 @@ public class StandardPipelines {
     /**
      * Creates a video overlay generation pipeline.
      * @param capture The capture to build an overlay generator for.
-     * @param videoFile The video file to build the overlay generator for.
+     * @param videoFile The input video file to build the overlay generator for.
      * @param outputFile The file to output the overlaid video to.
      * @param overlayDefinition The definition of the overlay to add.
      * @return The built up overlay.
      * @throws InstantiationException If the pipeline cannot be built.
      */
     public static Pipeline captureVideoOverlayPipeline(Capture capture, Path videoFile, Path outputFile, String overlayDefinition) throws InstantiationException {
+        // verify output file doesn't exist
+        if (Files.exists(outputFile)) {
+            LOGGER.error("Output file already exits: " + outputFile.toString() + ".");
+            throw new InstantiationException("Output file already exits: " + outputFile.toString() + ".");
+        }
+        
+        // list of elements that make up the pipeline
         List<PipelineElement> toBuild = new ArrayList<>();
+        
+        // create a temp dir for intermediate processing files
         Path outDir;
         try {
             outDir = Files.createTempDirectory("vitembp");
@@ -131,6 +140,7 @@ public class StandardPipelines {
      * @param toBuild The pipeline being built.
      */
     private static void addAverages(Sensor sensor, List<PipelineElement> toBuild) {
+        // add averaging elements based on sensor type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
                     ((RotarySensor)sensor)::getPositionDegrees, ELEMENT_COUNT_BINDING,
@@ -158,6 +168,7 @@ public class StandardPipelines {
      * @param toBuild The pipeline being built.
      */
     private static void addMaximums(Sensor sensor, List<PipelineElement> toBuild) {
+        // add maximum calculating elements based on type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
                     ((RotarySensor)sensor)::getPositionDegrees,
@@ -185,6 +196,7 @@ public class StandardPipelines {
      * @param toBuild The pipeline being built.
      */
     private static void addMinimums(Sensor sensor, List<PipelineElement> toBuild) {
+        // add minimum calculating elements based on type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
                     ((RotarySensor)sensor)::getPositionDegrees,

@@ -45,12 +45,14 @@ class ThreeAxisGOverlayElement extends OverlayElement {
      * @param upperLeftY The Y-coordinate of the upper left bounding point.
      * @param lowerRightX The X-coordinate of the lower right bounding point.
      * @param lowerRightY The Y-coordinate of the lower right bounding point.
+     * @param location The location to render the element if it does not fill
+     * the bounding box.
      * @param minValue The minimum possible value of the sensor data in Gs.
      * @param maxValue The maximum possible value of the sensor data in Gs.
      * @param sensor The sensor which will read data from the sample.
      */
-    ThreeAxisGOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, double minValue, double maxValue, AccelerometerThreeAxis sensor) {
-        super(upperLeftX, upperLeftY, lowerRightX, lowerRightY);
+    ThreeAxisGOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, ElementLocation location, double minValue, double maxValue, AccelerometerThreeAxis sensor) {
+        super(upperLeftX, upperLeftY, lowerRightX, lowerRightY, location);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.sensor = sensor;
@@ -62,8 +64,8 @@ class ThreeAxisGOverlayElement extends OverlayElement {
         double yValue = this.sensor.getYAxisG(data).orElse(minValue);
         double zValue = this.sensor.getZAxisG(data).orElse(minValue);
         
-        builder.addText("X: " + Double.toString(xValue), this.upperLeftX + 4, this.upperLeftY + 4);
-        builder.addText("Y: " + Double.toString(yValue), this.upperLeftX + 4, this.upperLeftY + 24);
-        builder.addText("Z: " + Double.toString(zValue), this.upperLeftX + 4, this.upperLeftY + 44);
+        builder.addText("X: " + Double.toString(xValue), this.upperLeftX + 20, this.upperLeftY + 20);
+        builder.addText("Y: " + Double.toString(yValue), this.upperLeftX + 20, this.upperLeftY + 40);
+        builder.addText("Z: " + Double.toString(zValue), this.upperLeftX + 20, this.upperLeftY + 60);
     }
 }

@@ -55,6 +55,7 @@ public class CaptureProcessor {
      * data through until a flush condition is found.
      * @param source The capture containing the data to process.
      * @param pipeline The pipeline of elements used to process the data.
+     * @param syncFrame The video frame at which the captured data starts.
      * @return The results of the pipeline application.
      */
     public static Map<String, Object> processUntilFlush(Capture source, Pipeline pipeline, int syncFrame) {

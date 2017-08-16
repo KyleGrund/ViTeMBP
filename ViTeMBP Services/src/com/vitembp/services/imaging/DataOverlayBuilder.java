@@ -144,6 +144,63 @@ class DataOverlayBuilder {
     }
     
     /**
+     * Adds a vertical progress bar to the overlay.
+     * @param progressScaleFactor A float indicating how much progress to
+     * display, with 1.0 being complete and 0 indicating 0% complete.
+     * @param topLeftX The horizontal location of the top left of the bar in
+     * pixels from the left side.
+     * @param topLeftY The vertical location of the top left of the bar in
+     * pixels from the top side.
+     * @param lowerRightX The horizontal location of the bottom right of the bar
+     * in pixels from the left side.
+     * @param lowerRightY The vertical location of the bottom right of the bar
+     * in pixels from the top side.
+     */
+    void addHorizontalProgressBar(float progressScaleFactor, int topLeftX, int topLeftY, int lowerRightX, int lowerRightY) {
+        int height = this.frame.getHeight();
+        int width = this.frame.getWidth();
+        
+        // check points are within the frame
+        if (topLeftY > height || topLeftY < 0) {
+            throw new IllegalArgumentException("Argument topLeftY is out of range of the frame buffer.");
+        }
+        
+        if (topLeftX < 0 || topLeftX > width) {
+            throw new IllegalArgumentException("Argument topLeftX is out of range of the frame buffer.");
+        }
+        
+        if (lowerRightY > height || lowerRightY < 0) {
+            throw new IllegalArgumentException("Argument lowerRightY is out of range of the frame buffer.");
+        }
+        
+        if (lowerRightX < 0 || lowerRightX > width) {
+            throw new IllegalArgumentException("Argument lowerRightX is out of range of the frame buffer.");
+        }
+        
+        // check the upper left is less than right and upper is above lower
+        if (topLeftY >= lowerRightY || topLeftX >= lowerRightX) {
+            throw new IllegalArgumentException("The top left point vlues must be less than the lower right point values.");
+        }
+        
+        // check bar graph percentace
+        if (progressScaleFactor > 1.0 || progressScaleFactor < 0.0) {
+            throw new IllegalArgumentException("The percentage must be between 0 and 1.");
+        }
+        
+        // draw bar
+        Graphics2D graphics = this.frame.createGraphics();
+        graphics.setColor(Color.white);
+        graphics.setStroke(new BasicStroke(2));
+        graphics.drawRect(topLeftX, topLeftY, lowerRightX - topLeftX, lowerRightY - topLeftY);
+        
+        int progressWidth = (int)(((lowerRightX - topLeftX) - 2) * progressScaleFactor);
+        int progressTopLeftX = lowerRightX - progressWidth;
+        
+        graphics.setColor(Color.white);
+        graphics.fillRect(topLeftX + 2, topLeftY, progressWidth - 2, lowerRightY - topLeftY - 4);
+    }
+    
+    /**
      * Saves the overlay image to a PNG.
      * @param destination The location where the file should be saved.
      * @throws IOException If an exception occurs while saving.

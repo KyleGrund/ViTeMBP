@@ -22,7 +22,20 @@ package com.vitembp.services.data;
  * pipeline.
  */
 public class PipelineExecutionException extends RuntimeException {
-    public PipelineExecutionException(String message, Exception inner){
+    /**
+     * Initializes a new instance of the PipelineExecutionException class.
+     * @param message The message explaining why the exception occurred.
+     * @param inner The Exception that caused this exception to be thrown.
+     */
+    public PipelineExecutionException(String message, Exception inner) {
         super(message, inner);
+    }
+    
+    /**
+     * Initializes a new instance of the PipelineExecutionException class.
+     * @param message The message explaining why the exception occurred.
+     */
+    public PipelineExecutionException(String message) {
+        super(message);
     }
 }

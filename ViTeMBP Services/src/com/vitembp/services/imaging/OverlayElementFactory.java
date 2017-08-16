@@ -32,7 +32,7 @@ class OverlayElementFactory {
      * Builds an overlay element.
      * @return The overlay element.
      */
-    static OverlayElement buildElement(ElementDefinition definition, List<Sensor> sensors, Map<Sensor, Double> minimumValues, Map<Sensor, Double> maximumValues, int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY) throws InstantiationException {
+    static OverlayElement buildElement(ElementDefinition definition, ElementLocation layoutLocation, List<Sensor> sensors, Map<Sensor, Double> minimumValues, Map<Sensor, Double> maximumValues, int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY) throws InstantiationException {
         // this checks that all sensors described in the definition are
         // in the list of sensors
         if (!definition.getSensors().stream()
@@ -87,6 +87,7 @@ class OverlayElementFactory {
                         upperLeftY,
                         lowerRightX,
                         lowerRightY,
+                        layoutLocation,
                         minimumValues.get(leftBinding),
                         maximumValues.get(leftBinding),
                         (RotarySensor)leftBinding,
@@ -121,6 +122,7 @@ class OverlayElementFactory {
                         upperLeftY,
                         lowerRightX,
                         lowerRightY,
+                        layoutLocation,
                         minimumValues.get(shockBinding),
                         maximumValues.get(shockBinding),
                         (DistanceSensor)shockBinding);
@@ -152,6 +154,7 @@ class OverlayElementFactory {
                         upperLeftY,
                         lowerRightX,
                         lowerRightY,
+                        layoutLocation,
                         minimumValues.get(accelBinding),
                         maximumValues.get(accelBinding),
                         (AccelerometerThreeAxis)accelBinding);

@@ -45,12 +45,14 @@ public class ShockSensorOverlayElement extends OverlayElement {
      * @param upperLeftY The Y-coordinate of the upper left bounding point.
      * @param lowerRightX The X-coordinate of the lower right bounding point.
      * @param lowerRightY The Y-coordinate of the lower right bounding point.
+     * @param location The location to render the element if it does not fill
+     * the bounding box.
      * @param minValue The minimum possible value of the sensor data in Gs.
      * @param maxValue The maximum possible value of the sensor data in Gs.
      * @param sensor The sensor which will read data from the sample.
      */
-    ShockSensorOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, double minValue, double maxValue, DistanceSensor sensor) {
-        super(upperLeftX, upperLeftY, lowerRightX, lowerRightY);
+    ShockSensorOverlayElement(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY, ElementLocation location, double minValue, double maxValue, DistanceSensor sensor) {
+        super(upperLeftX, upperLeftY, lowerRightX, lowerRightY, location);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.sensor = sensor;
@@ -62,7 +64,7 @@ public class ShockSensorOverlayElement extends OverlayElement {
         
         builder.addText(
                 this.sensor.getName() + ": " + Double.toString(distance),
-                upperLeftX + 4,
-                upperLeftY + 4);
+                upperLeftX + 20,
+                upperLeftY + 20);
     }
 }
