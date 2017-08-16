@@ -18,13 +18,34 @@
 package com.vitembp.services.imaging;
 
 import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.data.PipelineExecutionException;
 import com.vitembp.services.sensors.DistanceSensor;
 
 /**
  * Creates an overlay for a linear shock sensor.
  */
 public class ShockSensorOverlayElement extends OverlayElement {
-/**
+    /**
+     * The total height of the rendered element.
+     */
+    private static final int TOTAL_HEIGHT = 400;
+    
+    /**
+     * The total width of the rendered element.
+     */
+    private static final int TOTAL_WIDTH = 150;
+    
+    /**
+     * The total height of the rendered text.
+     */
+    private static final int TEXT_HEIGHT = 20;
+    
+    /**
+     * The distance to pad from the edges of the image.
+     */
+    private static final int BORDER_PAD = 20;
+    
+    /**
      * The minimum possible value the sensor can read in Gs.
      */
     private final double minValue;
@@ -59,12 +80,42 @@ public class ShockSensorOverlayElement extends OverlayElement {
     }
     
     @Override
-    public void apply(DataOverlayBuilder builder, Sample data) {
+    void apply(DataOverlayBuilder builder, Sample data) {
         double distance = this.sensor.getDistanceMilimeters(data).orElse(minValue);
+        double percentage = distance / (this.maxValue - this.minValue);
         
+        // calculate the upper left origin point of the element
+        int topLeftX, topLeftY;
+        switch (this.location) {
+            case TopLeft:
+                topLeftX = this.upperLeftX + BORDER_PAD;
+                topLeftY = this.upperLeftY + BORDER_PAD;
+                break;
+            case TopRight:
+                topLeftX = this.lowerRightX - TOTAL_WIDTH - BORDER_PAD;
+                topLeftY = this.upperLeftY + BORDER_PAD;
+                break;
+            case BottomLeft:
+                topLeftX = this.upperLeftX + BORDER_PAD;
+                topLeftY = (this.lowerRightY - TOTAL_HEIGHT) + BORDER_PAD;
+                break;
+            case BottomRight:
+                topLeftX = this.lowerRightX - TOTAL_WIDTH - BORDER_PAD;
+                topLeftY = (this.lowerRightY - TOTAL_HEIGHT) + BORDER_PAD;
+                break;
+            case Center:
+                topLeftX = ((this.lowerRightX - this.upperLeftX) / 2) - (TOTAL_WIDTH / 2);
+                topLeftY = ((this.lowerRightY - this.upperLeftY) / 2) - (TOTAL_HEIGHT / 2);
+                break;
+            default:
+                throw new PipelineExecutionException("Unknown brake sensor overlay element rendering locaiton.");
+        }
+        
+        // render graphic elements
+        builder.addVerticalProgressBar((float)percentage, topLeftX, topLeftY, topLeftX + TOTAL_WIDTH, topLeftY + TOTAL_HEIGHT - (TEXT_HEIGHT * 2));
         builder.addText(
                 this.sensor.getName() + ": " + Double.toString(distance),
-                upperLeftX + 20,
-                upperLeftY + 20);
+                topLeftX,
+                topLeftY + TOTAL_HEIGHT - TEXT_HEIGHT);
     }
 }

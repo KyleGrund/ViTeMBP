@@ -70,5 +70,5 @@ abstract class OverlayElement {
      * @param builder The build to use to construct the overlay.
      * @param data The data to use to build the element.
      */
-    public abstract void apply(DataOverlayBuilder builder, Sample data);
+    abstract void apply(DataOverlayBuilder builder, Sample data);
 }
