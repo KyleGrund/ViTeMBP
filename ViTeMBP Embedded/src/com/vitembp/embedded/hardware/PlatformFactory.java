@@ -24,8 +24,6 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -167,8 +165,45 @@ class PlatformFactory {
                 () -> {
                     Set<Sensor> toReturn = new HashSet<>();
                     
-                    // todo: move to HardwareInterface class
                     // use factory to build all devices
+                    board.getI2CBusses().forEach((bus) -> {
+                        toReturn.addAll(I2CSensorFactory.getI2CSensors(bus));
+                    });
+                    
+                    board.getSerialBusses().forEach((bus) -> {
+                        try { 
+                            toReturn.addAll(SerialBusSensorFactory.getSerialSensors(bus));
+                        } catch (IOException ex) {
+                            LOGGER.error("Error building sensor for: " + bus.getName(), ex);
+                        }
+                    });
+                    
+                    return toReturn;
+                },
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
+    }
+    
+    /**
+     * Builds a Platform for a SystemBoardMock instance.
+     * @param board The system board to build a Platform for.
+     * @return A Platform for a SystemBoardMock instance.
+     */
+    public static Platform create(SystemBoardRPi3 board){
+        return new PlatformFunctor(
+                (Boolean t) -> {
+                    if (t) {
+                        LOGGER.info("Enabled synchronization light.");
+                    } else {
+                        LOGGER.info("Disabled synchronization light.");
+                    }   
+                },
+                (Consumer<Character> cb) -> {
+                    LOGGER.info("Set keypad callback.");
+                },
+                () -> {
+                    Set<Sensor> toReturn = new HashSet<>();
+                    
+                    // use factory to build all devices for I2C and Serial
                     board.getI2CBusses().forEach((bus) -> {
                         toReturn.addAll(I2CSensorFactory.getI2CSensors(bus));
                     });

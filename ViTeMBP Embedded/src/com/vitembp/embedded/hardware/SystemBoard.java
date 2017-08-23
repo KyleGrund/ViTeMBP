@@ -18,10 +18,7 @@
 package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 
@@ -89,21 +86,17 @@ abstract class SystemBoard {
         synchronized (SystemBoard.SINGLETON_CREATE_LOCK) {
             // create the singleton instance if it doesn't already exist
             if (SystemBoard.singletonInstance == null) {
-                // linux distrobutions have a version file used to access distro info
-                Path versionFile = Paths.get("/proc/version");
-
-                // if the version file contains udooneo we are running on a UDOO NEO board
-                if (versionFile.toFile().exists()) {
+                if (SystemBoardUdooNeo.isBoardDetected()) {
                     try {
-                        List<String> versionLines = Files.readAllLines(versionFile);
-                        if (versionLines.size() > 0) {
-                            if (versionLines.get(0).contains("udooneo")) {
-                                // return a udoo neo system board instance
-                                SystemBoard.singletonInstance = new SystemBoardUdooNeo();
-                            }
-                        }
+                        SystemBoard.singletonInstance = new SystemBoardUdooNeo();
                     } catch (IOException ex) {
-                        LOGGER.error("Version file exists but could not be read.", ex);
+                        LOGGER.error("IOException while building UDOO Neo board.", ex);
+                    }
+                } else if (SystemBoardRPi3.isBoardDetected()) {
+                    try {
+                        SystemBoard.singletonInstance = new SystemBoardRPi3();
+                    } catch (IOException ex) {
+                        LOGGER.error("IOException while building RPi 3 board.", ex);
                     }
                 }
 

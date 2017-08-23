@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * A SystemBoard implementation for the UDOO NEO.
  */
-class SystemBoardUdooNeo extends SystemBoard {
+class SystemBoardRPi3 extends SystemBoard {
     /**
      * Class logger instance.
      */
@@ -52,7 +52,7 @@ class SystemBoardUdooNeo extends SystemBoard {
      * @throws IOException If there is an IOException communicating with the
      * system hardware.
      */
-    SystemBoardUdooNeo() throws IOException {
+    SystemBoardRPi3() throws IOException {
         // builds GPIO port interfaces
         this.gpioPorts = GPIOPortFile.buildPortsForPath(Paths.get("/sys/class/gpio"));
         
@@ -72,12 +72,12 @@ class SystemBoardUdooNeo extends SystemBoard {
 
     @Override
     public Path getConfigDirectory() {
-        return Paths.get("/home/udooer/config");
+        return Paths.get("/home/pi/config");
     }
 
     @Override
     public Path getLogDirectory() {
-        return Paths.get("/home/udooer/logs");
+        return Paths.get("/home/pi/logs");
     }
 
     @Override
@@ -87,7 +87,7 @@ class SystemBoardUdooNeo extends SystemBoard {
         // get an array of files in /dev that start with ttyACM or ttyMMC
         File[] busses = Paths.get("/dev/")
             .toFile()
-            .listFiles((dir, name) -> name.startsWith("ttyACM") || name.startsWith("ttyMCC"));
+            .listFiles((dir, name) -> name.startsWith("ttyACM"));
         
         // then add their paths to toReturn
         for (File toAdd : busses) {
@@ -103,21 +103,21 @@ class SystemBoardUdooNeo extends SystemBoard {
      * @return A boolean value indicating whether the board is detected.
      */
     public static boolean isBoardDetected() {
-        // linux distrobutions have a version file used to access distro info
-        Path versionFile = Paths.get("/proc/version");
+        // the RPi3 will have it's board type in the base board model file
+        Path modelFile = Paths.get("/sys/firmware/devicetree/base/model");
 
-        // if the version file contains udooneo we are running on a UDOO NEO board
-        if (versionFile.toFile().exists()) {
+        // if the version file contains udooneo we are running on a RPi 3
+        if (modelFile.toFile().exists()) {
             try {
-                List<String> versionLines = Files.readAllLines(versionFile);
+                List<String> versionLines = Files.readAllLines(modelFile);
                 if (versionLines.size() > 0) {
-                    if (versionLines.get(0).contains("udooneo")) {
-                        // return a udoo neo system board instance
+                    if (versionLines.get(0).contains("Raspberry Pi 3")) {
+                        // indicate a RPi 3 board was found
                         return true;
                     }
                 }
             } catch (IOException ex) {
-                LOGGER.error("Version file exists but could not be read.", ex);
+                LOGGER.error("Model file exists but could not be read.", ex);
             }
         }
 

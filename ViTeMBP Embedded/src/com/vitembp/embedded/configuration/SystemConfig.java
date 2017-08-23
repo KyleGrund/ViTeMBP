@@ -281,8 +281,11 @@ public class SystemConfig {
      * @param configFile The file to save to.
      */
     private void saveConfigToPath(Path configFile) throws IOException, XMLStreamException {
-        Path configDir = configFile.getParent();
-        LOGGER.info("Saving configuration to: " + configFile);
+        // get absolute path as we will be checking for the directory to exist
+        // before saving the config
+        Path fullConfigFile = configFile.toAbsolutePath();
+        Path configDir = fullConfigFile.getParent();
+        LOGGER.info("Saving configuration to: " + fullConfigFile);
         // if the directory doesn't exits try create it or the writer can't be made        
         if (!Files.isDirectory(configDir)) {
             LOGGER.info("Config path not found, creating: " + configDir.toString());
@@ -290,7 +293,7 @@ public class SystemConfig {
         }
         
         // create a buffered writer to output the file to
-        try (BufferedWriter writer = Files.newBufferedWriter(configFile)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(fullConfigFile)) {
             // create a stream to write config to
             XMLStreamWriter configOutputStream = XMLOutputFactory
                     .newFactory()

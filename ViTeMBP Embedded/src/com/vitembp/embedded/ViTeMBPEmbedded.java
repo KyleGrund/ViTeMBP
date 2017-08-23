@@ -18,6 +18,7 @@
 package com.vitembp.embedded;
 
 import com.vitembp.embedded.controller.StateMachine;
+import com.vitembp.embedded.gui800x480.GUI;
 import com.vitembp.embedded.interfaces.CommandLine;
 
 /**
@@ -31,6 +32,9 @@ public class ViTeMBPEmbedded {
     public static void main(String[] args) {
         // process command line arguments
         CommandLine.acceptArgs(args);
+        
+        // starts the gui
+        GUI.start();
         
         // start system controller state machine
         new StateMachine().start();
