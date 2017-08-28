@@ -17,11 +17,21 @@
  */
 package com.vitembp.embedded.gui800x480;
 
+import com.vitembp.embedded.hardware.HardwareInterface;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+
 /**
  *
  * @author kgrund
  */
 public class CaptureStatus extends javax.swing.JDialog {
+    /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
     /**
      * Creates new form CaptureStatus
@@ -103,6 +113,11 @@ public class CaptureStatus extends javax.swing.JDialog {
 
         startCaptureButton.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
         startCaptureButton.setText("Start Capture");
+        startCaptureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startCaptureButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -200,6 +215,26 @@ public class CaptureStatus extends javax.swing.JDialog {
         // show capture status
         GUI.showCaptureControl();
     }//GEN-LAST:event_captureStatusButtonActionPerformed
+
+    private void startCaptureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startCaptureButtonActionPerformed
+        if ("Start Capture".equals(startCaptureButton.getText())) {
+            // starting capture
+            try {
+                startCaptureButton.setText("Stop Capture");
+                HardwareInterface.getInterface().generateKeyPress('1');
+            } catch (InterruptedException ex) {
+                LOGGER.error("Interrupted starting capture from GUI.", ex);
+            }
+        } else {
+            // ending capture
+            try {
+                startCaptureButton.setText("Start Capture");
+                HardwareInterface.getInterface().generateKeyPress('4');
+            } catch (InterruptedException ex) {
+                LOGGER.error("Interrupted stopping capture from GUI.", ex);
+            }
+        }
+    }//GEN-LAST:event_startCaptureButtonActionPerformed
 
     /**
      * @param args the command line arguments

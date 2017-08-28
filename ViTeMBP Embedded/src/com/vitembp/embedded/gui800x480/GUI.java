@@ -18,30 +18,45 @@
 package com.vitembp.embedded.gui800x480;
 
 /**
- * Interface class for running the embedded GUI.
+ * Class which provides an interface to the embedded GUI.
  */
 public class GUI {
+    /**
+     * The window showing the capture status and control.
+     */
+    private static final CaptureStatus CAPTURE_STATUS_WINDOW = new CaptureStatus(null, true);
     
-    private static CaptureStatus captureStatusWindow = new CaptureStatus(null, true);
-    private static OptionsMenu optionsMenuWindow = new OptionsMenu(null, true);
+    /**
+     * The options window allowing basic configuration control.
+     */
+    private static final OptionsMenu OPTIONS_MENU_WINDOW = new OptionsMenu(null, true);
     
+    /**
+     * Starts the GUI.
+     */
     public static void start() {
         java.awt.EventQueue.invokeLater(() -> {
-            captureStatusWindow.setVisible(true);
+            CAPTURE_STATUS_WINDOW.setVisible(true);
         });
     }
     
+    /**
+     * Shows the capture status window and hides all others.
+     */
     public static void showCaptureControl() {
         java.awt.EventQueue.invokeLater(() -> {
-            optionsMenuWindow.setVisible(false);
-            captureStatusWindow.setVisible(true);
+            OPTIONS_MENU_WINDOW.setVisible(false);
+            CAPTURE_STATUS_WINDOW.setVisible(true);
         });
     }
     
+    /**
+     * Shows the options window and hides all others.
+     */
     public static void showOptionsControl() {
         java.awt.EventQueue.invokeLater(() -> {
-            captureStatusWindow.setVisible(false);
-            optionsMenuWindow.setVisible(true);
+            CAPTURE_STATUS_WINDOW.setVisible(false);
+            OPTIONS_MENU_WINDOW.setVisible(true);
         });
     }
 }

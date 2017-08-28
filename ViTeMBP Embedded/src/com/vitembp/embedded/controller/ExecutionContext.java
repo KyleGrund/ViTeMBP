@@ -59,6 +59,10 @@ class ExecutionContext {
         this.captureSession = session;
     }
     
+    /**
+     * Gets the interface to the system hardware.
+     * @return The interface to the system hardware.
+     */
     HardwareInterface getHardware() {
         return HardwareInterface.getInterface();
     }

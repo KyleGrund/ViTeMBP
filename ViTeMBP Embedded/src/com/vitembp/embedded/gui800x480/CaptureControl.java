@@ -71,6 +71,11 @@ public class CaptureControl extends javax.swing.JPanel {
 
         startCaptureButton.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
         startCaptureButton.setText("Start Capture");
+        startCaptureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startCaptureButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -190,6 +195,10 @@ public class CaptureControl extends javax.swing.JPanel {
         // show options screen
         GUI.showOptionsControl();
     }//GEN-LAST:event_optionsNavActionPerformed
+
+    private void startCaptureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startCaptureButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_startCaptureButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -120,6 +120,15 @@ public class HardwareInterface {
     }
     
     /**
+     * Adds a key press to the processing queue.
+     * @param key The key to add.
+     * @throws InterruptedException If the insertion operation is interrupted.
+     */
+    public void generateKeyPress(Character key) throws InterruptedException {
+        this.keyPresses.put(key);
+    }
+    
+    /**
      * Initializes resources such as resolving sensor bindings for system
      * interface.
      */

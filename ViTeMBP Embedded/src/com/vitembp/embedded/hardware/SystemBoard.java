@@ -98,6 +98,12 @@ abstract class SystemBoard {
                     } catch (IOException ex) {
                         LOGGER.error("IOException while building RPi 3 board.", ex);
                     }
+                } else if (SystemBoardUdooQdl.isBoardDetected()) {
+                    try {
+                        SystemBoard.singletonInstance = new SystemBoardUdooQdl();
+                    } catch (IOException ex) {
+                        LOGGER.error("IOException while building UDOO Quad/Dual board.", ex);
+                    }
                 }
 
                 // no system board was able to be made, so return a mock
