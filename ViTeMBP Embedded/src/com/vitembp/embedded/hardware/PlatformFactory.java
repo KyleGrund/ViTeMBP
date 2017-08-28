@@ -184,6 +184,97 @@ class PlatformFactory {
     }
     
     /**
+     * Builds a Platform for a SystemBoardUdooNeo instance.
+     * @param board The system board to build a Platform for.
+     * @return A Platform for a SystemBoardUdooNeo instance.
+     */
+    public static Platform create(SystemBoardUdooQdl board){
+        // get gpio182 which controls the sync light
+        GPIOPort lightPort = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio123"))
+                .findFirst()
+                .get();
+        
+        // get gpio106 which controls button 1
+        GPIOPort buttonOne = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio124"))
+                .findFirst()
+                .get();
+        
+        // get gpio107 which controls button 2
+        GPIOPort buttonTwo = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio125"))
+                .findFirst()
+                .get();
+        
+        // get gpio180 which controls button 3
+        GPIOPort buttonThree = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio126"))
+                .findFirst()
+                .get();
+        
+        // get gpio181 which controls button 4
+        GPIOPort buttonFour = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio127"))
+                .findFirst()
+                .get();
+        
+        return new PlatformFunctor(
+                lightPort::setValue,
+                (Consumer<Character> cb) -> {
+                    // add polled event listeners to supply button press events
+                    new GPIOPolledEvent(
+                            buttonOne,
+                            8,
+                            (Boolean released) -> {
+                                if (!released) cb.accept('1');
+                            }).start();
+//                    new GPIOPolledEvent(
+//                            buttonTwo,
+//                            10,
+//                            (Boolean released) -> {
+//                                if (!released) cb.accept('2');
+//                            }).start();
+//                    new GPIOPolledEvent(
+//                            buttonThree,
+//                            10,
+//                            (Boolean released) -> {
+//                                if (!released) cb.accept('3');
+//                            }).start();
+                    new GPIOPolledEvent(
+                            buttonFour,
+                            8,
+                            (Boolean released) -> {
+                                if (!released) cb.accept('4');
+                            }).start();
+                },
+                () -> {
+                    Set<Sensor> toReturn = new HashSet<>();
+                    
+                    // use factory to build all devices
+                    board.getI2CBusses().forEach((bus) -> {
+                        toReturn.addAll(I2CSensorFactory.getI2CSensors(bus));
+                    });
+                    
+                    board.getSerialBusses().forEach((bus) -> {
+                        try { 
+                            toReturn.addAll(SerialBusSensorFactory.getSerialSensors(bus));
+                        } catch (IOException ex) {
+                            LOGGER.error("Error building sensor for: " + bus.getName(), ex);
+                        }
+                    });
+                    
+                    return toReturn;
+                },
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
+    }
+    
+    /**
      * Builds a Platform for a SystemBoardMock instance.
      * @param board The system board to build a Platform for.
      * @return A Platform for a SystemBoardMock instance.
