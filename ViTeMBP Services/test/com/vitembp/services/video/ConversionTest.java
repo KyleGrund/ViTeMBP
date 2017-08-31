@@ -62,6 +62,31 @@ public class ConversionTest {
     }
 
     /**
+     * Test of extractWaveAudio method, of class Conversion.
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testExtractWaveAudio() throws Exception {
+        System.out.println("extractWaveAudio");
+        
+        URL reso = getClass().getResource("GOPR0026.MP4");
+        String source = null;
+        try {
+            source = new File(URLDecoder.decode(reso.getFile(), "UTF-8")).getAbsolutePath();
+        } catch (UnsupportedEncodingException ex) {
+            fail("Unexpected exception: " + ex.getMessage());
+        }
+        // build a temporary directory for images
+        Path tempDir = Files.createTempDirectory("vitempbTest");
+        
+        Conversion.extractWaveAudio(source, tempDir.resolve("test.wav").toString());
+        
+        // delete all files and make sure the audio file was extracted
+        int filesCount = DeleteTree(tempDir);
+        Assert.assertEquals(1, filesCount);
+    }
+    
+    /**
      * Test of extractFrames method, of class Conversion.
      * @throws java.lang.Exception
      */

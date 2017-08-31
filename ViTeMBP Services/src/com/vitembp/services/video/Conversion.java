@@ -40,6 +40,48 @@ public class Conversion {
     private static final Logger LOGGER = LogManager.getLogger();
     
     /**
+     * Extracts waveform audio from a video file.
+     * @param source The video from which to extract frames.
+     * @param destination The destination file for the extracted audio.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public static void extractWaveAudio(String source, String destination) throws IOException {
+        // build the FFmpeg process that will extract the audio        
+        ProcessBuilder pb = new ProcessBuilder(
+                "ffmpeg",
+                "-i",
+                source,
+                "-vn",
+                "-f",
+                "wav",
+                destination
+        );
+        
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        
+        // execute the command
+        Process proc = pb.start();
+
+        try {
+            // execute and wait for the command
+            int result = proc.waitFor();
+            if (result != 0) {
+                // result is exit level, log anything > 0 as an error
+                LOGGER.error("Waveform audio extraction completed with exit level: " + Integer.toString(result));
+                BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                String line = br.readLine();
+                while (line != null) {
+                    LOGGER.error(line);
+                    line = br.readLine();
+                }
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while waiting for waveform audio extraction process completion.", ex);
+        }
+    }
+    
+    /**
      * Extracts frames from a video file to a destination directory.
      * @param source The video from which to extract frames.
      * @param destination The destination directory for the extracted frames.
