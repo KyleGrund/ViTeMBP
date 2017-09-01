@@ -17,8 +17,6 @@
  */
 package com.vitembp.embedded.controller;
 
-import java.io.IOException;
-import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -32,24 +30,10 @@ class WaitForStart implements ControllerState {
 
     @Override
     public Class execute(ExecutionContext state) {
-        // flash the sync light to indicate that we are ready to start
-        try {
-            state.getHardware().flashSyncLight(Arrays.asList(new Integer[] { 100, 200, 100 }));
-        } catch (IOException ex) {
-            LOGGER.error("IOException flashing sync light.", ex);
-        }
-        
-        // wait for flash to complete
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException ex) {
-            LOGGER.error("IOException flashing sync light.", ex);
-        }
-        
         // wait for a keypress
         char key = '\0';
         try {
-            key = state.getHardware().getKeyPress();
+            key = state.getHardware().getKeyPress(1000);
         } catch (InterruptedException ex) {
             LOGGER.error("Interrupted waiting for key press.", ex);
         }
@@ -59,7 +43,7 @@ class WaitForStart implements ControllerState {
             return CreateCapture.class;
         }
         
-        // no valid key was pressed, return to this wait state
-        return this.getClass();
+        // no valid key was pressed, run idle sensor state
+        return IdleSensor.class;
     }
 }

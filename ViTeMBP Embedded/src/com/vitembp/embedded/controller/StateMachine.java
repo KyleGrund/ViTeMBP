@@ -17,8 +17,11 @@
  */
 package com.vitembp.embedded.controller;
 
+import com.vitembp.embedded.hardware.Sensor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -75,6 +78,8 @@ public class StateMachine {
         this.states.put(StartCapture.class, new StartCapture());
         this.states.put(WaitForEnd.class, new WaitForEnd());
         this.states.put(WaitForStart.class, new WaitForStart());
+        this.states.put(WaitForStartFlashLed.class, new WaitForStartFlashLed());
+        this.states.put(IdleSensor.class, new IdleSensor());
     }
     
     /**
@@ -90,6 +95,24 @@ public class StateMachine {
      */
     public void stop() {
         this.isRunning = false;
+    }
+    
+    /**
+     * Sets the Consumer which is called when sensors are added or removed.
+     * @param callback The Consumer which is called when sensors are added or removed.
+     */
+    public void setSensorsChangedCallback(Consumer<Set<String>> callback) {
+        IdleSensor state = (IdleSensor)this.states.get(IdleSensor.class);
+        state.setSensorsChangedCallback(callback);
+    }
+    
+    /**
+     * Sets the Consumer which is called when a sensor reading is performed.
+     * @param callback The Consumer which is called when a sensor reading is performed.
+     */
+    public void setSensorsReadCallback(Consumer<Map<String, String>> callback) {
+        IdleSensor state = (IdleSensor)this.states.get(IdleSensor.class);
+        state.setSensorsReadCallback(callback);
     }
     
     /**

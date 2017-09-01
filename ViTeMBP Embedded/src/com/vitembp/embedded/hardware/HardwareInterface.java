@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -117,6 +118,17 @@ public class HardwareInterface {
      */
     public char getKeyPress() throws InterruptedException {
         return this.keyPresses.take();
+    }
+    
+    /**
+     * Waits for and returns a key press.
+     * @param timeout The number of milliseconds to wait for a key press.
+     * @return The character corresponding to the key pressed.
+     * @throws java.lang.InterruptedException If a Thread wait for a key press
+     * is interrupted.
+     */
+    public char getKeyPress(int timeout) throws InterruptedException {
+        return this.keyPresses.poll(timeout, TimeUnit.MILLISECONDS);
     }
     
     /**

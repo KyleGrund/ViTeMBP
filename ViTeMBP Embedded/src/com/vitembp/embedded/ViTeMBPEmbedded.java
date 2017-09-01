@@ -33,10 +33,13 @@ public class ViTeMBPEmbedded {
         // process command line arguments
         CommandLine.acceptArgs(args);
         
-        // starts the gui
-        GUI.start();
+        // create system controller state machine
+        StateMachine machine = new StateMachine();
         
-        // start system controller state machine
-        new StateMachine().start();
+        // start GUI
+        GUI.start(machine::setSensorsChangedCallback, machine::setSensorsReadCallback);
+        
+        // start state machine
+        machine.start();
     }
 }

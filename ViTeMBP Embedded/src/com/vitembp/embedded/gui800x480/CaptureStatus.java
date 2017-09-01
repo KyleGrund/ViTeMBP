@@ -18,9 +18,10 @@
 package com.vitembp.embedded.gui800x480;
 
 import com.vitembp.embedded.hardware.HardwareInterface;
-import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.DefaultListModel;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -32,12 +33,18 @@ public class CaptureStatus extends javax.swing.JDialog {
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
-
+    
+    /**
+     * Maps of currently attached sensors.
+     */
+    private final Set<String> sensors;
+    
     /**
      * Creates new form CaptureStatus
      */
     public CaptureStatus(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        this.sensors = new HashSet<>();
         initComponents();
     }
 
@@ -163,16 +170,11 @@ public class CaptureStatus extends javax.swing.JDialog {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 704, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -276,6 +278,32 @@ public class CaptureStatus extends javax.swing.JDialog {
                 dialog.setVisible(true);
             }
         });
+    }
+    
+    /**
+     * Updates the sensors list to reflect new or removed sensors.
+     * @param currentSensors The currently connected sensors.
+     */
+    void updateSensors(Set<String> currentSensors) {
+        this.sensors.clear();
+        this.sensors.addAll(currentSensors);
+        
+        DefaultListModel model = new DefaultListModel();
+        this.sensors.forEach(model::addElement);
+        
+        java.awt.EventQueue.invokeLater((Runnable)() -> sensorsList.setModel(model));
+    }
+    
+    /**
+     * Updates the sensor list with latest sensor reading.
+     * @param dataReadCallback The latest sensor reading.
+     */
+    void sensorReading(Map<String, String> readData) {
+        DefaultListModel model = new DefaultListModel();
+        readData.forEach((String sensor, String data) -> model.addElement(
+                sensor + " - " + data));
+        
+        java.awt.EventQueue.invokeLater((Runnable)() -> sensorsList.setModel(model));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

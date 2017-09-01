@@ -17,6 +17,11 @@
  */
 package com.vitembp.embedded.gui800x480;
 
+import com.vitembp.embedded.hardware.Sensor;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
 /**
  * Class which provides an interface to the embedded GUI.
  */
@@ -33,8 +38,17 @@ public class GUI {
     
     /**
      * Starts the GUI.
+     * @param sensorsChangedCallback
+     * @param dataReadCallback
      */
-    public static void start() {
+    public static void start(
+            Consumer<Consumer<Set<String>>> sensorsChangedCallback,
+            Consumer<Consumer<Map<String, String>>> dataReadCallback) {
+        // register callbacks
+        sensorsChangedCallback.accept(CAPTURE_STATUS_WINDOW::updateSensors);
+        dataReadCallback.accept(CAPTURE_STATUS_WINDOW::sensorReading);
+        
+        // show status window
         java.awt.EventQueue.invokeLater(() -> {
             CAPTURE_STATUS_WINDOW.setVisible(true);
         });

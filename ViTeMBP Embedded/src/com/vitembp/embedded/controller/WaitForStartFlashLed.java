@@ -17,36 +17,36 @@
  */
 package com.vitembp.embedded.controller;
 
-import com.vitembp.embedded.datacollection.CaptureSession;
 import java.io.IOException;
+import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * The class containing the implementation for the EndCapture state.
+ * State that flashes LED to indicate the system is waiting to start a capture.
  */
-class EndCapture implements ControllerState {
+class WaitForStartFlashLed implements ControllerState {
     /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
-    
+
     @Override
     public Class execute(ExecutionContext state) {
-        // get the current capture session
-        CaptureSession session = state.getCaptureSession();
-        
-        // stop the current capture session
-        session.stop();
-        
+        // flash the sync light to indicate that we are ready to start
         try {
-            // save the capture data
-            session.saveCapture();
+            state.getHardware().flashSyncLight(Arrays.asList(new Integer[] { 100, 200, 100 }));
         } catch (IOException ex) {
-            LOGGER.error("Error while saving data at end of capture.", ex);
+            LOGGER.error("IOException flashing sync light.", ex);
         }
         
-        // signal capture has stopped as needed
+        // wait for flash to complete
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ex) {
+            LOGGER.error("IOException flashing sync light.", ex);
+        }
         
-        return WaitForStartFlashLed.class;
+        // go to wait state
+        return WaitForStart.class;
     }
 }
