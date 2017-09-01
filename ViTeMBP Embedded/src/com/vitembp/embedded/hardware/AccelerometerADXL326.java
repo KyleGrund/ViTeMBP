@@ -76,9 +76,9 @@ public class AccelerometerADXL326 extends Sensor {
         byte[] reading = this.bus.readBytes(6);
         
         // the 10-bit ADC values are packed into two bytes
-        float x = (((int)reading[0]) << 8) & reading[1];
-        float y = (((int)reading[2]) << 8) & reading[3];
-        float z = (((int)reading[4]) << 8) & reading[5];
+        float x = (((int)reading[0]) << 8) | reading[1];
+        float y = (((int)reading[2]) << 8) | reading[3];
+        float z = (((int)reading[4]) << 8) | reading[5];
         
         // the sensor returns a value between 0 and 1023 inclusively
         // values below 1/2 of the range represent negative G measurements
