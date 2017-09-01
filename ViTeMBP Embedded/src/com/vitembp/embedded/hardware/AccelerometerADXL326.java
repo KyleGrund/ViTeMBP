@@ -23,9 +23,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Class providing interface for an NXP FXOS8700CQ chip.
+ * Sensor driver for the ADXL326 16G accelerometer.
  */
-class AccelerometerFXOS8700CQSerial extends Sensor {
+public class AccelerometerADXL326 extends Sensor {
     /**
      * Class logger instance.
      */
@@ -34,12 +34,12 @@ class AccelerometerFXOS8700CQSerial extends Sensor {
     /**
      * A UUID representing the type of this sensor.
      */
-    public static final UUID TYPE_UUID = UUID.fromString("fe3c4af2-feb4-4c9b-a717-2d0db3052293");
+    public static final UUID TYPE_UUID = UUID.fromString("f06ee9e1-345a-490d-8b03-a736a5e5d7bf");
     
     /**
      * A UUID representing serial number for this sensor.
      */
-    private static final UUID SERIAL_UUID = UUID.fromString("cc2e40c5-9994-415b-b451-c37582cce97f");
+    private static final UUID SERIAL_UUID = UUID.fromString("d9395313-35f5-4d55-9b52-9948d85e8f41");
     
     /**
      * The object used to communicate on the serial bus.
@@ -47,16 +47,16 @@ class AccelerometerFXOS8700CQSerial extends Sensor {
     private final SerialBus bus;
     
     /**
-     * Initializes a new instance of the AccelerometerFXOS8700CQ class.
+     * Initializes a new instance of the AccelerometerADXL326 class.
      * @param bus The device object used to communicate on the serial bus.
      */
-    AccelerometerFXOS8700CQSerial(SerialBus bus) {
+    AccelerometerADXL326(SerialBus bus) {
         this.bus = bus;
     }
 
     @Override
     public UUID getType() {
-        return AccelerometerFXOS8700CQSerial.TYPE_UUID;
+        return AccelerometerADXL326.TYPE_UUID;
     }
 
     @Override
@@ -73,29 +73,29 @@ class AccelerometerFXOS8700CQSerial extends Sensor {
         
         
         // parse out bytes to their individual axis values
-        int xh = this.bus.readBytes(1)[0];
-        int xl = this.bus.readBytes(1)[0];
-        int yh = this.bus.readBytes(1)[0];
-        int yl = this.bus.readBytes(1)[0];
-        int zh = this.bus.readBytes(1)[0];
-        int zl = this.bus.readBytes(1)[0];
+        byte[] reading = this.bus.readBytes(6);
         
-        // interpret bytes as signed 14bit values
-        int signx = (xh & 0x20) == 0x20 ? -1 : 1;
-        int signy = (yh & 0x20) == 0x20 ? -1 : 1;
-        int signz = (zh & 0x20) == 0x20 ? -1 : 1;
-        int x = signx * (((xh & 0x1F) << 8) | xl) / 4;
-        int y = signy * (((yh & 0x1F) << 8) | yl) / 4;
-        int z = signz * (((zh & 0x1F) << 8) | zl) / 4;
+        // the 10-bit ADC values are packed into two bytes
+        float x = (((int)reading[0]) << 8) & reading[1];
+        float y = (((int)reading[2]) << 8) & reading[3];
+        float z = (((int)reading[4]) << 8) & reading[5];
+        
+        // the sensor returns a value between 0 and 1023 inclusively
+        // values below 1/2 of the range represent negative G measurements
+        // values above represent positive measurements. The total scale is
+        // 16G leadint to the formula: ((reading / 1023) + 0.5) * 16
+        x = ((x / 1023.0f) - 0.5f) * 16.0f;
+        y = ((y / 1023.0f) - 0.5f) * 16.0f;
+        z = ((z / 1023.0f) - 0.5f) * 16.0f;
         
         // return values as a string
         return 
                 "(" +
-                Integer.toString(x) +
+                Float.toString(x) +
                 "," +
-                Integer.toString(y) +
+                Float.toString(y) +
                 "," +
-                Integer.toString(z) +
+                Float.toString(z) +
                 ")";
         } catch (IOException ex) {
             LOGGER.error("Error reading from accelerometer.", ex);
@@ -105,6 +105,6 @@ class AccelerometerFXOS8700CQSerial extends Sensor {
 
     @Override
     public UUID getSerial() {
-        return SERIAL_UUID;
+        return AccelerometerADXL326.SERIAL_UUID;
     }
 }

@@ -20,8 +20,6 @@ package com.vitembp.embedded.hardware;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.codec.Charsets;
 
 /**
@@ -43,12 +41,14 @@ class SerialBusSensorFactory {
             byte[] respBytes = bus.readBytes(36);
             String resp = new String(respBytes, Charsets.UTF_8);
             
-            if ("3972d3a9-d55f-4e74-a61f-f2f8fe62f858".equals(resp)) {
+            if (DistanceVL53L0X.TYPE_UUID.toString().equals(resp)) {
                 toReturn.add(new DistanceVL53L0X(bus));
-            } else if ("fe3c4af2-feb4-4c9b-a717-2d0db3052293".equals(resp)) {
+            } else if (AccelerometerFXOS8700CQSerial.TYPE_UUID.toString().equals(resp)) {
                 toReturn.add(new AccelerometerFXOS8700CQSerial(bus));
-            } else if ("75d05ba8-639c-46e6-a940-591d920a2d86".equals(resp)) {
+            } else if (RotaryEncoderEAW0J.TYPE_UUID.toString().equals(resp)) {
                 toReturn.add(new RotaryEncoderEAW0J(bus));
+            } else if (AccelerometerADXL326.TYPE_UUID.toString().equals(resp)){
+                toReturn.add(new AccelerometerADXL326(bus));
             }
             
             return toReturn;

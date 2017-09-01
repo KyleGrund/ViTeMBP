@@ -38,7 +38,7 @@ public class RotaryEncoderEAW0J extends Sensor {
     /**
      * A UUID representing the type of this sensor.
      */
-    private static final UUID TYPE_UUID = UUID.fromString("75d05ba8-639c-46e6-a940-591d920a2d86");
+    public static final UUID TYPE_UUID = UUID.fromString("75d05ba8-639c-46e6-a940-591d920a2d86");
     
     /**
      * The bus to communicate with the sensors on.

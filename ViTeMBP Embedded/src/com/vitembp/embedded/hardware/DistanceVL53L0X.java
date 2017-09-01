@@ -38,7 +38,7 @@ public class DistanceVL53L0X extends Sensor {
     /**
      * A UUID representing the type of this sensor.
      */
-    private static final UUID TYPE_UUID = UUID.fromString("3972d3a9-d55f-4e74-a61f-f2f8fe62f858");
+    public static final UUID TYPE_UUID = UUID.fromString("3972d3a9-d55f-4e74-a61f-f2f8fe62f858");
     
     /**
      * The bus to communicate with the sensors on.
