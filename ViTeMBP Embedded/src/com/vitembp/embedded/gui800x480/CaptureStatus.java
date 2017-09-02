@@ -30,6 +30,12 @@ import org.apache.logging.log4j.LogManager;
  */
 public class CaptureStatus extends javax.swing.JDialog {
     /**
+     * This is the amount of time to wait before registering a second key press
+     * to prevent bounce on touch panels.
+     */
+    private static final int DEBOUNCE_MS = 500;
+    
+    /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
@@ -38,6 +44,11 @@ public class CaptureStatus extends javax.swing.JDialog {
      * Maps of currently attached sensors.
      */
     private final Set<String> sensors;
+    
+    /**
+     * Holds the time at which to begin accepting key presses again.
+     */
+    private long debounceTime = System.currentTimeMillis() - DEBOUNCE_MS;
     
     /**
      * Creates new form CaptureStatus
@@ -219,21 +230,27 @@ public class CaptureStatus extends javax.swing.JDialog {
     }//GEN-LAST:event_captureStatusButtonActionPerformed
 
     private void startCaptureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startCaptureButtonActionPerformed
-        if ("Start Capture".equals(startCaptureButton.getText())) {
-            // starting capture
-            try {
-                startCaptureButton.setText("Stop Capture");
-                HardwareInterface.getInterface().generateKeyPress('1');
-            } catch (InterruptedException ex) {
-                LOGGER.error("Interrupted starting capture from GUI.", ex);
-            }
-        } else {
-            // ending capture
-            try {
-                startCaptureButton.setText("Start Capture");
-                HardwareInterface.getInterface().generateKeyPress('4');
-            } catch (InterruptedException ex) {
-                LOGGER.error("Interrupted stopping capture from GUI.", ex);
+        // wait until debounce time to prevent accidental multiple presses on a
+        // touch panel
+        if (System.currentTimeMillis() > this.debounceTime) {
+            this.debounceTime = System.currentTimeMillis() + DEBOUNCE_MS;
+            
+            if ("Start Capture".equals(startCaptureButton.getText())) {
+                // starting capture
+                try {
+                    startCaptureButton.setText("Stop Capture");
+                    HardwareInterface.getInterface().generateKeyPress('1');
+                } catch (InterruptedException ex) {
+                    LOGGER.error("Interrupted starting capture from GUI.", ex);
+                }
+            } else {
+                // ending capture
+                try {
+                    startCaptureButton.setText("Start Capture");
+                    HardwareInterface.getInterface().generateKeyPress('4');
+                } catch (InterruptedException ex) {
+                    LOGGER.error("Interrupted stopping capture from GUI.", ex);
+                }
             }
         }
     }//GEN-LAST:event_startCaptureButtonActionPerformed

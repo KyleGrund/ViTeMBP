@@ -68,7 +68,7 @@ public class DistanceVL53L0X extends Sensor {
             this.bus.writeBytes(new byte[] { 'r' });
             byte[] resp = this.bus.readBytes(2);
             
-            return Integer.toString(((int)resp[0]) + ((int)resp[1]) << 8);
+            return Integer.toString((resp[0] & 0xff) | (resp[1]) << 8);
         } catch (IOException ex) {
             LOGGER.error("Error reading sample from VL53L0X " + this.bus.getName(), ex);
             return null;
