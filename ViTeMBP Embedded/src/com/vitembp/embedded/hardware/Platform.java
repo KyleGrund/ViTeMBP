@@ -45,6 +45,13 @@ abstract class Platform {
     public abstract ConsumerIOException<Boolean> getSetSyncLightTarget();
     
     /**
+     * Gets a Consumer which takes a Boolean value and sets the state of the
+     * buzzer to on if it is true, or off if it is false.
+     * @return A Consumer which can be used to set the state of the buzzer.
+     */
+    public abstract ConsumerIOException<Boolean> getBuzzerTarget();
+    
+    /**
      * Sets the callback function which will process key press events.
      * @param callback The function which will process key press events.
      */

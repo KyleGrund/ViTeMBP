@@ -24,6 +24,10 @@ import org.apache.logging.log4j.LogManager;
  */
 class WaitForStart implements ControllerState {
     /**
+     * The time to wait for a key press before going to sensor idle.
+     */
+    private static final int KEY_PRESS_WAIT_TIME_MS = 250;
+    /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
@@ -31,15 +35,15 @@ class WaitForStart implements ControllerState {
     @Override
     public Class execute(ExecutionContext state) {
         // wait for a keypress
-        char key = '\0';
+        Character key = '\0';
         try {
-            key = state.getHardware().getKeyPress(1000);
+            key = state.getHardware().getKeyPress(KEY_PRESS_WAIT_TIME_MS);
         } catch (InterruptedException ex) {
             LOGGER.error("Interrupted waiting for key press.", ex);
         }
         
         // the 1 key triggers starting the capture
-        if (key == '1') {
+        if (key != null && key == '1') {
             return CreateCapture.class;
         }
         

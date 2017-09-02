@@ -62,4 +62,15 @@ class PlatformMock extends Platform{
     Path getDefaultConfigPath() {
         return Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml");
     }
+
+    @Override
+    public ConsumerIOException<Boolean> getBuzzerTarget() {
+        return (Boolean t) -> {
+            if (t) {
+                LOGGER.info("Enabled buzzer.");
+            } else {
+                LOGGER.info("Disabled buzzer.");
+            }   
+        };
+    }
 }

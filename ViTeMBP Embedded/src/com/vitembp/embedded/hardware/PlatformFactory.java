@@ -81,6 +81,13 @@ class PlatformFactory {
                         LOGGER.info("Disabled synchronization light.");
                     }   
                 },
+                (Boolean t) -> {
+                    if (t) {
+                        LOGGER.info("Enabled buzzer.");
+                    } else {
+                        LOGGER.info("Disabled buzzer.");
+                    }   
+                },
                 (Consumer<Character> cb) -> {
                     LOGGER.info("Set keypad callback.");
                 },
@@ -102,6 +109,13 @@ class PlatformFactory {
         GPIOPort lightPort = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio182"))
+                .findFirst()
+                .get();
+        
+        // get gpio4 which controls the buzzer
+        GPIOPort buzzerPort = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio4"))
                 .findFirst()
                 .get();
         
@@ -135,6 +149,7 @@ class PlatformFactory {
         
         return new PlatformFunctor(
                 lightPort::setValue,
+                buzzerPort::setValue,
                 (Consumer<Character> cb) -> {
                     // add polled event listeners to supply button press events
                     new GPIOPolledEvent(
@@ -196,6 +211,13 @@ class PlatformFactory {
                 .findFirst()
                 .get();
         
+        // get gpio133 which controls the buzzer
+        GPIOPort buzzerPort = board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals("gpio133"))
+                .findFirst()
+                .get();
+        
         // get gpio106 which controls button 1
         GPIOPort buttonOne = board.getGPIOPorts()
                 .stream()
@@ -226,6 +248,7 @@ class PlatformFactory {
         
         return new PlatformFunctor(
                 lightPort::setValue,
+                buzzerPort::setValue,
                 (Consumer<Character> cb) -> {
                     // add polled event listeners to supply button press events
                     new GPIOPolledEvent(
@@ -286,6 +309,13 @@ class PlatformFactory {
                         LOGGER.info("Enabled synchronization light.");
                     } else {
                         LOGGER.info("Disabled synchronization light.");
+                    }   
+                },
+                (Boolean t) -> {
+                    if (t) {
+                        LOGGER.info("Enabled buzzer.");
+                    } else {
+                        LOGGER.info("Disabled buzzer.");
                     }   
                 },
                 (Consumer<Character> cb) -> {

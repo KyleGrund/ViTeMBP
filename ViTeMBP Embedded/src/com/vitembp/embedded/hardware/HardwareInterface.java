@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -91,23 +93,54 @@ public class HardwareInterface {
     /**
      * Flashes the sync light with the list of integers indicating the durations.
      * @param durations The delays between turning the sync light on and off.
-     * @throws java.io.IOException If an error occurs accessing IO setting sync light state.
+     * @throws java.io.IOException If an error occurs accessing sync light IO.
      */
     public void flashSyncLight(List<Integer> durations) throws IOException {
         ConsumerIOException<Boolean> light = this.platform.getSetSyncLightTarget();
-        boolean lightState = false;
-        light.accept(false);
-        for (int wait : durations) {
-            lightState = !lightState;
-            light.accept(lightState);
+        Runnable lightTask = () -> {
             try {
-                Thread.sleep(wait);
+                // initially disable light
+                boolean lightState = false;
+                light.accept(false);
+                
+                // flip light state and wait for duration
+                for (int wait : durations) {
+                    lightState = !lightState;
+                    light.accept(lightState);
+                    Thread.sleep(wait);
+                }
+                
+                // always disable light
+                light.accept(false);
             } catch (InterruptedException ex) {
                 LOGGER.error("Thread sleep interrupted flashing sync light.", ex);
+            } catch (IOException ex) {
+                LOGGER.error("IOException while flashing sync light.", ex);
             }
-        }
+        };
         
-        light.accept(false);
+        new Thread(lightTask, "syncLight").start();
+    }
+    
+    /**
+     * Sounds the buzzer for the number of milliseconds provided.
+     * @param duration The number of milliseconds to sound the buzzer for.
+     * @throws java.io.IOException If an error occurs accessing buzzer IO.
+     */
+    public void soundBuzzer(int duration) throws IOException {
+        ConsumerIOException<Boolean> buzzer = this.platform.getBuzzerTarget();
+        Runnable buzzTask = () -> {
+            try {
+                buzzer.accept(true);
+                Thread.sleep(duration);
+                buzzer.accept(false);
+            } catch (InterruptedException ex) {
+                LOGGER.error("Thread sleep interrupted sounding buzzer.", ex);
+            }   catch (IOException ex) {
+                LOGGER.error("IO exception occured sounding buzzer.", ex);
+            }
+        };
+        new Thread(buzzTask, "Buzzer").start();
     }
     
     /**
@@ -116,7 +149,7 @@ public class HardwareInterface {
      * @throws java.lang.InterruptedException If a Thread wait for a key press
      * is interrupted.
      */
-    public char getKeyPress() throws InterruptedException {
+    public Character getKeyPress() throws InterruptedException {
         return this.keyPresses.take();
     }
     
@@ -127,7 +160,7 @@ public class HardwareInterface {
      * @throws java.lang.InterruptedException If a Thread wait for a key press
      * is interrupted.
      */
-    public char getKeyPress(int timeout) throws InterruptedException {
+    public Character getKeyPress(int timeout) throws InterruptedException {
         return this.keyPresses.poll(timeout, TimeUnit.MILLISECONDS);
     }
     

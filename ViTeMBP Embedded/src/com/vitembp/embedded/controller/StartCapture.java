@@ -29,6 +29,12 @@ import org.apache.logging.log4j.LogManager;
  */
 class StartCapture implements ControllerState {
     /**
+     * The time in milliseconds to enable the sync light and buzzer to indicate
+     * the capture has started.
+     */
+    private static final int LIGHT_DURATION = 2000;
+    
+    /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
@@ -39,7 +45,7 @@ class StartCapture implements ControllerState {
         CaptureSession session = state.getCaptureSession();
         
         // this represents the time to enable the sync light for
-        List<Integer> syncLightDuration = Arrays.asList(new Integer[] { 2000 });
+        List<Integer> syncLightDuration = Arrays.asList(new Integer[] { LIGHT_DURATION});
 
         // start capture
         session.start();
@@ -49,6 +55,13 @@ class StartCapture implements ControllerState {
             hardware.flashSyncLight(syncLightDuration);
         } catch (IOException ex) {
             LOGGER.error("Error flashing sync light when starting new capture.", ex);
+        }
+        
+        try {
+            // flash sync LED
+            hardware.soundBuzzer(LIGHT_DURATION);
+        } catch (IOException ex) {
+            LOGGER.error("Error sounding buzzer when starting new capture.", ex);
         }
         
         // transition to wait for end class

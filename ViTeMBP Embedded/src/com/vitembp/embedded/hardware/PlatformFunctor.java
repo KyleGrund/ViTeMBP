@@ -33,6 +33,11 @@ class PlatformFunctor extends Platform {
     private final ConsumerIOException<Boolean> setSyncLightTarget;
     
     /**
+     * The function which sets the state of the buzzer.
+     */
+    private final ConsumerIOException<Boolean> setBuzzerTarget;
+    
+    /**
      * The callback used to set the keypad key press consumer.
      */
     private final Consumer<Consumer<Character>> setKeypadCallback;
@@ -55,10 +60,12 @@ class PlatformFunctor extends Platform {
      */
     public PlatformFunctor(
             ConsumerIOException<Boolean> setSyncLightTarget,
+            ConsumerIOException<Boolean> setBuzzerTarget,
             Consumer<Consumer<Character>> setKeypadCallback,
             Supplier<Set<Sensor>> getSensorsTarget,
             Supplier<Path> getDefaultConfigPath) {
         this.setSyncLightTarget = setSyncLightTarget;
+        this.setBuzzerTarget = setBuzzerTarget;
         this.setKeypadCallback = setKeypadCallback;
         this.getSensorsTarget = getSensorsTarget;
         this.getDefaultConfigPath = getDefaultConfigPath;
@@ -69,6 +76,11 @@ class PlatformFunctor extends Platform {
         return this.setSyncLightTarget;
     }
 
+    @Override
+    public ConsumerIOException<Boolean> getBuzzerTarget() {
+        return this.setBuzzerTarget;
+    }
+    
     @Override
     public void setKeypadCallback(Consumer<Character> callback) {
         this.setKeypadCallback.accept(callback);
