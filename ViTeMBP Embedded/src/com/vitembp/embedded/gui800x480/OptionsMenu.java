@@ -17,6 +17,8 @@
  */
 package com.vitembp.embedded.gui800x480;
 
+import com.vitembp.embedded.configuration.SystemConfig;
+
 /**
  *
  * @author kgrund
@@ -29,6 +31,9 @@ public class OptionsMenu extends javax.swing.JDialog {
     public OptionsMenu(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        // update system ID
+        this.jLabelSystemID.setText(SystemConfig.getConfig().getSystemUUID().toString());
     }
 
     /**
@@ -40,20 +45,22 @@ public class OptionsMenu extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        jPanelNavBar = new javax.swing.JPanel();
         captureStatusButton = new javax.swing.JButton();
         captureSetupButton = new javax.swing.JButton();
         networkingButton = new javax.swing.JButton();
         optionsButton = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
+        jPanelNavigation = new javax.swing.JPanel();
         quitButton = new javax.swing.JButton();
+        jPanelSystemID = new javax.swing.JPanel();
+        jLabelSystemID = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 480));
         setName("captureStatus"); // NOI18N
         setUndecorated(true);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
+        jPanelNavBar.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         captureStatusButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         captureStatusButton.setText("Capture Status");
@@ -65,30 +72,30 @@ public class OptionsMenu extends javax.swing.JDialog {
                 captureStatusButtonActionPerformed(evt);
             }
         });
-        jPanel1.add(captureStatusButton);
+        jPanelNavBar.add(captureStatusButton);
 
         captureSetupButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         captureSetupButton.setText("Capture Setup");
         captureSetupButton.setMaximumSize(new java.awt.Dimension(193, 50));
         captureSetupButton.setMinimumSize(new java.awt.Dimension(193, 50));
         captureSetupButton.setPreferredSize(new java.awt.Dimension(193, 50));
-        jPanel1.add(captureSetupButton);
+        jPanelNavBar.add(captureSetupButton);
 
         networkingButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         networkingButton.setText("Networking");
         networkingButton.setMaximumSize(new java.awt.Dimension(193, 50));
         networkingButton.setMinimumSize(new java.awt.Dimension(193, 50));
         networkingButton.setPreferredSize(new java.awt.Dimension(193, 50));
-        jPanel1.add(networkingButton);
+        jPanelNavBar.add(networkingButton);
 
         optionsButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         optionsButton.setText("Options");
         optionsButton.setMaximumSize(new java.awt.Dimension(193, 50));
         optionsButton.setMinimumSize(new java.awt.Dimension(193, 50));
         optionsButton.setPreferredSize(new java.awt.Dimension(193, 50));
-        jPanel1.add(optionsButton);
+        jPanelNavBar.add(optionsButton);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Navigation", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 14))); // NOI18N
+        jPanelNavigation.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Navigation", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 14))); // NOI18N
 
         quitButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         quitButton.setText("Quit");
@@ -98,40 +105,63 @@ public class OptionsMenu extends javax.swing.JDialog {
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanelNavigationLayout = new javax.swing.GroupLayout(jPanelNavigation);
+        jPanelNavigation.setLayout(jPanelNavigationLayout);
+        jPanelNavigationLayout.setHorizontalGroup(
+            jPanelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelNavigationLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(quitButton, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        jPanelNavigationLayout.setVerticalGroup(
+            jPanelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelNavigationLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(quitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(258, Short.MAX_VALUE))
+        );
+
+        jPanelSystemID.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "System ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 14))); // NOI18N
+
+        jLabelSystemID.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabelSystemID.setText("00000000-0000-0000-0000-000000000000");
+
+        javax.swing.GroupLayout jPanelSystemIDLayout = new javax.swing.GroupLayout(jPanelSystemID);
+        jPanelSystemID.setLayout(jPanelSystemIDLayout);
+        jPanelSystemIDLayout.setHorizontalGroup(
+            jPanelSystemIDLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelSystemIDLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabelSystemID, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanelSystemIDLayout.setVerticalGroup(
+            jPanelSystemIDLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabelSystemID)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanelNavBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jPanelSystemID, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanelNavigation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelNavigation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelSystemID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanelNavBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -193,8 +223,10 @@ public class OptionsMenu extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton captureSetupButton;
     private javax.swing.JButton captureStatusButton;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel jLabelSystemID;
+    private javax.swing.JPanel jPanelNavBar;
+    private javax.swing.JPanel jPanelNavigation;
+    private javax.swing.JPanel jPanelSystemID;
     private javax.swing.JButton networkingButton;
     private javax.swing.JButton optionsButton;
     private javax.swing.JButton quitButton;
