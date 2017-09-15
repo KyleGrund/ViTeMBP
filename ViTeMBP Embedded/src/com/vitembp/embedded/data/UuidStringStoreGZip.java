@@ -138,4 +138,14 @@ class UuidStringStoreGZip implements UuidStringStore {
     public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
         this.store.removeCaptureDescription(toRemove);
     }
+
+    @Override
+    public void registerDeviceUUID() throws IOException {
+        this.store.registerDeviceUUID();
+    }
+
+    @Override
+    public Stream<UUID> getDeviceUUIDs() throws IOException {
+        return this.store.getDeviceUUIDs();
+    }
 }

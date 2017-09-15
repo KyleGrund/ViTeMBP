@@ -90,6 +90,5 @@ public class UuidStringTransporterTest {
         
         assertEquals(0l, from.getCaptureLocations().count());
         assertEquals(100l, to.getCaptureLocations().count());
-    }
-    
+    }    
 }

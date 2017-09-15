@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -33,9 +35,17 @@ class UuidStringStoreHashMap implements UuidStringStore {
     /**
      * The backing data store.
      */
-    private final Map<UUID, String> store = new HashMap<>();
+    private final Map<UUID, String> store = new ConcurrentHashMap<>();
     
-    private final List<CaptureDescription> captureList = new ArrayList<>();
+    /**
+     * Holds list of capture descriptions.
+     */
+    private final List<CaptureDescription> captureList = Collections.synchronizedList(new ArrayList<>());
+    
+    /**
+     * Holds UUID of devices.
+     */
+    private final List<UUID> devices = Collections.synchronizedList(new ArrayList<>());
     
     /**
      * The locations in the store where a list of captures are stored.
@@ -118,5 +128,19 @@ class UuidStringStoreHashMap implements UuidStringStore {
                 .filter((cap) -> cap.getLocation().equals(location))
                 .findFirst()
                 .orElse(null);
+    }
+
+    @Override
+    public void registerDeviceUUID() throws IOException {
+        UUID systemID = SystemConfig.getConfig().getSystemUUID();
+        // add this system to the list
+        if (!this.devices.contains(systemID)) {
+            this.devices.add(systemID);
+        }
+    }
+
+    @Override
+    public Stream<UUID> getDeviceUUIDs() throws IOException {
+        return this.devices.stream();
     }
 }

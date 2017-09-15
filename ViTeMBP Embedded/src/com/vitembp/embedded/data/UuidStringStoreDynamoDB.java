@@ -107,6 +107,39 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     }
     
     @Override
+    public void registerDeviceUUID() throws IOException {
+        // add capture data: location, system, start, frequency to captures table
+        Map<String, AttributeValue> attrs = new HashMap<>();
+        attrs.put("ID", new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
+        
+        try {
+            this.client.putItem("DEVICES", attrs);
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error("The database does not contain the device index table.", e);
+        } catch (AmazonServiceException e) {
+            LOGGER.error("Exception occurred writing to database.", e);
+        }
+    }
+    
+    @Override
+    public Stream<UUID> getDeviceUUIDs() throws IOException {
+        List<ScanResult> keys = new ArrayList<>();
+        ScanResult res = this.client.scan("DEVICES", Arrays.asList(new String[] { "ID" }));
+        keys.add(res);
+        Map<String,AttributeValue> lastRes = res.getLastEvaluatedKey();
+        while (lastRes != null) {
+            ScanRequest sr = new ScanRequest();
+            sr.setTableName("DEVICES");
+            sr.setAttributesToGet(Arrays.asList(new String[] { "ID" }));
+            sr.setExclusiveStartKey(lastRes);
+            res = this.client.scan(sr);
+            keys.add(res);
+            lastRes = res.getLastEvaluatedKey();
+        }
+        return res.getItems().stream().map((item) -> UUID.fromString(item.get("ID").getS()));
+    }
+    
+    @Override
     public CaptureDescription getCaptureDescription(UUID location) throws IOException {
         Map<String, AttributeValue> reqkey = new HashMap<>();
         reqkey.put("LOCATION", new AttributeValue().withS(location.toString()));

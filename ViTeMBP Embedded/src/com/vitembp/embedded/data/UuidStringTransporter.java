@@ -190,9 +190,30 @@ public class UuidStringTransporter {
      * The method which executes the capture synchronization task.
      */
     private void syncCapturesTask() {
+        // booleans to track whether device has been registered in the stores
+        boolean toRegistered = false;
+        boolean fromRegistered = false;
+        
         // loop until this flag tells us to stop
         while (this.isRunning) {
             try {
+                // make sure the device is regesterd in the stores
+                if (!toRegistered) {
+                    to.registerDeviceUUID();
+                    toRegistered = true;
+                }
+                if (!fromRegistered) {
+                    from.registerDeviceUUID();
+                    fromRegistered = true;
+                }
+            } catch (IOException ex) {
+                LOGGER.error("Failed to register device in store.", ex);
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected exception registering device.", ex);
+            }
+             
+            try {
+                // sync the capture definitions
                 CaptureDescription[] toSend = this.from.getCaptureLocations().toArray(CaptureDescription[]::new);
                 for (CaptureDescription desc : toSend) {
                     Thread.sleep(SHORT_SLEEP);
@@ -213,7 +234,6 @@ public class UuidStringTransporter {
                 }
                 
                 Thread.sleep(LONG_SLEEP);
-                
             } catch (IOException ex) {
                 LOGGER.error("Failed to access keys in store.", ex);
             } catch (InterruptedException ex) {

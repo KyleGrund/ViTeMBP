@@ -27,12 +27,12 @@ public class UuidStringTransporterFactory {
     /**
      * Stores the tuples mappings from -> to.
      */
-    private static Map<CaptureTypes, CaptureTypes> tuples = new HashMap<>();
+    private static final Map<CaptureTypes, CaptureTypes> TUPLES = new HashMap<>();
     
     /**
      * Stores the singleton instances.
      */
-    private static Map<CaptureTypes, UuidStringTransporter> singletons = new HashMap<>();
+    private static final Map<CaptureTypes, UuidStringTransporter> SINGLETONS = new HashMap<>();
     
     /**
      * Builds and returns unique singletons for tuples binding (from, to).
@@ -51,23 +51,23 @@ public class UuidStringTransporterFactory {
         }
         
         // if there isn't a tuple mapping we haven't built a transporter of this type yet
-        if (!tuples.containsKey(from)) {
+        if (!TUPLES.containsKey(from)) {
             UuidStringTransporter built = new UuidStringTransporter(
                     UuidStringStoreFactory.build(from),
                     UuidStringStoreFactory.build(to),
                     deleteAfterTransfer);
-            tuples.put(from, to);
-            singletons.put(from, built);
+            TUPLES.put(from, to);
+            SINGLETONS.put(from, built);
             // return here as there should just be safety checks below this block
             return built;
         }
         
         // check that the
-        if (!tuples.get(from).equals(to)) {
+        if (!TUPLES.get(from).equals(to)) {
             throw new IllegalArgumentException("The destination store is already in use.");
         }
         
-        UuidStringTransporter toReturn = singletons.get(from);
+        UuidStringTransporter toReturn = SINGLETONS.get(from);
         if (toReturn.getDeleteAfterTransfer() != deleteAfterTransfer) {
             throw new IllegalArgumentException("The deleteAfterTranfer parameter does not match the previously instantiated instance.");
         }
