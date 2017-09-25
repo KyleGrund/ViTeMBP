@@ -109,7 +109,7 @@ class UuidStringStoreH2 implements UuidStringStore {
                 public CaptureDescription next() {
                     if (hasNext) {
                         try {
-                            UUID system = UUID.fromString(set.getString("SYSTEM"));
+                            UUID system = UUID.fromString(set.getString("SYSTEM_UUID"));
                             UUID location = UUID.fromString(set.getString("LOCATION"));
                             Instant time = Instant.parse(set.getString("CREATEDTIME"));
                             double frequency = set.getDouble("FREQUENCY");
@@ -133,7 +133,7 @@ class UuidStringStoreH2 implements UuidStringStore {
         StringBuilder query = new StringBuilder();
         query.append("MERGE INTO DEVICES VALUES('");
         query.append(SystemConfig.getConfig().getSystemUUID().toString());
-        query.append(")");
+        query.append("')");
 
         try {
             // execute query
@@ -193,7 +193,7 @@ class UuidStringStoreH2 implements UuidStringStore {
                 return null;
             }
             
-            UUID system = UUID.fromString(results.getString("SYSTEM"));
+            UUID system = UUID.fromString(results.getString("SYSTEM_UUID"));
             Instant created = Instant.parse(results.getString("CREATEDTIME"));
             double frequency = results.getDouble("FREQUENCY");
             
@@ -292,7 +292,7 @@ class UuidStringStoreH2 implements UuidStringStore {
         
         // execute query to create the CAPTURES table which tracks the locations of captures in the data table
         // with the system that created them, the time they were created, and the frequency of the capture data
-        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM UUID, CREATEDTIME VARCHAR, FREQUENCY DOUBLE)");
+        this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS CAPTURES(LOCATION UUID PRIMARY KEY, SYSTEM_UUID UUID, CREATEDTIME VARCHAR, FREQUENCY DOUBLE)");
         
         // execute query to create the DEVICES table which holds UUIDS of devices
         this.connection.createStatement().execute("CREATE CACHED TABLE IF NOT EXISTS DEVICES(ID UUID PRIMARY KEY)");

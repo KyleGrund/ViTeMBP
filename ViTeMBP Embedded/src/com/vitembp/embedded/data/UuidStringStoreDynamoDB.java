@@ -66,7 +66,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     @Override
     public Stream<CaptureDescription> getCaptureLocations() throws IOException {
         List<ScanResult> keys = new ArrayList<>();
-        List<String> params = Arrays.asList(new String[] { "LOCATION", "SYSTEM", "CREATEDTIME", "FREQUENCY" });
+        List<String> params = Arrays.asList(new String[] { "LOCATION", "SYSTEM_UUID", "CREATEDTIME", "FREQUENCY" });
         ScanResult res = this.client.scan("CAPTURES", params);
         keys.add(res);
         Map<String,AttributeValue> lastRes = res.getLastEvaluatedKey();
@@ -83,7 +83,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
         return res.getItems().stream().map((item) -> 
                 new CaptureDescription(
                         UUID.fromString(item.get("LOCATION").getS()),
-                        UUID.fromString(item.get("SYSTEM").getS()),
+                        UUID.fromString(item.get("SYSTEM_UUID").getS()),
                         Instant.parse(item.get("CREATEDTIME").getS()),
                         Double.parseDouble(item.get("FREQUENCY").getS())));
     }
@@ -93,7 +93,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
         // add capture data: location, system, start, frequency to captures table
         Map<String, AttributeValue> attrs = new HashMap<>();
         attrs.put("LOCATION", new AttributeValue(toAdd.getLocation().toString()));
-        attrs.put("SYSTEM", new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
+        attrs.put("SYSTEM_UUID", new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
         attrs.put("CREATEDTIME", new AttributeValue(toAdd.getCreated().toString()));
         attrs.put("FREQUENCY", new AttributeValue(Double.toString(toAdd.getFrequency())));
         
@@ -143,7 +143,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     public CaptureDescription getCaptureDescription(UUID location) throws IOException {
         Map<String, AttributeValue> reqkey = new HashMap<>();
         reqkey.put("LOCATION", new AttributeValue().withS(location.toString()));
-        List<String> params = Arrays.asList(new String[] { "SYSTEM", "CREATEDTIME", "FREQUENCY" });
+        List<String> params = Arrays.asList(new String[] { "SYSTEM_UUID", "CREATEDTIME", "FREQUENCY" });
         
         GetItemRequest request = new GetItemRequest()
                 .withTableName("CAPTURES")
@@ -152,7 +152,7 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
         
         GetItemResult result = client.getItem(request);
         if (result != null && result.getItem() != null) {
-            UUID system = UUID.fromString(result.getItem().get("SYSTEM").getS());
+            UUID system = UUID.fromString(result.getItem().get("SYSTEM_UUID").getS());
             Instant time = Instant.parse(result.getItem().get("CREATEDTIME").getS());
             double frequency = Double.parseDouble(result.getItem().get("FREQUENCY").getS());
             return new CaptureDescription(

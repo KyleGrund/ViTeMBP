@@ -42,7 +42,7 @@ class IdleSensor  implements ControllerState {
     /**
      * Set of currently enumerated sensors.
      */
-    private Set<String> sensors = new HashSet<>();
+    private final Set<String> sensors = new HashSet<>();
     
     @Override
     public Class execute(ExecutionContext state) {
@@ -61,7 +61,11 @@ class IdleSensor  implements ControllerState {
         // get readings for sensors
         if (this.sensorsReadCallback != null) {
             Map<String, String> readings = new HashMap<>();
-            currentSensors.forEach((name, sensor) -> readings.put(name, sensor.readSample()));
+            currentSensors.forEach((name, sensor) -> {
+                if (sensor != null) {
+                    readings.put(name, sensor.readSample());
+                }
+            });
             this.sensorsReadCallback.accept(readings);
         }
         
