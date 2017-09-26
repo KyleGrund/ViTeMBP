@@ -25,6 +25,7 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
 import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
+import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
@@ -109,11 +110,17 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     @Override
     public void registerDeviceUUID() throws IOException {
         // add capture data: location, system, start, frequency to captures table
-        Map<String, AttributeValue> attrs = new HashMap<>();
-        attrs.put("ID", new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
+        Map<String, AttributeValue> itemToSet = new HashMap<>();
+        PutItemRequest pir = new PutItemRequest();
+        pir.setConditionExpression("attribute_not_exists(ID)");
+        itemToSet.put(
+                "ID",
+                new AttributeValue(SystemConfig.getConfig().getSystemUUID().toString()));
+        pir.setTableName("DEVICES");
+        pir.setItem(itemToSet);
         
         try {
-            this.client.putItem("DEVICES", attrs);
+            this.client.putItem(pir);
         } catch (ResourceNotFoundException e) {
             LOGGER.error("The database does not contain the device index table.", e);
         } catch (AmazonServiceException e) {

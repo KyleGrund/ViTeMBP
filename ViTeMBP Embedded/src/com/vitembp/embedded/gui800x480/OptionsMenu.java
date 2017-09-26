@@ -52,6 +52,8 @@ public class OptionsMenu extends javax.swing.JDialog {
         optionsButton = new javax.swing.JButton();
         jPanelNavigation = new javax.swing.JPanel();
         quitButton = new javax.swing.JButton();
+        shutDownButton = new javax.swing.JButton();
+        restartButton = new javax.swing.JButton();
         jPanelSystemID = new javax.swing.JPanel();
         jLabelSystemID = new javax.swing.JLabel();
 
@@ -105,21 +107,43 @@ public class OptionsMenu extends javax.swing.JDialog {
             }
         });
 
+        shutDownButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        shutDownButton.setText("Shutdown");
+        shutDownButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                shutDownButtonActionPerformed(evt);
+            }
+        });
+
+        restartButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        restartButton.setText("Restart");
+        restartButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restartButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanelNavigationLayout = new javax.swing.GroupLayout(jPanelNavigation);
         jPanelNavigation.setLayout(jPanelNavigationLayout);
         jPanelNavigationLayout.setHorizontalGroup(
             jPanelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelNavigationLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(quitButton, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                .addGroup(jPanelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(quitButton, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                    .addComponent(shutDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                    .addComponent(restartButton, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanelNavigationLayout.setVerticalGroup(
             jPanelNavigationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelNavigationLayout.createSequentialGroup()
-                .addContainerGap()
+                .addComponent(shutDownButton, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(restartButton, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 120, Short.MAX_VALUE)
                 .addComponent(quitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(258, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jPanelSystemID.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "System ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 14))); // NOI18N
@@ -177,6 +201,16 @@ public class OptionsMenu extends javax.swing.JDialog {
         GUI.showCaptureControl();
     }//GEN-LAST:event_captureStatusButtonActionPerformed
 
+    private void shutDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shutDownButtonActionPerformed
+        // shutdown the system hardware and firmware
+        GUI.systemShutdown();
+    }//GEN-LAST:event_shutDownButtonActionPerformed
+
+    private void restartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restartButtonActionPerformed
+        // restart the system hardware and firmware
+        GUI.systemRestart();
+    }//GEN-LAST:event_restartButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -230,5 +264,7 @@ public class OptionsMenu extends javax.swing.JDialog {
     private javax.swing.JButton networkingButton;
     private javax.swing.JButton optionsButton;
     private javax.swing.JButton quitButton;
+    private javax.swing.JButton restartButton;
+    private javax.swing.JButton shutDownButton;
     // End of variables declaration//GEN-END:variables
 }

@@ -17,15 +17,22 @@
  */
 package com.vitembp.embedded.gui800x480;
 
-import com.vitembp.embedded.hardware.Sensor;
+import com.vitembp.embedded.hardware.HardwareInterface;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Class which provides an interface to the embedded GUI.
  */
 public class GUI {
+    /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    
     /**
      * The window showing the capture status and control.
      */
@@ -72,5 +79,29 @@ public class GUI {
             CAPTURE_STATUS_WINDOW.setVisible(false);
             OPTIONS_MENU_WINDOW.setVisible(true);
         });
+    }
+    
+    /**
+     * Shuts the system down using the hardware interface.
+     */
+    public static void systemShutdown() {
+        try {
+            // shuts the system down for halt
+            HardwareInterface.getInterface().shutDownSystem();
+        } catch (IOException ex) {
+            LOGGER.error("Could not start shutdown process.", ex);
+        }
+    }
+
+    /**
+     * Restarts the system using the hardware interface.
+     */
+    static void systemRestart() {
+        try {
+            // shuts the system down for halt
+            HardwareInterface.getInterface().restartSystem();
+        } catch (IOException ex) {
+            LOGGER.error("Could not start shutdown process.", ex);
+        }
     }
 }

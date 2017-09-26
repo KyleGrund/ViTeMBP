@@ -20,14 +20,13 @@ package com.vitembp.embedded.hardware;
 import com.vitembp.embedded.data.ConsumerIOException;
 import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -171,6 +170,34 @@ public class HardwareInterface {
      */
     public void generateKeyPress(Character key) throws InterruptedException {
         this.keyPresses.put(key);
+    }
+    
+    /**
+     * Shuts down and halts the system.
+     * @throws IOException if the shutdown process cannot be started.
+     */
+    public void shutDownSystem() throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-h", "now"});
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        // execute the command
+        Process proc = pb.start();
+        
+        LOGGER.info("Sytem shutting down.");
+        System.exit(0);
+    }
+    
+    /**
+     * Shuts down and restarts the system.
+     * @throws IOException if the shutdown process cannot be started.
+     */
+    public void restartSystem() throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-r", "now"});
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        // execute the command
+        Process proc = pb.start();
+        
+        LOGGER.info("Sytem shutting down.");
+        System.exit(0);
     }
     
     /**
