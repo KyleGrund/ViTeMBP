@@ -73,4 +73,12 @@ class UuidStringLocation {
     public UuidStringLocation getNewLocation(UUID location) {
         return new UuidStringLocation(this.store, location);
     }
+
+    /**
+     * Gets the location in the store where reads and writes address.
+     * @return The location in the store where reads and writes address.
+     */
+    UUID getLocation() {
+        return this.location;
+    }
 }

@@ -79,6 +79,7 @@ class UuidStringStorePagingCapture extends Capture {
      * @param frequency The frequency at which samples were taken.
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
+     * in the store.
      */
     UuidStringStorePagingCapture(double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
         super(frequency);
@@ -178,7 +179,7 @@ class UuidStringStorePagingCapture extends Capture {
         // is none we can just go with defaults as this is a new page
         if (savedData != null && !"".equals(savedData)) {
             try {
-                this.readFrom(XMLStreams.createReader(savedData));
+                this.readFrom(XMLStreams.createReader(savedData), (sensors) -> { this.types = sensors; });
             } catch (XMLStreamException ex) {
                 throw new IOException("XMLStreamException occured reading capture from persistnat storage.", ex);
             }
@@ -249,5 +250,10 @@ class UuidStringStorePagingCapture extends Capture {
         
         // read to next element
         toReadFrom.next();
+    }
+
+    @Override
+    public UUID getId() {
+        return this.store.getLocation();
     }
 }

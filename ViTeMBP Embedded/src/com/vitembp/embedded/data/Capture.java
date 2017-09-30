@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -64,7 +65,6 @@ public abstract class Capture {
     
     /**
      * Initializes a new instance of the Capture class.
-     * @param sampleFrequency The frequency at which samples were taken.
      */
     Capture() {
         // default to 29.9Hz, the standard us video frame rate
@@ -150,6 +150,12 @@ public abstract class Capture {
      * @throws XMLStreamException If there is an error reading data from XML.
      */
     protected abstract void writeSamplesTo(XMLStreamWriter toWriteTo) throws XMLStreamException;
+    
+    /**
+     * Gets the unique ID of this capture.
+     * @return The UUID representing unique ID of this capture.
+     */
+    public abstract UUID getId();
     
     /**
      * Gets the sampling frequency of this capture.
@@ -240,9 +246,10 @@ public abstract class Capture {
     /**
      * Read data for this Capture from an XMLStreamWriter.
      * @param toReadFrom The XMLStreamReader to read from.
+     * @param setSensorsCallback The callback used to set the sensor values.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
-    protected void readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
+    protected void readFrom(XMLStreamReader toReadFrom, Consumer<Map<String, UUID>> setSensorsCallback) throws XMLStreamException {
         if (toReadFrom.getEventType() != XMLStreamConstants.START_DOCUMENT) {
             throw new XMLStreamException("Expected start of document not found.", toReadFrom.getLocation());
         }
@@ -285,7 +292,7 @@ public abstract class Capture {
         }
         
         // map of sensor name to type
-        Map<String, String> sensorTypes = new HashMap<>();
+        Map<String, UUID> sensorTypes = new HashMap<>();
         
         // add a sensor element for each data entry
         toReadFrom.next();
@@ -303,11 +310,14 @@ public abstract class Capture {
             }
             
             // successfully found a sensor, save it
-            sensorTypes.put(sensorName, sensorType);
+            sensorTypes.put(sensorName, UUID.fromString(sensorType));
             
             // read past close element
             toReadFrom.next();
         }
+        
+        // store the sensor values
+        setSensorsCallback.accept(sensorTypes);
         
         // read into close element
         if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensors".equals(toReadFrom.getLocalName())) {

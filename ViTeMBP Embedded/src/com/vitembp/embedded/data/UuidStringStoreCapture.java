@@ -48,11 +48,6 @@ class UuidStringStoreCapture extends Capture {
     private final Set<String> names;
     
     /**
-     * The map of sensor names to their UUID type.
-     */
-    private final Map<String, UUID> types;
-    
-    /**
      * The set of samples.
      */
     private final ArrayList<Sample> samples;
@@ -63,9 +58,9 @@ class UuidStringStoreCapture extends Capture {
     private final UuidStringLocation store;
     
     /**
-     * The UUID location to save  this capture at.
+     * The map of sensor names to their UUID type.
      */
-    private final UUID captureLocation;
+    private Map<String, UUID> types;
     
     /**
      * Initializes a new instance of the InMemoryCapture class and stores it to
@@ -84,9 +79,6 @@ class UuidStringStoreCapture extends Capture {
         
         // create store for any added samples
         this.samples = new ArrayList<>();
-        
-        // the location to store this capture in the UUID store
-        captureLocation = UUID.randomUUID();
     }
     
     @Override
@@ -113,7 +105,7 @@ class UuidStringStoreCapture extends Capture {
             // read data from the underyling data store
             String toRead = this.store.read();
             int len = toRead.length();
-            this.readFrom(XMLStreams.createReader(toRead));
+            this.readFrom(XMLStreams.createReader(toRead), (sensors) -> { this.types = sensors; });
         } catch (XMLStreamException ex) {
             LOGGER.error("Exception while loading Capture from UUID String store.", ex);
             throw new IOException("Exception while loading Capture from UUID String store.", ex);
@@ -157,5 +149,10 @@ class UuidStringStoreCapture extends Capture {
         for (Sample sample : this.getSamples().toArray(Sample[]::new)) {
             sample.writeTo(toWriteTo);
         }
+    }
+
+    @Override
+    public UUID getId() {
+        return this.store.getLocation();
     }
 }
