@@ -23,11 +23,18 @@ import com.vitembp.services.sensors.RotarySensor;
 import com.vitembp.services.sensors.Sensor;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Builds overlay elements.
  */
 class OverlayElementFactory {
+    /**
+     * Class logger instance.
+     */
+    private static final Logger LOGGER = LogManager.getLogger();
+    
     /**
      * Builds an overlay element.
      * @return The overlay element.
@@ -41,7 +48,12 @@ class OverlayElementFactory {
                                 .map(sensor -> sensor.getName())
                                 .filter(sensorName -> name.equals(sensorName))
                                 .count() == 1)) {
-            throw new InstantiationException("Not all sensor definitions can be bound.");
+            LOGGER.error(
+                    "Could not create sensor overlay for: " +
+                    definition.getElementType().name() +
+                    " - " +
+                    definition.getLocation().name());
+            return null;
         }
         switch (definition.getElementType()) {
             case BrakeSensor:

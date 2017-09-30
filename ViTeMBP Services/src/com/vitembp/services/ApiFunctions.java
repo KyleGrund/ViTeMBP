@@ -90,12 +90,14 @@ public final class ApiFunctions {
      * Triggers a video to be processed by putting the command message on a queue.
      * @param capture The capture to process.
      * @param videoFile The associated video file.
+     * @param detinationBucket The bucket to place the output file.
+     * @param destinationFilename The file to upload the output to in the target bucket.
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public void processCaptureVideo(UUID capture, String videoFile) throws IOException {
+    public void processCaptureVideo(UUID capture, String videoFile, String detinationBucket, String destinationFilename) throws IOException {
         // this is a long running task, so enqueue it for async processing
-        Processing.processVideo(capture, videoFile);
+        Processing.processVideo(capture, videoFile, detinationBucket, destinationFilename);
     }
     
     /**

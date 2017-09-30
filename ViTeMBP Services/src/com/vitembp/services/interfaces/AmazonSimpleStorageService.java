@@ -23,6 +23,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -89,6 +90,27 @@ public class AmazonSimpleStorageService {
         } catch (AmazonClientException | InterruptedException ex) {
             LOGGER.error("Exception uploading " + toUpload.toString(), ex);
             throw new IOException("Exception uploading " + toUpload.toString(), ex);
+        }
+    }
+    
+    /**
+     * Downloads a file from S3 storage to the local file system.
+     * @param source The item in the bucket to download to the file.
+     * @param destination The location to save the file to.
+     * @throws java.io.IOException If an I/O exception occurs while downloading
+     * the file.
+     */
+    public void download(String source, File destination) throws IOException {
+        try {
+            // download the file and wait for completion
+            Download xfer = this.transferManager.download(this.bucketName, source, destination);
+            xfer.waitForCompletion();
+        } catch (AmazonServiceException ex) {
+            LOGGER.error("Exception downloading " + source, ex);
+            throw new IOException("Exception downloading " + source, ex);
+        } catch (AmazonClientException | InterruptedException ex) {
+            LOGGER.error("Exception downloading " + source, ex);
+            throw new IOException("Exception downloading " + source, ex);
         }
     }
 }

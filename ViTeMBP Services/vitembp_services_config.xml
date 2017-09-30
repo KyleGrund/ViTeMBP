@@ -1,0 +1,1 @@
+<?xml version="1.0" ?><configuration><enablehttpinterface>true</enablehttpinterface><httpinterfaceport>8080</httpinterfaceport><enableawssqsinterface>true</enableawssqsinterface><awssqsqueuename>ViTeMBP-Service-Queue</awssqsqueuename></configuration>

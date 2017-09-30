@@ -17,21 +17,33 @@
  */
 package com.vitembp.services.video;
 
+import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.data.CaptureFactory;
+import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.services.imaging.SyncDiagFrameProcessor;
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.FilenameGenerator;
+import com.vitembp.services.config.ServicesConfig;
+import com.vitembp.services.data.CaptureProcessor;
+import com.vitembp.services.data.Pipeline;
+import com.vitembp.services.data.StandardOverlayDefinitions;
+import com.vitembp.services.data.StandardPipelines;
 import com.vitembp.services.imaging.Histogram;
 import com.vitembp.services.imaging.HistogramList;
 import com.vitembp.services.interfaces.AmazonSimpleStorageService;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -114,19 +126,58 @@ public class Processing {
     /**
      * Processes a video with a capture.
      * @param capture The capture containing data to overlay on the video.
-     * @param videoFile The video file to overlay data on.
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
-    public static void processVideo(UUID capture, String videoFile) throws IOException {
-        LOGGER.info("Processing: " + videoFile);
-        List<Integer> frames = Processing.findChannelSyncFrames(videoFile, ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT);
+    public static void processVideo(UUID capture, String inputBucket, String outputBucket, String videoKey) throws IOException {
+        // create S3 bucket interface objects
+        AmazonSimpleStorageService sourceBucket = new AmazonSimpleStorageService(inputBucket);
+        AmazonSimpleStorageService destinationBucket = new AmazonSimpleStorageService(outputBucket);
+
+        // download the source file to temporary directory
+        Path tempDir = ServicesConfig.getConfig().getTemporaryDirectory();
+        Path videoFilename = Paths.get(videoKey).getFileName();
+        Path localVideoSourcePath = tempDir.resolve(videoFilename);
+        File localVideoSource = localVideoSourcePath.toFile();
+        sourceBucket.download(videoKey, localVideoSource);
+        
+        // find video sync frames
+        List<Integer> frames = Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(), ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT);
         
         if (frames.isEmpty()) {
             throw new IOException("No sync frames detected.");
+        } else {
+            // create a temporary file for the output
+            Path localTempOutput = 
+                    Files.createTempFile(tempDir, null, videoFilename.toString());
+            localTempOutput.toFile().delete();
+            
+            // get the capture to process from the database
+            Capture toProcess;
+            try {
+                Stream<Capture> allCaptures = java.util.stream.StreamSupport.stream(
+                        CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB).spliterator(),
+                        false);
+                toProcess = allCaptures.filter((Capture c) -> c.getId().equals(capture)).findFirst().get();
+            } catch (InstantiationException ex) {
+                throw new IOException("Could not read captures from database.", ex);
+            }
+        
+            // build up the processing pipeline
+            Pipeline toTest;
+            try {
+                toTest = StandardPipelines.captureVideoOverlayPipeline(toProcess, localVideoSourcePath, localTempOutput, StandardOverlayDefinitions.getStandardFourQuadrant());
+            } catch (InstantiationException ex) {
+                LOGGER.error("Could not create overlay pipeline.", ex);
+                throw new IOException("Could not create overlay pipeline.", ex);
+            }
+        
+            // process the data
+            Map<String, Object> results = CaptureProcessor.processUntilFlush(toProcess, toTest, 75);
+            
+            // upload to the destination in the target S3 bucket.
+            destinationBucket.uploadPublic(localTempOutput.toFile(), videoKey);
         }
-        
-        
     }
 
     /**

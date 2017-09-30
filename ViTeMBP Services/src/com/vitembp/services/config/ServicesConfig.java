@@ -83,6 +83,11 @@ public class ServicesConfig {
     private boolean enableAwsSqsInterface = true;
     
     /**
+     * The temporary directory for processing files.
+     */
+    private Path tempDirectory = Paths.get("");
+    
+    /**
      * The name of the SQS queue to bind to.
      */
     private String awsSqsQueueName = "ViTeMBP-Service-Queue";
@@ -111,8 +116,22 @@ public class ServicesConfig {
                 LOGGER.error("Exception saving default configuraiton.", ex);
             }
         }
+        
+        try {
+            this.tempDirectory = Files.createTempDirectory("ViTeMBP");
+        } catch (IOException ex) {
+            LOGGER.error("Could not create temporary directory.", ex);
+        }
     }
 
+    /**
+     * Gets the directory to put temporary files during processing.
+     * @return The directory to put temporary files during processing.
+     */
+    public Path getTemporaryDirectory() {
+        return this.tempDirectory;
+    }
+    
     /**
      * Returns a boolean value indicating whether to enable the HTTP interface.
      * @return A boolean value indicating whether to enable the HTTP interface.

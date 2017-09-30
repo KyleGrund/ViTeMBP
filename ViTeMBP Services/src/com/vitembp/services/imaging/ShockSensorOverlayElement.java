@@ -82,7 +82,7 @@ public class ShockSensorOverlayElement extends OverlayElement {
     @Override
     void apply(DataOverlayBuilder builder, Sample data) {
         double distance = this.sensor.getDistanceMilimeters(data).orElse(minValue);
-        double percentage = distance / (this.maxValue - this.minValue);
+        double percentage = (distance - this.minValue) / (this.maxValue - this.minValue);
         
         // calculate the upper left origin point of the element
         int topLeftX, topLeftY;

@@ -20,7 +20,7 @@ package com.vitembp.services.data;
 /**
  * A class containing standard overlay definitions for default applications.
  */
-class StandardOverlayDefinitions {
+public class StandardOverlayDefinitions {
     public static String getStandardFourQuadrant() {
         return  "<overlay><type>FourQuadrant</type><elements>" +
                 "<element>" +

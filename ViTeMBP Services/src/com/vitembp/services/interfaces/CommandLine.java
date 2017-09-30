@@ -156,16 +156,23 @@ public class CommandLine {
             }
         } else if (args[0].toUpperCase().equals("-PV")) {
             // command: -pv <uuid> <videoLocation>
-            if (args.length >= 2) {
+            if (args.length >= 4) {
                 // gets the input video file name
                 UUID captureLocation = UUID.fromString(args[1]);
                 
                 // gets the input video file name
-                String videoFile = (args[2]);
+                String videoFile = args[2];
+                
+                // gets the destination bucket to put the processed video
+                String destinationBucket = args[3];
+                
+                // gets the destination filename to put the processed video in
+                // the target bucket
+                String destinationFilename = args[4];
                 
                 try {
                     // process the video
-                    functions.processCaptureVideo(captureLocation, videoFile);
+                    functions.processCaptureVideo(captureLocation, videoFile, destinationBucket, destinationFilename);
                 } catch (IOException ex) {
                     LOGGER.error("IOException processing video for capture.", ex);
                 }
