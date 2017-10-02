@@ -18,12 +18,33 @@
 package com.vitembp.services.imaging;
 
 import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.data.PipelineExecutionException;
 import com.vitembp.services.sensors.AccelerometerThreeAxis;
 
 /**
  * Class creating an overlay for a three-axis accelerometer.
  */
 class ThreeAxisGOverlayElement extends OverlayElement {
+    /**
+     * The total height of the rendered element.
+     */
+    private static final int TOTAL_HEIGHT = 80;
+    
+    /**
+     * The total width of the rendered element.
+     */
+    private static final int TOTAL_WIDTH = 150;
+    
+    /**
+     * The total height of the rendered text.
+     */
+    private static final int TEXT_HEIGHT = 20;
+    
+    /**
+     * The distance to pad from the edges of the image.
+     */
+    private static final int BORDER_PAD = 20;
+    
     /**
      * The minimum possible value the sensor can read in Gs.
      */
@@ -60,12 +81,41 @@ class ThreeAxisGOverlayElement extends OverlayElement {
 
     @Override
     public void apply(DataOverlayBuilder builder, Sample data) {
+        // calculate the upper left origin point of the element
+        int topLeftX, topLeftY;
+        switch (this.location) {
+            case TopLeft:
+                topLeftX = this.upperLeftX + BORDER_PAD;
+                topLeftY = this.upperLeftY + BORDER_PAD;
+                break;
+            case TopRight:
+                topLeftX = this.lowerRightX - TOTAL_WIDTH - BORDER_PAD;
+                topLeftY = this.upperLeftY + BORDER_PAD;
+                break;
+            case BottomLeft:
+                topLeftX = this.upperLeftX + BORDER_PAD;
+                topLeftY = (this.lowerRightY - TOTAL_HEIGHT) + BORDER_PAD;
+                break;
+            case BottomRight:
+                topLeftX = this.lowerRightX - TOTAL_WIDTH - BORDER_PAD;
+                topLeftY = (this.lowerRightY - TOTAL_HEIGHT) + BORDER_PAD;
+                break;
+            case Center:
+                topLeftX = ((this.lowerRightX - this.upperLeftX) / 2) - (TOTAL_WIDTH / 2);
+                topLeftY = ((this.lowerRightY - this.upperLeftY) / 2) - (TOTAL_HEIGHT / 2);
+                break;
+            default:
+                throw new PipelineExecutionException("Unknown brake sensor overlay element rendering locaiton.");
+        }
+        
+        // get data to render
         double xValue = this.sensor.getXAxisG(data).orElse(minValue);
         double yValue = this.sensor.getYAxisG(data).orElse(minValue);
         double zValue = this.sensor.getZAxisG(data).orElse(minValue);
         
-        builder.addText("X: " + Double.toString(xValue), this.upperLeftX + 20, this.upperLeftY + 20);
-        builder.addText("Y: " + Double.toString(yValue), this.upperLeftX + 20, this.upperLeftY + 40);
-        builder.addText("Z: " + Double.toString(zValue), this.upperLeftX + 20, this.upperLeftY + 60);
+        // render the data
+        builder.addText("X: " + Double.toString(xValue), topLeftX, topLeftY);
+        builder.addText("Y: " + Double.toString(yValue),  topLeftX, topLeftY + 20);
+        builder.addText("Z: " + Double.toString(zValue),  topLeftX, topLeftY + 40);
     }
 }
