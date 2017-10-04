@@ -104,7 +104,7 @@ public class StandardPipelines {
         toBuild.add(new FrameDataOverlayGeneratorElement(capture, videoInfo, overlayDefinition, "ProcessingFrame"));
         toBuild.add(new FrameCollectorElement(filenameGenerator, "ProcessingFrame", "NewVideoSegment", "VideoOutputFile", 300, videoInfo.getFrameRate()));
         toBuild.add(new VideoCollectorElement("NewVideoSegment", "VideoOutputFile"));
-        toBuild.add(new CopyAudioElement("VideoInputFile", "VideoOutputFile"));
+        toBuild.add(new CopyAudioElement("VideoInputFile", "VideoOutputFile", "AudioCopied"));
         
         return new Pipeline(toBuild);
     }

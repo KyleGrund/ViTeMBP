@@ -37,29 +37,44 @@ class CopyAudioElement implements PipelineElement {
     private final String destVideoBinding;
     
     /**
+     * Keeps track of whether the audio has been copied for this pipeline run.
+     */
+    private final String copiedBinding;
+    
+    /**
      * Initializes a new instance of the CopyAudioElement class.
      * @param sourceVideoBinding The key of the source video path on the state object.
      * @param destVideoBinding The key of the source video path on the state object.
+     * @param copiedBinding The key of the boolean value indicating whether the
+     * audio has already been copied.
      */
-    CopyAudioElement(String sourceVideoBinding, String destVideoBinding) {
+    CopyAudioElement(String sourceVideoBinding, String destVideoBinding, String copiedBinding) {
         this.sourceVideoBinding = sourceVideoBinding;
         this.destVideoBinding = destVideoBinding;
+        this.copiedBinding = copiedBinding;
     }
     
     @Override
     public Map<String, Object> accept(Map<String, Object> state) {
+        // if the pipeline is flushing
         if (state.containsKey("Flush")) {
-            // get original video  file
-            Path sourceFile = (Path)state.get(this.sourceVideoBinding);
+            // if the copied binding has not been set or it is set to false
+            if (!state.containsKey(this.copiedBinding) || !(boolean)state.get(this.copiedBinding)) {
+                // get original video  file
+                Path sourceFile = (Path)state.get(this.sourceVideoBinding);
 
-            // get output video file
-            Path destFile = (Path)state.get(this.destVideoBinding);
+                // get output video file
+                Path destFile = (Path)state.get(this.destVideoBinding);
 
-            try {
-                // copy audio from original to output
-                Conversion.copyAudio(sourceFile, destFile);
-            } catch (IOException ex) {
-                throw new PipelineExecutionException("IOException while coping video file audio.", ex);
+                try {
+                    // copy audio from original to output
+                    Conversion.copyAudio(sourceFile, destFile);
+                } catch (IOException ex) {
+                    throw new PipelineExecutionException("IOException while coping video file audio.", ex);
+                }
+                
+                // mark as copied so as to not repeat the copy
+                state.put(this.copiedBinding, true);
             }
         }
         return state;
