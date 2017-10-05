@@ -47,4 +47,10 @@ public abstract class Sensor {
      * @return A UTF-8 String representation of the data.
      */
     public abstract String readSample();
+    
+    /**
+     * Gets the calibrator object used to calibrate this sensor.
+     * @return The calibrator object used to calibrate this sensor.
+     */
+    public abstract Calibrator getCalibrator();
 }

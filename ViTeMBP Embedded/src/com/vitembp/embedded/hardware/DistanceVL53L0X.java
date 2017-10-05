@@ -18,7 +18,14 @@
 package com.vitembp.embedded.hardware;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -125,5 +132,45 @@ public class DistanceVL53L0X extends Sensor {
         }
         
         return serial;
+    }
+    
+    @Override
+    public Calibrator getCalibrator() {
+        List<String> userPrompts = Arrays.asList(new String[] {
+            "To calibrate the distance sensor, move the sensor through its " +
+                    "full range of travel."
+        });
+        
+        // these will hold maximum values of the data readings
+        final Map<String, Float> value = new HashMap<>();
+        value.put("maximum", Float.MIN_VALUE);
+        value.put("minimum", Float.MAX_VALUE);
+        
+        // build up the data consumers
+        List<Consumer<String>> sampleConsumers = new ArrayList<>();
+        sampleConsumers.add(
+            (String s) -> {
+               // parse value
+               int x = Integer.parseInt(s);
+               
+               // update maximum values
+               value.put("maximum", Float.max(value.get("maximum"), x));
+               value.put("minimum", Float.max(value.get("minimum"), x));
+            });
+        
+        // formats and returns the calibration data
+        Supplier<String> getDataCallback = () -> {
+            return "(" + Float.toString(value.get("minimum")) + "," +
+                    Float.toString(value.get("maximum")) + ")";
+        };
+        
+        // return the calibrator
+        return new CalibratorReducer(
+                this,
+                29.97f,
+                userPrompts,
+                sampleConsumers,
+                getDataCallback
+        );
     }
 }

@@ -17,7 +17,14 @@
  */
 package com.vitembp.embedded.hardware;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -111,5 +118,61 @@ class AccelerometerFXOS8700CQ extends Sensor {
     @Override
     public UUID getSerial() {
         return this.serial;
+    }
+
+    @Override
+    public Calibrator getCalibrator() {
+        List<String> userPrompts = Arrays.asList(new String[] {
+            "To calibrate the accelerometer, slowly rotate the sensor in " +
+                    "both a horizontal and a vertical circle so that all " + 
+                    " edges face down one at a time."
+        });
+        
+        // these will hold min minum and maximum values of the data readings
+        final Map<String, Float> maximums = new HashMap<>();
+        maximums.put("x", Float.MIN_VALUE);
+        maximums.put("y", Float.MIN_VALUE);
+        maximums.put("z", Float.MIN_VALUE);
+        final Map<String, Float> minimums = new HashMap<>();
+        minimums.put("x", Float.MAX_VALUE);
+        minimums.put("y", Float.MAX_VALUE);
+        minimums.put("z", Float.MAX_VALUE);
+        
+        // build up the data consumers
+        List<Consumer<String>> sampleConsumers = new ArrayList<>();
+        sampleConsumers.add(
+            (String s) -> {
+               // parse values
+               String[] vals = s.replace("(", "").replace(")", "").split(",");
+               float x = Float.parseFloat(vals[0]);
+               float y = Float.parseFloat(vals[0]);
+               float z = Float.parseFloat(vals[0]);
+               
+               // update maximum values
+               maximums.put("x", Float.max(maximums.get("x"), x));
+               maximums.put("y", Float.max(maximums.get("y"), y));
+               maximums.put("z", Float.max(maximums.get("z"), z));
+               
+               // update minimum values
+               minimums.put("x", Float.min(minimums.get("x"), x));
+               minimums.put("y", Float.min(minimums.get("y"), y));
+               minimums.put("z", Float.min(minimums.get("z"), z));
+            });
+        
+        // formats and returns the calibration data
+        Supplier<String> getDataCallback = () -> {
+            return "[(" + Float.toString(minimums.get("x")) + "," + Float.toString(maximums.get("x")) + ")," +
+                    "(" + Float.toString(minimums.get("y")) + "," + Float.toString(maximums.get("y")) + ")," +
+                    "(" + Float.toString(minimums.get("z")) + "," + Float.toString(maximums.get("z")) + ")]";
+        };
+        
+        // return the calibrator
+        return new CalibratorReducer(
+                this,
+                29.97f,
+                userPrompts,
+                sampleConsumers,
+                getDataCallback
+        );
     }
 }
