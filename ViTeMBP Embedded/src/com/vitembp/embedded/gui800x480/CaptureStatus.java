@@ -70,7 +70,7 @@ public class CaptureStatus extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         captureStatusButton = new javax.swing.JButton();
-        captureSetupButton = new javax.swing.JButton();
+        sensorSetupButton = new javax.swing.JButton();
         networkingButton = new javax.swing.JButton();
         optionsButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -90,7 +90,7 @@ public class CaptureStatus extends javax.swing.JDialog {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         captureStatusButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        captureStatusButton.setText("Capture Status");
+        captureStatusButton.setText("Captures");
         captureStatusButton.setMaximumSize(new java.awt.Dimension(193, 50));
         captureStatusButton.setMinimumSize(new java.awt.Dimension(193, 50));
         captureStatusButton.setPreferredSize(new java.awt.Dimension(193, 50));
@@ -101,12 +101,17 @@ public class CaptureStatus extends javax.swing.JDialog {
         });
         jPanel1.add(captureStatusButton);
 
-        captureSetupButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        captureSetupButton.setText("Capture Setup");
-        captureSetupButton.setMaximumSize(new java.awt.Dimension(193, 50));
-        captureSetupButton.setMinimumSize(new java.awt.Dimension(193, 50));
-        captureSetupButton.setPreferredSize(new java.awt.Dimension(193, 50));
-        jPanel1.add(captureSetupButton);
+        sensorSetupButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        sensorSetupButton.setText("Sensors");
+        sensorSetupButton.setMaximumSize(new java.awt.Dimension(193, 50));
+        sensorSetupButton.setMinimumSize(new java.awt.Dimension(193, 50));
+        sensorSetupButton.setPreferredSize(new java.awt.Dimension(193, 50));
+        sensorSetupButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sensorSetupButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(sensorSetupButton);
 
         networkingButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         networkingButton.setText("Networking");
@@ -255,6 +260,10 @@ public class CaptureStatus extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_startCaptureButtonActionPerformed
 
+    private void sensorSetupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorSetupButtonActionPerformed
+        GUI.showSensorsControl();
+    }//GEN-LAST:event_sensorSetupButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -324,7 +333,6 @@ public class CaptureStatus extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton captureSetupButton;
     private javax.swing.JButton captureStatusButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -333,6 +341,7 @@ public class CaptureStatus extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton networkingButton;
     private javax.swing.JButton optionsButton;
+    private javax.swing.JButton sensorSetupButton;
     private javax.swing.JList<String> sensorsList;
     private javax.swing.JButton startCaptureButton;
     // End of variables declaration//GEN-END:variables

@@ -44,6 +44,11 @@ public class GUI {
     private static final OptionsMenu OPTIONS_MENU_WINDOW = new OptionsMenu(null, true);
     
     /**
+     * The window providing sensors control.
+     */
+    private static final SensorsMenu SENSORS_MENU_WINDOW = new SensorsMenu(null, true);
+    
+    /**
      * Starts the GUI.
      * @param sensorsChangedCallback
      * @param dataReadCallback
@@ -67,6 +72,7 @@ public class GUI {
     public static void showCaptureControl() {
         java.awt.EventQueue.invokeLater(() -> {
             OPTIONS_MENU_WINDOW.setVisible(false);
+            SENSORS_MENU_WINDOW.setVisible(false);
             CAPTURE_STATUS_WINDOW.setVisible(true);
         });
     }
@@ -77,7 +83,19 @@ public class GUI {
     public static void showOptionsControl() {
         java.awt.EventQueue.invokeLater(() -> {
             CAPTURE_STATUS_WINDOW.setVisible(false);
+            SENSORS_MENU_WINDOW.setVisible(false);
             OPTIONS_MENU_WINDOW.setVisible(true);
+        });
+    }
+    
+    /**
+     * Shows the sensors window and hides all others.
+     */
+    public static void showSensorsControl() {
+        java.awt.EventQueue.invokeLater(() -> {
+            CAPTURE_STATUS_WINDOW.setVisible(false);
+            OPTIONS_MENU_WINDOW.setVisible(false);
+            SENSORS_MENU_WINDOW.setVisible(true);
         });
     }
     

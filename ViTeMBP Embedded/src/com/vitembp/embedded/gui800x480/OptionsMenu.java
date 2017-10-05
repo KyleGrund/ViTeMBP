@@ -47,7 +47,7 @@ public class OptionsMenu extends javax.swing.JDialog {
 
         jPanelNavBar = new javax.swing.JPanel();
         captureStatusButton = new javax.swing.JButton();
-        captureSetupButton = new javax.swing.JButton();
+        sensorsSetupButton = new javax.swing.JButton();
         networkingButton = new javax.swing.JButton();
         optionsButton = new javax.swing.JButton();
         jPanelNavigation = new javax.swing.JPanel();
@@ -63,9 +63,11 @@ public class OptionsMenu extends javax.swing.JDialog {
         setUndecorated(true);
 
         jPanelNavBar.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
+        jPanelNavBar.setMaximumSize(new java.awt.Dimension(800, 65));
+        jPanelNavBar.setMinimumSize(new java.awt.Dimension(800, 65));
 
         captureStatusButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        captureStatusButton.setText("Capture Status");
+        captureStatusButton.setText("Captures");
         captureStatusButton.setMaximumSize(new java.awt.Dimension(193, 50));
         captureStatusButton.setMinimumSize(new java.awt.Dimension(193, 50));
         captureStatusButton.setPreferredSize(new java.awt.Dimension(193, 50));
@@ -76,12 +78,17 @@ public class OptionsMenu extends javax.swing.JDialog {
         });
         jPanelNavBar.add(captureStatusButton);
 
-        captureSetupButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        captureSetupButton.setText("Capture Setup");
-        captureSetupButton.setMaximumSize(new java.awt.Dimension(193, 50));
-        captureSetupButton.setMinimumSize(new java.awt.Dimension(193, 50));
-        captureSetupButton.setPreferredSize(new java.awt.Dimension(193, 50));
-        jPanelNavBar.add(captureSetupButton);
+        sensorsSetupButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        sensorsSetupButton.setText("Sensors");
+        sensorsSetupButton.setMaximumSize(new java.awt.Dimension(193, 50));
+        sensorsSetupButton.setMinimumSize(new java.awt.Dimension(193, 50));
+        sensorsSetupButton.setPreferredSize(new java.awt.Dimension(193, 50));
+        sensorsSetupButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sensorsSetupButtonActionPerformed(evt);
+            }
+        });
+        jPanelNavBar.add(sensorsSetupButton);
 
         networkingButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         networkingButton.setText("Networking");
@@ -211,6 +218,10 @@ public class OptionsMenu extends javax.swing.JDialog {
         GUI.systemRestart();
     }//GEN-LAST:event_restartButtonActionPerformed
 
+    private void sensorsSetupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorsSetupButtonActionPerformed
+        GUI.showSensorsControl();
+    }//GEN-LAST:event_sensorsSetupButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -255,7 +266,6 @@ public class OptionsMenu extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton captureSetupButton;
     private javax.swing.JButton captureStatusButton;
     private javax.swing.JLabel jLabelSystemID;
     private javax.swing.JPanel jPanelNavBar;
@@ -265,6 +275,7 @@ public class OptionsMenu extends javax.swing.JDialog {
     private javax.swing.JButton optionsButton;
     private javax.swing.JButton quitButton;
     private javax.swing.JButton restartButton;
+    private javax.swing.JButton sensorsSetupButton;
     private javax.swing.JButton shutDownButton;
     // End of variables declaration//GEN-END:variables
 }
