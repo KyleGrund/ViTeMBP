@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -141,6 +141,9 @@ public class SystemConfig {
         } else {
             LOGGER.info("System configuration not found on filesystem.");
         }
+        
+        // start cloud sync service
+        CloudConfigSync.Start();
     }
 
     /**
@@ -346,7 +349,7 @@ public class SystemConfig {
      * @param toWriteTo The XMLStreamWriter to write to.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
-    public void writeTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
+    final void writeTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
         toWriteTo.writeStartDocument();
         
         toWriteTo.writeStartElement("configuration");
@@ -421,7 +424,7 @@ public class SystemConfig {
      * @param toReadFrom The XMLStreamReader to read from.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
-    protected final void readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
+    final void readFrom(XMLStreamReader toReadFrom) throws XMLStreamException {
         if (toReadFrom.getEventType() != XMLStreamConstants.START_DOCUMENT) {
             throw new XMLStreamException("Expected start of document not found.", toReadFrom.getLocation());
         }
@@ -519,5 +522,42 @@ public class SystemConfig {
         // configuration successfully read, safe to update settings
         this.sensorNames = readSensorNames;
         this.sensorBindings = readSensorBindings;
+    }
+    
+    /**
+     * Writes the configuration to a string and returns it.
+     * @return The configuration.
+     */
+    public String writeToString() throws XMLStreamException {
+        StringWriter writer = new StringWriter();
+        
+        // create a stream to write config to
+        XMLStreamWriter configOutputStream = XMLOutputFactory
+                .newFactory()
+                .createXMLStreamWriter(writer);
+
+        // write config to the file
+        this.writeTo(configOutputStream);
+        configOutputStream.flush();
+        configOutputStream.close();
+        
+        return writer.toString();
+    }
+    
+    /**
+     * Loads the configuration from a string.
+     * @param toReadFrom The configuration to load.
+     */
+    public void readFromString(String toReadFrom) throws XMLStreamException {
+        // create an XMLStreamReader for the string read in using a filter to
+        // remove any extranuous white space
+        XMLInputFactory factory = XMLInputFactory.newFactory();
+        XMLStreamReader xmlReader =
+                factory.createFilteredReader(
+                        factory.createXMLStreamReader(new StringReader(toReadFrom)),
+                        (XMLStreamReader sr) -> !sr.isWhiteSpace());
+
+        // read config from the file
+        this.readFrom(xmlReader);
     }
 }

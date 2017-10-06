@@ -54,17 +54,6 @@ interface UuidStringStore {
     public abstract Stream<CaptureDescription> getCaptureLocations() throws IOException;
     
     /**
-     * Registers a device's UUID to the data store for device registration.
-     * @param deviceUUID The UUID of this device.
-     */
-    public abstract void registerDeviceUUID() throws IOException;
-    
-    /**
-     * Gets the device UUIDs to the data store for device registration.
-     */
-    public abstract Stream<UUID> getDeviceUUIDs() throws IOException;
-    
-    /**
      * Adds a description of a capture in the store.
      * @param toAdd The description to add.
      * @throws IOException If an exception occurs while adding the UUID to the

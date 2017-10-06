@@ -129,18 +129,4 @@ class UuidStringStoreHashMap implements UuidStringStore {
                 .findFirst()
                 .orElse(null);
     }
-
-    @Override
-    public void registerDeviceUUID() throws IOException {
-        UUID systemID = SystemConfig.getConfig().getSystemUUID();
-        // add this system to the list
-        if (!this.devices.contains(systemID)) {
-            this.devices.add(systemID);
-        }
-    }
-
-    @Override
-    public Stream<UUID> getDeviceUUIDs() throws IOException {
-        return this.devices.stream();
-    }
 }

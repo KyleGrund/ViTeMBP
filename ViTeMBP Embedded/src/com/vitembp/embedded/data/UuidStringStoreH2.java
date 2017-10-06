@@ -128,28 +128,6 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     @Override
-    public void registerDeviceUUID() throws IOException {
-        // add device UUID if needed
-        StringBuilder query = new StringBuilder();
-        query.append("MERGE INTO DEVICES VALUES('");
-        query.append(SystemConfig.getConfig().getSystemUUID().toString());
-        query.append("')");
-
-        try {
-            // execute query
-            int rowsUpdated = this.connection.createStatement().executeUpdate(query.toString());
-            
-            // only one row should have been updated
-            if (rowsUpdated != 1) {
-                throw new SQLException("Expected one row to be udpdated, actually updated: " + Integer.toString(rowsUpdated));
-            }
-        } catch (SQLException ex) {
-            LOGGER.error("Could not write to database.", ex);
-            throw new IOException("Exception writing to H2 database.", ex);
-        }
-    }
-    
-    @Override
     public void addCaptureDescription(CaptureDescription toAdd) throws IOException {       
         // add capture data: location, system, start, frequency to captures table
         StringBuilder query = new StringBuilder();
@@ -367,40 +345,6 @@ class UuidStringStoreH2 implements UuidStringStore {
         } catch (SQLException ex) {
             LOGGER.error("Could not remove capture from database.", ex);
             throw new IOException("Exception writing to H2 database.", ex);
-        }
-    }
-
-    @Override
-    public Stream<UUID> getDeviceUUIDs() throws IOException {
-        try {
-            // get all ID entries from the DATA table in the database
-            ResultSet set = this.connection.createStatement().executeQuery("SELECT ID FROM DEVICES");
-            boolean hasElements = set.first();
-            
-            // generate a stream of the parsed UUIDs excluding CAPTURE_LOCATIONS
-            return StreamSupport.stream(((Iterable<UUID>)() -> new Iterator<UUID>() {
-                boolean hasNext = hasElements;
-                @Override
-                public boolean hasNext() {
-                    return hasNext;
-                }
-
-                @Override
-                public UUID next() {
-                    if (hasNext) {
-                        try {
-                            UUID value = UUID.fromString(set.getString("ID"));
-                            hasNext = set.next();
-                            return value;
-                        } catch (SQLException ex) {
-                            LOGGER.error("Unexpected exception accessing ID column.", ex);
-                        }
-                    }
-                    return null;
-                }
-            }).spliterator(), false);
-        } catch (SQLException ex) {
-            throw new IOException("Could not retrieve devices from H2 store.", ex);
         }
     }
 }
