@@ -41,7 +41,7 @@ public class XMLStreams {
     private static XMLOutputFactory outputFactory;
     
     /**
-     * Initializes static memeber variables.
+     * Initializes static member variables.
      */
     static {
         // build and configure factories
@@ -74,6 +74,38 @@ public class XMLStreams {
         // read into close element
         if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </" + name + "> not found.", toReadFrom.getLocation());
+        }
+        
+        // read past close element
+        toReadFrom.next();
+        
+        return value;
+    }
+    
+    /**
+     * Reads a single text element from XMLStreamReader.
+     * @param name The name of the element.
+     * @param toReadFrom The reader to read from.
+     * @return The string read from the stream.
+     * @throws XMLStreamException If an exception occurs reading from stream.
+     */
+    public static String readElementWithEmpty(String name, XMLStreamReader toReadFrom) throws XMLStreamException {
+        // check starting element
+        if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <" + name + "> not found.", toReadFrom.getLocation());
+        }
+        
+        // read text data if available, otherwise set to empty string
+        String value;
+        if (toReadFrom.next() == XMLStreamConstants.CHARACTERS) {
+            value = toReadFrom.getText();
+            
+            // read into close element
+            if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
+                throw new XMLStreamException("Expected </" + name + "> not found.", toReadFrom.getLocation());
+            }
+        } else {
+            value = "";
         }
         
         // read past close element

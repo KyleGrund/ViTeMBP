@@ -20,21 +20,18 @@ package com.vitembp.embedded.configuration;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeAction;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -84,6 +81,7 @@ public class CloudConfigSync {
             CloudConfigSync.syncThread = new Thread(CloudConfigSync::SyncThreadTarget);
             CloudConfigSync.isRunning = true;
             CloudConfigSync.syncThread.start();
+            LOGGER.info("Configuration cloud sync service started.");
         }
     }
     
@@ -95,6 +93,7 @@ public class CloudConfigSync {
             CloudConfigSync.isRunning = false;
             try {
                 CloudConfigSync.syncThread.join();
+                LOGGER.info("Configuration cloud sync service stopped.");
             } catch (InterruptedException ex) {
                 LOGGER.error("Interrupted wiating for config sync thread to complete.", ex);
             }
@@ -116,9 +115,14 @@ public class CloudConfigSync {
             msToNextStart = CHECK_INTERVAL_MS - (System.currentTimeMillis() - checkStarted);
             if (msToNextStart > 0) {
                 try {
+                    LOGGER.debug(
+                            "Waiting " +
+                            Long.toString(msToNextStart) +
+                            "ms until next sync.");
                     Thread.sleep(msToNextStart);
                 } catch (InterruptedException ex) {
-                    LOGGER.debug("Interrupted waiting for next check interval.", ex);
+                    LOGGER.error("Interrupted waiting for next check interval.", ex);
+                    isRunning = false;
                 }
             }
         }
@@ -141,28 +145,28 @@ public class CloudConfigSync {
         }
 
         // check if configuration has changed
-        boolean hasChanged = false;
-        String newConfig = "";
+        boolean hasChanged;
+        String newConfig;
         
         // perform query
         Map<String, AttributeValue> reqkey = new HashMap<>();
         reqkey.put("ID", new AttributeValue().withS(SystemConfig.getConfig().getSystemUUID().toString()));
-        List<String> params = Arrays.asList(new String[] { "CONFIG", "UPDATED" });
         
         GetItemRequest request = new GetItemRequest()
                 .withTableName("DEVICES")
                 .withKey(reqkey)
-                .withAttributesToGet(params);
+                .withProjectionExpression("CONFIG,UPDATED");
         
         // try to get the data
         GetItemResult result = client.getItem(request);
         if (result != null && result.getItem() != null) {
             // parse data from response if the table has the attributes
             Map<String, AttributeValue> attributes = result.getItem();
-            
+
             // can not continue if the UPDATED and CONFIG attributes are not
             // present in the table row
             if (!attributes.containsKey("UPDATED") || !attributes.containsKey("CONFIG")) {
+                LOGGER.error("Configuration is not available in database.");
                 return;
             }
             
@@ -171,6 +175,7 @@ public class CloudConfigSync {
             newConfig = result.getItem().get("CONFIG").getS();
         } else {
             // query failed so do not continue
+            LOGGER.error("Could not query configuration in databse.");
             return;
         }
         
@@ -179,8 +184,20 @@ public class CloudConfigSync {
             try {
                 updateConfiguration(newConfig);
             } catch (XMLStreamException ex) {
-                LOGGER.warn("Could not update configuration.", ex);
+                LOGGER.error("Could not update configuration.", ex);
+                return;
             }
+            
+            // change updated to false
+            Map<String, AttributeValue> keyAttribs = new HashMap<>();
+            keyAttribs.put("ID", new AttributeValue().withS(SystemConfig.getConfig().getSystemUUID().toString()));
+            Map<String, AttributeValueUpdate> updateAttribs = new HashMap<>();
+            updateAttribs.put("UPDATED", new AttributeValueUpdate()
+                    .withValue(new AttributeValue().withS(Boolean.toString(false)))
+                    .withAction(AttributeAction.PUT));
+            
+            client.updateItem("DEVICES", keyAttribs, updateAttribs);
+            LOGGER.info("Config updated flag set to false.");
         }
     }
     
@@ -191,14 +208,16 @@ public class CloudConfigSync {
      * configuration.
      */
     private static void updateConfiguration(String newConfig) throws XMLStreamException {
-        // create an XMLStreamReader for the string read in using a filter to
-        // remove any extranuous white space
-        XMLInputFactory factory = XMLInputFactory.newFactory();
-        XMLStreamReader xmlReader =
-                factory.createFilteredReader(
-                        factory.createXMLStreamReader(new StringReader(newConfig)),
-                        (XMLStreamReader sr) -> !sr.isWhiteSpace());
-        SystemConfig.getConfig().readFrom(xmlReader);
+        // load config from the remote string
+        LOGGER.info("Loading new configuration: " + newConfig);
+        SystemConfig.getConfig().readFromString(newConfig);
+        
+        try {
+            // save the config to the local system
+            SystemConfig.getConfig().saveToLocalSystem();
+        } catch (IOException ex) {
+            throw new XMLStreamException("Exception saving config.", ex);
+        }
     }
     
     /**
@@ -234,7 +253,9 @@ public class CloudConfigSync {
         try {
             CloudConfigSync.client.putItem(pir);
             CloudConfigSync.deviceRegistered = true;
+            LOGGER.info("Device successfully registered.");
         } catch (ConditionalCheckFailedException e) {
+            CloudConfigSync.deviceRegistered = true;
             LOGGER.debug("Device already registered.");
         } catch (ResourceNotFoundException e) {
             LOGGER.error("The database does not contain the device index table.", e);

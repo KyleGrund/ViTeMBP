@@ -123,6 +123,11 @@ public class SystemConfig {
     private UUID systemID = DEFAULT_UUID;
     
     /**
+     * The friendly name of this system.
+     */
+    private String systemName = "";
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {
@@ -237,6 +242,14 @@ public class SystemConfig {
     }
     
     /**
+     * Gets the user defined name of this system.
+     * @return The user defined name of this system.
+     */
+    public String getSystemName() {
+        return this.systemName;
+    }
+    
+    /**
      * Loads the configuration from a file.
      * @param configFile The file to load from.
      */
@@ -267,16 +280,8 @@ public class SystemConfig {
                     .reduce("", (a, b) -> a + b);
         }
         
-        // create an XMLStreamReader for the string read in using a filter to
-        // remove any extranuous white space
-        XMLInputFactory factory = XMLInputFactory.newFactory();
-        XMLStreamReader xmlReader =
-                factory.createFilteredReader(
-                        factory.createXMLStreamReader(new StringReader(config)),
-                        (XMLStreamReader sr) -> !sr.isWhiteSpace());
-
         // read config from the file
-        this.readFrom(xmlReader);
+        this.readFromString(config);
     }
     
     /**
@@ -354,7 +359,12 @@ public class SystemConfig {
         
         toWriteTo.writeStartElement("configuration");
         
-        // save sampling frequency
+        // save system name
+        toWriteTo.writeStartElement("systemname");
+        toWriteTo.writeCharacters(this.systemName);
+        toWriteTo.writeEndElement();
+        
+        // save system id
         toWriteTo.writeStartElement("systemid");
         toWriteTo.writeCharacters(this.systemID.toString());
         toWriteTo.writeEndElement();
@@ -434,8 +444,11 @@ public class SystemConfig {
             throw new XMLStreamException("Expected <configuration> not found.", toReadFrom.getLocation());
         }
 
-        // read system ID
+        // read system name
         toReadFrom.next();
+        this.systemName = XMLStreams.readElementWithEmpty("systemname", toReadFrom);
+        
+        // read system ID
         this.systemID = UUID.fromString(XMLStreams.readElement("systemid", toReadFrom));
         
         // read sampling frequency
@@ -527,6 +540,8 @@ public class SystemConfig {
     /**
      * Writes the configuration to a string and returns it.
      * @return The configuration.
+     * @throws javax.xml.stream.XMLStreamException If an error occurs while
+     * writing the configuration.
      */
     public String writeToString() throws XMLStreamException {
         StringWriter writer = new StringWriter();
@@ -547,17 +562,32 @@ public class SystemConfig {
     /**
      * Loads the configuration from a string.
      * @param toReadFrom The configuration to load.
+     * @throws javax.xml.stream.XMLStreamException If an error occurs while
+     * parsing the configuration.
      */
     public void readFromString(String toReadFrom) throws XMLStreamException {
         // create an XMLStreamReader for the string read in using a filter to
         // remove any extranuous white space
         XMLInputFactory factory = XMLInputFactory.newFactory();
-        XMLStreamReader xmlReader =
-                factory.createFilteredReader(
-                        factory.createXMLStreamReader(new StringReader(toReadFrom)),
-                        (XMLStreamReader sr) -> !sr.isWhiteSpace());
+        factory.setProperty(XMLInputFactory.IS_COALESCING, true);
+        XMLStreamReader xmlReader = factory.createFilteredReader(
+                factory.createXMLStreamReader(new StringReader(toReadFrom)),
+                (XMLStreamReader sr) -> !sr.isWhiteSpace());
 
         // read config from the file
         this.readFrom(xmlReader);
+    }
+
+    /**
+     * Saves the current configuration to the local filesystem.
+     * @throws IOException If there is an error saving the configuration.
+     */
+    void saveToLocalSystem() throws IOException {
+        // try to save, rethrowing an XML exception as an IOException as needed
+        try {
+            this.saveConfigToPath(this.configFile);
+        } catch (XMLStreamException ex) {
+            throw new IOException("XMLException while writing configuration to filesystem.", ex);
+        }
     }
 }
