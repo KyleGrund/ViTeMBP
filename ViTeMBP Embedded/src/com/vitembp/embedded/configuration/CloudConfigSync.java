@@ -31,6 +31,8 @@ import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import org.apache.logging.log4j.LogManager;
 
@@ -182,7 +184,7 @@ public class CloudConfigSync {
         // update if changed
         if (hasChanged) {
             try {
-                updateConfiguration(newConfig);
+                loadConfigFromRemote(newConfig);
             } catch (XMLStreamException ex) {
                 LOGGER.error("Could not update configuration.", ex);
                 return;
@@ -198,6 +200,30 @@ public class CloudConfigSync {
             
             client.updateItem("DEVICES", keyAttribs, updateAttribs);
             LOGGER.info("Config updated flag set to false.");
+        } else {
+            // build local config to check if the local has changes not
+            // in the remote config
+            String localConfig;
+            try {
+                localConfig = SystemConfig.getConfig().writeToString();
+            } catch (XMLStreamException ex) {
+                LOGGER.error("Could not create configuration string.", ex);
+                return;
+            }
+            
+            // update remote as needed
+            if (!newConfig.equals(localConfig)) {
+                // updated configuration with local
+                Map<String, AttributeValue> keyAttribs = new HashMap<>();
+                keyAttribs.put("ID", new AttributeValue().withS(SystemConfig.getConfig().getSystemUUID().toString()));
+                Map<String, AttributeValueUpdate> updateAttribs = new HashMap<>();
+                updateAttribs.put("CONFIG", new AttributeValueUpdate()
+                        .withValue(new AttributeValue().withS(localConfig))
+                        .withAction(AttributeAction.PUT));
+
+                client.updateItem("DEVICES", keyAttribs, updateAttribs);
+                LOGGER.info("Remote config updated.");
+            }
         }
     }
     
@@ -207,7 +233,7 @@ public class CloudConfigSync {
      * @throws XMLStreamException If there is an exception while updating the
      * configuration.
      */
-    private static void updateConfiguration(String newConfig) throws XMLStreamException {
+    private static void loadConfigFromRemote(String newConfig) throws XMLStreamException {
         // load config from the remote string
         LOGGER.info("Loading new configuration: " + newConfig);
         SystemConfig.getConfig().readFromString(newConfig);

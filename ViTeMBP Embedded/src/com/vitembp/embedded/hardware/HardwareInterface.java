@@ -219,9 +219,13 @@ public class HardwareInterface {
             }
         }
         
-        this.platform.getSensors().forEach((s) -> LOGGER.info(
-                "Found sensor, " + s.getSerial().toString() + ", of type, " +
-                s.getType().toString() + "."));
+        // register sensors with the system configuration
+        this.platform.getSensors().forEach((s) -> {
+            SystemConfig.getConfig().registerSensorUUID(s.getSerial());
+            LOGGER.info(
+                "Registered sensor, " + s.getSerial().toString() + ", of type, " +
+                s.getType().toString() + ".");
+            });
         
         // names to sensor bindings
         Map<String, Sensor> bindings = new HashMap<>();

@@ -128,6 +128,11 @@ public class SystemConfig {
     private String systemName = "";
     
     /**
+     * The UUID of sensors which have been connected to the system.
+     */
+    private Set<UUID> sensorBindingSites = new HashSet<>();
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {
@@ -247,6 +252,17 @@ public class SystemConfig {
      */
     public String getSystemName() {
         return this.systemName;
+    }
+    
+    /**
+     * Registers a UUID adding it to the configuration if it is not already
+     * present.
+     * @param toRegister The UUID for the sensor being registered.
+     */
+    public void registerSensorUUID(UUID toRegister) {
+        if (!this.sensorBindingSites.contains(toRegister)) {
+            this.sensorBindingSites.add(toRegister);
+        }
     }
     
     /**
@@ -383,6 +399,15 @@ public class SystemConfig {
         }
         toWriteTo.writeEndElement();
         
+        // save binding site
+        toWriteTo.writeStartElement("sensorbindingsites");
+        for (UUID site : this.sensorBindingSites) {
+            toWriteTo.writeStartElement("site");
+            toWriteTo.writeCharacters(site.toString());
+            toWriteTo.writeEndElement();
+        }
+        toWriteTo.writeEndElement();
+        
         // save sensor bindings
         toWriteTo.writeStartElement("sensorbindings");
         for (String name : this.sensorBindings.keySet()) {
@@ -474,6 +499,26 @@ public class SystemConfig {
             throw new XMLStreamException("Expected </sensornames> not found.", toReadFrom.getLocation());
         }
         
+        // read into sensor binding sites element
+        if (toReadFrom.next()!= XMLStreamConstants.START_ELEMENT || !"sensorbindingsites".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <sensorbindingsites> not found.", toReadFrom.getLocation());
+        }
+        
+        // set of sensor names
+        Set<UUID> readSensorBindingSites = new HashSet<>();
+        
+        // add a name element for each name entry
+        toReadFrom.next();
+        while (toReadFrom.getEventType() == XMLStreamConstants.START_ELEMENT && "site".equals(toReadFrom.getLocalName())) {
+            // read and save sensor name
+            readSensorBindingSites.add(UUID.fromString(XMLStreams.readElement("site", toReadFrom)));
+        }
+        
+        // read into close element
+        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensorbindingsites".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </sensorbindingsites> not found.", toReadFrom.getLocation());
+        }
+        
         // read into sensorbindings element
         if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"sensorbindings".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <sensorbindings> not found.", toReadFrom.getLocation());
@@ -535,6 +580,9 @@ public class SystemConfig {
         // configuration successfully read, safe to update settings
         this.sensorNames = readSensorNames;
         this.sensorBindings = readSensorBindings;
+        
+        // only ever add binding site to avoid sync related erasure
+        this.sensorBindingSites.addAll(readSensorBindingSites);
     }
     
     /**
@@ -579,7 +627,7 @@ public class SystemConfig {
     }
 
     /**
-     * Saves the current configuration to the local filesystem.
+     * Saves the current configuration to the local file system.
      * @throws IOException If there is an error saving the configuration.
      */
     void saveToLocalSystem() throws IOException {
