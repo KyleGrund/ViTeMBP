@@ -31,12 +31,17 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -69,6 +74,11 @@ public class SystemConfig {
      * The singleton instance for this class.
      */
     private static final SystemConfig SINGLETON = new SystemConfig();
+    
+    /**
+     * Listeners to be notified when a configuration change occurs.
+     */
+    private final List<Runnable> configChangedListeners = new ArrayList<>();
     
     /**
      * The path to the configuration file.
@@ -196,6 +206,14 @@ public class SystemConfig {
      */
     public static SystemConfig getConfig() {
         return SystemConfig.SINGLETON;
+    }
+    
+    /**
+     * Adds a listener to be notified when a configuration change occurs.
+     * @param toAdd The listener to be added.
+     */
+    public void addConfigChangedListener(Runnable toAdd) {
+        this.configChangedListeners.add(toAdd);
     }
     
     /**
@@ -533,7 +551,7 @@ public class SystemConfig {
             toReadFrom.next();
             String sensorName = XMLStreams.readElement("name", toReadFrom);
             
-            // read binding            
+            // read binding         
             UUID sensorBinding = UUID.fromString(XMLStreams.readElement("binding", toReadFrom));
             
             // successfully found a sensor name, save it
@@ -583,6 +601,9 @@ public class SystemConfig {
         
         // only ever add binding site to avoid sync related erasure
         this.sensorBindingSites.addAll(readSensorBindingSites);
+        
+        // notify listeners of changes
+        this.notifyChangeListeners();
     }
     
     /**
@@ -637,5 +658,18 @@ public class SystemConfig {
         } catch (XMLStreamException ex) {
             throw new IOException("XMLException while writing configuration to filesystem.", ex);
         }
+    }
+
+    /**
+     * Notifies listeners that the configuration has changed.
+     */
+    private void notifyChangeListeners() {
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Runnable[] listeners = this.configChangedListeners.toArray(
+                new Runnable[this.configChangedListeners.size()]);
+        for (Runnable listener : listeners) {
+            executor.submit(listener);
+        }
+        executor.shutdown();
     }
 }

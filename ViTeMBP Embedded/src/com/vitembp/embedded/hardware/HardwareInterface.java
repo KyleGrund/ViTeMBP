@@ -70,6 +70,9 @@ public class HardwareInterface {
         this.keyPresses = new LinkedBlockingQueue<>();
         this.sensors  = new HashMap<>();
         this.initializeResources();
+        
+        // updates the sensor collection when configuration updates occur
+        this.config.addConfigChangedListener(this::updateSensorBindings);
     }
     
     /**
@@ -228,6 +231,32 @@ public class HardwareInterface {
             });
         
         // names to sensor bindings
+        updateSensorBindings();
+        
+        // register key press listener to store presses into a queue
+        this.platform.setKeypadCallback(this.keyPresses::add);
+    }
+    
+    /**
+     * Gets an instance of the HardwareInterface class used to access the
+     * hardware the program is currently executing on.
+     * @return An instance of the HardwareInterface class for the hardware the
+     * program is currently executing on.
+     */
+    public synchronized static HardwareInterface getInterface() {
+        // build the singleton instance if it has not been built already
+        if (HardwareInterface.singleton == null) {
+            HardwareInterface.singleton = new HardwareInterface();
+        }
+        
+        return HardwareInterface.singleton;
+    }
+    
+    /**
+     * Creates a new hash map of sensor name to instance bindings.
+     * @return A hash map of sensor name to instance bindings.
+     */
+    private void updateSensorBindings() {
         Map<String, Sensor> bindings = new HashMap<>();
         
         // for each name
@@ -251,25 +280,7 @@ public class HardwareInterface {
             bindings.put(name, match);
         });
         
-        // register key press listener to store presses into a queue
-        this.platform.setKeypadCallback(this.keyPresses::add);
-        
-        // save updated bindings
+        // update the local bindings collection
         this.sensors = bindings;
-    }
-    
-    /**
-     * Gets an instance of the HardwareInterface class used to access the
-     * hardware the program is currently executing on.
-     * @return An instance of the HardwareInterface class for the hardware the
-     * program is currently executing on.
-     */
-    public synchronized static HardwareInterface getInterface() {
-        // build the singleton instance if it has not been built already
-        if (HardwareInterface.singleton == null) {
-            HardwareInterface.singleton = new HardwareInterface();
-        }
-        
-        return HardwareInterface.singleton;
     }
 }
