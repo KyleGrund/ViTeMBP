@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -161,9 +160,6 @@ public class SystemConfig {
         } else {
             LOGGER.info("System configuration not found on filesystem.");
         }
-        
-        // start cloud sync service
-        CloudConfigSync.Start();
     }
 
     /**

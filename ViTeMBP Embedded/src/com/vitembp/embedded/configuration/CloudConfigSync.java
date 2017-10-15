@@ -31,8 +31,6 @@ import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import org.apache.logging.log4j.LogManager;
 
@@ -63,7 +61,11 @@ public class CloudConfigSync {
     /**
      * The connection to the database.
      */
-    private static AmazonDynamoDB client;
+    private static final AmazonDynamoDB client;
+    
+    /**
+     * Flag indicating whether the devices has been registered.
+     */
     private static boolean deviceRegistered;
     
     /**
@@ -75,12 +77,12 @@ public class CloudConfigSync {
     }
     
     /**
-     * Starts the cloud sync service.
+     * Starts the cloud sync service polling for updates.
      */
-    public static synchronized void Start() {
+    public static synchronized void startPolling() {
         // if not already started build and start the sync thread
         if (CloudConfigSync.isRunning != true) {
-            CloudConfigSync.syncThread = new Thread(CloudConfigSync::SyncThreadTarget);
+            CloudConfigSync.syncThread = new Thread(CloudConfigSync::syncThreadTarget);
             CloudConfigSync.isRunning = true;
             CloudConfigSync.syncThread.start();
             LOGGER.info("Configuration cloud sync service started.");
@@ -88,9 +90,9 @@ public class CloudConfigSync {
     }
     
     /**
-     * Stops the cloud sync service.
+     * Stops the cloud sync service from polling for updates.
      */
-    public static synchronized void Stop(){
+    public static synchronized void stopPolling(){
         if (CloudConfigSync.isRunning) {
             CloudConfigSync.isRunning = false;
             try {
@@ -103,15 +105,23 @@ public class CloudConfigSync {
     }
     
     /**
+     * Call this method to trigger a check for configuration updates.
+     */
+    public static void checkForUpdates() {
+        LOGGER.info("Configuration update check triggered.");
+        CloudConfigSync.checkConfiguration();
+    }
+    
+    /**
      * The function that the sync thread runs.
      */
-    private static void SyncThreadTarget() {
+    private static void syncThreadTarget() {
         long checkStarted, msToNextStart;
         while (isRunning) {
             checkStarted = System.currentTimeMillis();
             
             // check configuration
-            CloudConfigSync.CheckConfiguration();
+            CloudConfigSync.checkConfiguration();
             
             // wait until next check time
             msToNextStart = CHECK_INTERVAL_MS - (System.currentTimeMillis() - checkStarted);
@@ -133,7 +143,7 @@ public class CloudConfigSync {
     /**
      * Checks if the configuration has changed.
      */
-    private static void CheckConfiguration() {
+    private static void checkConfiguration() {
         // register the device if it is not in the table
         if (!CloudConfigSync.deviceRegistered) {
             try {
