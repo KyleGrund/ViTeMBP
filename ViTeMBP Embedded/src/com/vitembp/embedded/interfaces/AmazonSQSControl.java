@@ -25,6 +25,7 @@ import com.vitembp.embedded.configuration.CloudConfigSync;
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -158,6 +159,20 @@ public class AmazonSQSControl {
         } else if ("UPDATECONFIG".equals(upperCase)) {
             // trigger the cloud configuration service to check for updates
             CloudConfigSync.checkForUpdates();
+        } else if ("STARTCAPTURE".equals(upperCase)) {
+            try {
+                // send the keypress '1' to signal start capture
+                HardwareInterface.getInterface().generateKeyPress('1');
+            } catch (InterruptedException ex) {
+                LOGGER.error("Interrupted sending start capture keypress.", ex);
+            }
+        } else if ("ENDCAPTURE".equals(upperCase)) {
+            try {
+                // send the keypress '4' to signal start capture
+                HardwareInterface.getInterface().generateKeyPress('4');
+            } catch (InterruptedException ex) {
+                LOGGER.error("Interrupted sending end capture keypress.", ex);
+            }
         }
     }
     
