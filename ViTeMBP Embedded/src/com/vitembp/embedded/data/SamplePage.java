@@ -384,7 +384,7 @@ class SamplePage {
 
     /**
      * Delete the data for this page.
-     * @throws IOException If there is an error while writing to the persistant
+     * @throws IOException If there is an error while writing to the persistent
      * store.
      */
     void delete() throws IOException {

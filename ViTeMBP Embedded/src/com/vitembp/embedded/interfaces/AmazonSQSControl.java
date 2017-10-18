@@ -19,12 +19,14 @@ package com.vitembp.embedded.interfaces;
 
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.vitembp.embedded.configuration.CloudConfigSync;
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -83,7 +85,11 @@ public class AmazonSQSControl {
         this.queueName = queueName;
         
         // create the queue
-        this.sqsClient.createQueue(this.queueName);
+        this.sqsClient.createQueue(new CreateQueueRequest()
+            .withQueueName(queueName)
+            .addAttributesEntry("ReceiveMessageWaitTimeSeconds", "20"));
+        
+        // save the url for use when acknowledging messages
         this.queueUrl = this.sqsClient.getQueueUrl(queueName).getQueueUrl();
     }
     
