@@ -49,11 +49,6 @@ public class HardwareInterface {
     private Platform platform;
     
     /**
-     * The configuration object containing details used to initialize the interface.
-     */
-    private SystemConfig config;
-    
-    /**
      * Mapping of sensor system names to sensor control objects.
      */
     private Map<String, Sensor> sensors;
@@ -72,7 +67,9 @@ public class HardwareInterface {
         this.initializeResources();
         
         // updates the sensor collection when configuration updates occur
-        this.config.addConfigChangedListener(this::updateSensorBindings);
+        SystemConfig config = SystemConfig.getConfig();
+        config.addConfigChangedListener(this::updateSensorBindings);
+        config.addConfigChangedListener(this::updateInterfaceMetrics);
     }
     
     /**
@@ -204,19 +201,33 @@ public class HardwareInterface {
     }
     
     /**
+     * Sets the metric for an interface
+     * @throws IOException if the shutdown process cannot be started.
+     */
+    public void setInterfaceMetric(String iface, int metric) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-r", "now"});
+        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+        // execute the command
+        Process proc = pb.start();
+        
+        LOGGER.info("Sytem shutting down.");
+        System.exit(0);
+    }
+    
+    /**
      * Initializes resources such as resolving sensor bindings for system
      * interface.
      */
     private void initializeResources() {
         LOGGER.info("Initializing hardware resoureces.");
         this.platform = Platform.getPlatform();
-        this.config = SystemConfig.getConfig();
+        SystemConfig config = SystemConfig.getConfig();
         
         // if the configuration was not loaded from disk,
         // attempt to load defaults for the platform
-        if (!this.config.initializedFromFile()) {
+        if (!config.initializedFromFile()) {
             try {
-                this.config.createDefaultConfigFrom(this.platform.getDefaultConfigPath());
+                config.createDefaultConfigFrom(this.platform.getDefaultConfigPath());
             } catch (IOException ex) {
                 LOGGER.error("Could not create platform specific default configuration.", ex);
             }
@@ -235,6 +246,9 @@ public class HardwareInterface {
         
         // register key press listener to store presses into a queue
         this.platform.setKeypadCallback(this.keyPresses::add);
+        
+        // update the interface metrics
+        this.updateInterfaceMetrics();
     }
     
     /**
@@ -258,11 +272,12 @@ public class HardwareInterface {
      */
     private void updateSensorBindings() {
         Map<String, Sensor> bindings = new HashMap<>();
+        SystemConfig config = SystemConfig.getConfig();
         
         // for each name
-        this.config.getSensorNames().forEach((name) -> {
+        config.getSensorNames().forEach((name) -> {
             // get binding
-            UUID bindingAddress = this.config.getSensorBindings().get(name);
+            UUID bindingAddress = config.getSensorBindings().get(name);
 
             // get matching sensor if one is available, otherwise gets null
             Sensor match = this.platform.getSensors().stream()
@@ -282,5 +297,28 @@ public class HardwareInterface {
         
         // update the local bindings collection
         this.sensors = bindings;
+    }
+
+    /**
+     * Updates the network interface metrics to the values set in the configuration.
+     */
+    private void updateInterfaceMetrics() {
+        SystemConfig config = SystemConfig.getConfig();
+        
+        try {
+            this.platform.setWiredEthernetMetric(config.getWiredEthernetMetric());
+        } catch (IOException ex) {
+            LOGGER.error("Exception setting wired Ethernet interface metric.", ex);
+        }
+        try {
+            this.platform.setWirelessEthernetMetric(config.getWirelessEthernetMetric());
+        } catch (IOException ex) {
+            LOGGER.error("Exception setting wireless Ethernet interface metric.", ex);
+        }
+        try {
+            this.platform.setBluetoothMetric(config.getBluetoothMetric());
+        } catch (IOException ex) {
+            LOGGER.error("Exception setting Bluetooth interface metric.", ex);
+        }
     }
 }

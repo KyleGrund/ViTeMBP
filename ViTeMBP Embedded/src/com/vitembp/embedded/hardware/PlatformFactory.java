@@ -97,7 +97,10 @@ class PlatformFactory {
                     return toReturn;
                 },
                 () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"),
-                () -> {});
+                () -> { LOGGER.info("Initialized mock platform."); },
+                (String iface, Integer metric) -> {
+                    LOGGER.info("Set interface \"" + iface + "\" metric to " + Integer.toString(metric) + ".");
+                });
     }
     
     /**
@@ -211,7 +214,8 @@ class PlatformFactory {
                     } catch (IOException ex) {
                         LOGGER.error ("Could not initialize sync buzzer port.", ex);
                     }
-                });
+                },
+                IfmetricInterface::setInterfaceMetric);
     }
     
     /**
@@ -325,7 +329,8 @@ class PlatformFactory {
                     } catch (IOException ex) {
                         LOGGER.error ("Could not initialize sync buzzer port.", ex);
                     }
-                });
+                },
+                IfmetricInterface::setInterfaceMetric);
     }
     
     /**
@@ -371,6 +376,7 @@ class PlatformFactory {
                     return toReturn;
                 },
                 () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
-                () -> {});
+                () -> {},
+                IfmetricInterface::setInterfaceMetric);
     }
 }

@@ -17,7 +17,9 @@
  */
 package com.vitembp.embedded.hardware;
 
+import com.vitembp.embedded.data.BiConsumerIOException;
 import com.vitembp.embedded.data.ConsumerIOException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -58,6 +60,11 @@ class PlatformFunctor extends Platform {
     private final Runnable initializeCallback;
     
     /**
+     * The callback which will set the metric of the interface described.
+     */
+    private final BiConsumerIOException<String, Integer> setInterfaceMetric;
+    
+    /**
      * Initializes a new instance of the PlatformFunctor class.
      * @param setSyncLightTarget Callback that controls the synchronization light.
      * @param getSensorsTarget Callback that provides a list of sensors.
@@ -69,13 +76,15 @@ class PlatformFunctor extends Platform {
             Consumer<Consumer<Character>> setKeypadCallback,
             Supplier<Set<Sensor>> getSensorsTarget,
             Supplier<Path> getDefaultConfigPath,
-            Runnable initializeCallback) {
+            Runnable initializeCallback,
+            BiConsumerIOException<String, Integer> setInterfaceMetric) {
         this.setSyncLightTarget = setSyncLightTarget;
         this.setBuzzerTarget = setBuzzerTarget;
         this.setKeypadCallback = setKeypadCallback;
         this.getSensorsTarget = getSensorsTarget;
         this.getDefaultConfigPath = getDefaultConfigPath;
         this.initializeCallback = initializeCallback;
+        this.setInterfaceMetric = setInterfaceMetric;
     }
     
     @Override
@@ -106,5 +115,20 @@ class PlatformFunctor extends Platform {
     @Override
     void initialize() {
         this.initializeCallback.run();
+    }
+
+    @Override
+    void setWiredEthernetMetric(int metric) throws IOException {
+        this.setInterfaceMetric.accept("eth0", metric);
+    }
+
+    @Override
+    void setWirelessEthernetMetric(int metric) throws IOException {
+        this.setInterfaceMetric.accept("wlan0", metric);
+    }
+
+    @Override
+    void setBluetoothMetric(int metric) throws IOException {
+        this.setInterfaceMetric.accept("bnep0", metric);
     }
 }

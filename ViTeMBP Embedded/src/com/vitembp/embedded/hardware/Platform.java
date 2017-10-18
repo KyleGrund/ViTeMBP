@@ -18,6 +18,7 @@
 package com.vitembp.embedded.hardware;
 
 import com.vitembp.embedded.data.ConsumerIOException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -72,6 +73,24 @@ abstract class Platform {
      * Initializes platform resources.
      */
     abstract void initialize();
+    
+    /**
+     * Sets the interface metric of the wired Ethernet interface.
+     * @param metric The metric to set the interface to.
+     */
+    abstract void setWiredEthernetMetric(int metric) throws IOException;
+    
+    /**
+     * Sets the interface metric of the wireless Ethernet interface.
+     * @param metric The metric to set the interface to.
+     */
+    abstract void setWirelessEthernetMetric(int metric) throws IOException;
+    
+    /**
+     * Sets the interface metric of the Bluetooth interface.
+     * @param metric The metric to set the interface to.
+     */
+    abstract void setBluetoothMetric(int metric) throws IOException;
     
     /**
      * Returns a platform object for the system hardware that the program 

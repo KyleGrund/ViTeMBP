@@ -78,4 +78,19 @@ class PlatformMock extends Platform{
     void initialize() {
         // mock does not require initialization
     }
+
+    @Override
+    void setWiredEthernetMetric(int metric) {
+        LOGGER.info("Set wired Ethernet metric to: " + Integer.toString(metric) + ".");
+    }
+
+    @Override
+    void setWirelessEthernetMetric(int metric) {
+        LOGGER.info("Set wireless Ethernet metric to: " + Integer.toString(metric) + ".");
+    }
+
+    @Override
+    void setBluetoothMetric(int metric) {
+        LOGGER.info("Set Bluetooth metric to: " + Integer.toString(metric) + ".");
+    }
 }
