@@ -98,6 +98,11 @@ class UuidStringStoreCapture extends Capture {
         int len = toWrite.length();
         this.store.write(toWrite);
     }
+    
+    @Override
+    public void delete() throws IOException {
+        this.store.delete();
+    }
 
     @Override
     public void load() throws IOException {

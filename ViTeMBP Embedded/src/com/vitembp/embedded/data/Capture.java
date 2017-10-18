@@ -138,6 +138,12 @@ public abstract class Capture {
     public abstract void load() throws IOException;
     
     /**
+     * Deletes this capture session from persistent storage.
+     * @throws java.io.IOException If an IO exception occurs while loading data.
+     */
+    public abstract void delete() throws IOException;
+    
+    /**
      * Reads in samples from an XMLStreamReader.
      * @param toReadFrom The XMLStreamReader to load samples from.
      * @throws XMLStreamException If there is an error reading data from XML.

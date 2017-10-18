@@ -178,6 +178,23 @@ class SamplePageManager {
     }
     
     /**
+     * Deletes the data locations used by the sample pages.
+     */
+    void delete() throws IOException {
+        // start at the first page and delete one by one until the last page is
+        // reached
+        SamplePage currentPage = firstPage;
+        SamplePage finalPage = lastPage;
+        while (currentPage != finalPage) {
+            SamplePage next = currentPage.getNextPage();
+            currentPage.delete();
+            currentPage = next;
+        }
+        
+        currentPage.delete();
+    }
+    
+    /**
      * Writes the manager to a XMLStreamWriter
      * @param toWriteTo the XMLStreamWriter to write to.
      * @throws XMLStreamException If an exception occurs while writing to the stream.

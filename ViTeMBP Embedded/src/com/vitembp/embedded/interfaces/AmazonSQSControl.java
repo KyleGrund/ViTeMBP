@@ -25,7 +25,6 @@ import com.vitembp.embedded.configuration.CloudConfigSync;
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
-import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -121,8 +120,10 @@ public class AmazonSQSControl {
             // check for new commands
             ReceiveMessageResult result = sqsClient.receiveMessage(queueUrl);
             
+            LOGGER.info("Processing messages from SQS device queue.");
+            
             // process commands
-            for (Message msg : result.getMessages()) {
+            result.getMessages().forEach((msg) -> {
                 // get message text
                 String toProcess = msg.getBody();
                 
@@ -131,7 +132,7 @@ public class AmazonSQSControl {
                 
                 // process the message
                 this.parseMessage(toProcess);
-            }
+            });
         }
     }
     

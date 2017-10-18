@@ -187,6 +187,12 @@ class UuidStringStorePagingCapture extends Capture {
     }
 
     @Override
+    public void delete() throws IOException {
+        this.manager.delete();
+        this.store.delete();
+    }
+    
+    @Override
     public Set<String> getSensorNames() {
         return Collections.unmodifiableSet(this.names);
     }

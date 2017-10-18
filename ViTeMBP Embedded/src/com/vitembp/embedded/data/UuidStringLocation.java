@@ -66,6 +66,15 @@ class UuidStringLocation {
     }
     
     /**
+     * Deletes the data at the specified location.
+     * @throws IOException If an exception occurs while writing to the
+     * persistent store.
+     */
+    public void delete() throws IOException {
+        this.store.delete(this.location);
+    }
+    
+    /**
      * Returns a new instance of UuidStringLocation bound to the supplied UUID.
      * @param location The location to bind the new instance to.
      * @return 

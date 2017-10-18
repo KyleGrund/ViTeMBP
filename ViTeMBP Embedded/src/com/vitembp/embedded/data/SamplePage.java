@@ -381,4 +381,13 @@ class SamplePage {
         this.nanosecondInterval = sampleInterval;
         this.nextPage = nextPageUuid;
     }
+
+    /**
+     * Delete the data for this page.
+     * @throws IOException If there is an error while writing to the persistant
+     * store.
+     */
+    void delete() throws IOException {
+        this.store.delete();
+    }
 }
