@@ -53,6 +53,11 @@ class PlatformFunctor extends Platform {
     private final Supplier<Path> getDefaultConfigPath;
     
     /**
+     * The callback which initializes hardware at system startup.
+     */
+    private final Runnable initializeCallback;
+    
+    /**
      * Initializes a new instance of the PlatformFunctor class.
      * @param setSyncLightTarget Callback that controls the synchronization light.
      * @param getSensorsTarget Callback that provides a list of sensors.
@@ -63,12 +68,14 @@ class PlatformFunctor extends Platform {
             ConsumerIOException<Boolean> setBuzzerTarget,
             Consumer<Consumer<Character>> setKeypadCallback,
             Supplier<Set<Sensor>> getSensorsTarget,
-            Supplier<Path> getDefaultConfigPath) {
+            Supplier<Path> getDefaultConfigPath,
+            Runnable initializeCallback) {
         this.setSyncLightTarget = setSyncLightTarget;
         this.setBuzzerTarget = setBuzzerTarget;
         this.setKeypadCallback = setKeypadCallback;
         this.getSensorsTarget = getSensorsTarget;
         this.getDefaultConfigPath = getDefaultConfigPath;
+        this.initializeCallback = initializeCallback;
     }
     
     @Override
@@ -94,5 +101,10 @@ class PlatformFunctor extends Platform {
     @Override
     Path getDefaultConfigPath() {
         return this.getDefaultConfigPath.get();
+    }
+
+    @Override
+    void initialize() {
+        this.initializeCallback.run();
     }
 }

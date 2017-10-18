@@ -69,6 +69,11 @@ abstract class Platform {
     abstract Path getDefaultConfigPath();
     
     /**
+     * Initializes platform resources.
+     */
+    abstract void initialize();
+    
+    /**
      * Returns a platform object for the system hardware that the program 
      * is currently executing on.
      * @return A platform object for the system hardware that the program 
@@ -81,6 +86,9 @@ abstract class Platform {
             if (Platform.singletonInstance == null) {
                 // get the system board and use factory to build plaform
                 Platform.singletonInstance = PlatformFactory.build(SystemBoard.getBoard());
+                
+                // initialize the platform
+                Platform.singletonInstance.initialize();
             }
         }
         

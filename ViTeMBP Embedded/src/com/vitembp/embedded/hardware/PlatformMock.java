@@ -73,4 +73,9 @@ class PlatformMock extends Platform{
             }   
         };
     }
+
+    @Override
+    void initialize() {
+        // mock does not require initialization
+    }
 }

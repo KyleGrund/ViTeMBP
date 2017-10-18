@@ -142,6 +142,21 @@ public class SystemConfig {
     private Set<UUID> sensorBindingSites = new HashSet<>();
     
     /**
+     * The metric to set for the wired Ethernet interface.
+     */
+    private int wiredEthernetMetric;
+    
+    /**
+     * The metric to set for the wireless network interface.
+     */
+    private int wirelessEthernetMetric;
+    
+    /**
+     * The metric to set for the bluetooth interface.
+     */
+    private int bluetoothMetric;
+    
+    /**
      * Initializes a new instance of the SystemConfig class.
      */
     private SystemConfig() {
@@ -266,6 +281,30 @@ public class SystemConfig {
      */
     public String getSystemName() {
         return this.systemName;
+    }
+    
+    /**
+     * Gets the metric to set for the Ethernet interface.
+     * @return The metric to set for the Ethernet interface.
+     */
+    public int getWiredEthernetMetric() {
+        return this.wiredEthernetMetric;
+    }
+    
+    /**
+     * Gets the metric to set for the Ethernet interface.
+     * @return The metric to set for the Ethernet interface.
+     */
+    public int getWirelessEthernetMetric() {
+        return this.wirelessEthernetMetric;
+    }
+    
+    /**
+     * Gets the metric to set for the Ethernet interface.
+     * @return The metric to set for the Ethernet interface.
+     */
+    public int getBluetoothMetric() {
+        return this.bluetoothMetric;
     }
     
     /**
@@ -461,6 +500,25 @@ public class SystemConfig {
         toWriteTo.writeEndElement();
         toWriteTo.writeEndElement();
         
+        // save network interface options
+        toWriteTo.writeStartElement("networkinterfaces");
+        toWriteTo.writeStartElement("wiredethernet");
+        toWriteTo.writeStartElement("metric");
+        toWriteTo.writeCharacters(Integer.toString(this.wiredEthernetMetric));
+        toWriteTo.writeEndElement();
+        toWriteTo.writeEndElement();
+        toWriteTo.writeStartElement("wirelessethernet");
+        toWriteTo.writeStartElement("metric");
+        toWriteTo.writeCharacters(Integer.toString(this.wirelessEthernetMetric));
+        toWriteTo.writeEndElement();
+        toWriteTo.writeEndElement();
+        toWriteTo.writeStartElement("bluetooth");
+        toWriteTo.writeStartElement("metric");
+        toWriteTo.writeCharacters(Integer.toString(this.bluetoothMetric));
+        toWriteTo.writeEndElement();
+        toWriteTo.writeEndElement();
+        toWriteTo.writeEndElement();
+        
         // close configuration
         toWriteTo.writeEndElement();
         
@@ -579,6 +637,56 @@ public class SystemConfig {
         // read into close cloud
         if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"cloud".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </cloud> not found.", toReadFrom.getLocation());
+        }
+        
+        // load network interface options
+        // read into network interfaces element
+        if (toReadFrom.next()!= XMLStreamConstants.START_ELEMENT || !"networkinterfaces".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <networkinterfaces> not found.", toReadFrom.getLocation());
+        }
+        
+        // read into wired interface element
+        if (toReadFrom.next()!= XMLStreamConstants.START_ELEMENT || !"wiredethernet".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <wiredethernet> not found.", toReadFrom.getLocation());
+        }
+
+        toReadFrom.next();
+        this.wiredEthernetMetric = Integer.parseInt(XMLStreams.readElement("metric", toReadFrom));
+        
+        // read into close wired ethernet
+        if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"wiredethernet".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </wiredethernet> not found.", toReadFrom.getLocation());
+        }
+        
+        // read into wireless interface element
+        if (toReadFrom.next()!= XMLStreamConstants.START_ELEMENT || !"wirelessethernet".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <wirelessethernet> not found.", toReadFrom.getLocation());
+        }
+
+        toReadFrom.next();
+        this.wirelessEthernetMetric = Integer.parseInt(XMLStreams.readElement("metric", toReadFrom));
+        
+        // read into close wired ethernet
+        if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"wirelessethernet".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </wirelessethernet> not found.", toReadFrom.getLocation());
+        }
+        
+        // read into bluetooth interface element
+        if (toReadFrom.next()!= XMLStreamConstants.START_ELEMENT || !"bluetooth".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <bluetooth> not found.", toReadFrom.getLocation());
+        }
+
+        toReadFrom.next();
+        this.bluetoothMetric = Integer.parseInt(XMLStreams.readElement("metric", toReadFrom));
+        
+        // read into close wired ethernet
+        if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"bluetooth".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </bluetooth> not found.", toReadFrom.getLocation());
+        }
+        
+        // read into close network interfaces
+        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"networkinterfaces".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </networkinterfaces> not found.", toReadFrom.getLocation());
         }
         
         // read into close configuration

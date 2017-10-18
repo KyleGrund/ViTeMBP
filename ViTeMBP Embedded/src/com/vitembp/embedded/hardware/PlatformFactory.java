@@ -96,7 +96,8 @@ class PlatformFactory {
                     toReturn.add(new AccelerometerMock());
                     return toReturn;
                 },
-                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"));
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigMock.xml"),
+                () -> {});
     }
     
     /**
@@ -106,42 +107,42 @@ class PlatformFactory {
      */
     public static Platform create(SystemBoardUdooNeo board){
         // get gpio182 which controls the sync light
-        GPIOPort lightPort = board.getGPIOPorts()
+        final GPIOPort lightPort = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio182"))
                 .findFirst()
                 .get();
         
         // get gpio4 which controls the buzzer
-        GPIOPort buzzerPort = board.getGPIOPorts()
+        final GPIOPort buzzerPort = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio4"))
                 .findFirst()
                 .get();
         
         // get gpio106 which controls button 1
-        GPIOPort buttonOne = board.getGPIOPorts()
+        final GPIOPort buttonOne = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio106"))
                 .findFirst()
                 .get();
         
         // get gpio107 which controls button 2
-        GPIOPort buttonTwo = board.getGPIOPorts()
+        final GPIOPort buttonTwo = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio107"))
                 .findFirst()
                 .get();
         
         // get gpio180 which controls button 3
-        GPIOPort buttonThree = board.getGPIOPorts()
+        final GPIOPort buttonThree = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio180"))
                 .findFirst()
                 .get();
         
         // get gpio181 which controls button 4
-        GPIOPort buttonFour = board.getGPIOPorts()
+        final GPIOPort buttonFour = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio181"))
                 .findFirst()
@@ -195,7 +196,22 @@ class PlatformFactory {
                     
                     return toReturn;
                 },
-                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
+                () -> { 
+                    try {
+                        lightPort.setDirection(GpioDirection.Output);
+                        lightPort.setValue(false);
+                    } catch (IOException ex) {
+                        LOGGER.error ("Could not initialize sync light port.", ex);
+                    }
+                    
+                    try {
+                        buzzerPort.setDirection(GpioDirection.Output);
+                        buzzerPort.setValue(false);
+                    } catch (IOException ex) {
+                        LOGGER.error ("Could not initialize sync buzzer port.", ex);
+                    }
+                });
     }
     
     /**
@@ -205,42 +221,42 @@ class PlatformFactory {
      */
     public static Platform create(SystemBoardUdooQdl board){
         // get gpio182 which controls the sync light
-        GPIOPort lightPort = board.getGPIOPorts()
+        final GPIOPort lightPort = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio123"))
                 .findFirst()
                 .get();
         
         // get gpio133 which controls the buzzer
-        GPIOPort buzzerPort = board.getGPIOPorts()
+        final GPIOPort buzzerPort = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio133"))
                 .findFirst()
                 .get();
         
         // get gpio106 which controls button 1
-        GPIOPort buttonOne = board.getGPIOPorts()
+        final GPIOPort buttonOne = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio124"))
                 .findFirst()
                 .get();
         
         // get gpio107 which controls button 2
-        GPIOPort buttonTwo = board.getGPIOPorts()
+        final GPIOPort buttonTwo = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio125"))
                 .findFirst()
                 .get();
         
         // get gpio180 which controls button 3
-        GPIOPort buttonThree = board.getGPIOPorts()
+        final GPIOPort buttonThree = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio126"))
                 .findFirst()
                 .get();
         
         // get gpio181 which controls button 4
-        GPIOPort buttonFour = board.getGPIOPorts()
+        final GPIOPort buttonFour = board.getGPIOPorts()
                 .stream()
                 .filter((p) -> p.getName().equals("gpio127"))
                 .findFirst()
@@ -294,7 +310,22 @@ class PlatformFactory {
                     
                     return toReturn;
                 },
-                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
+                () -> { 
+                    try {
+                        lightPort.setDirection(GpioDirection.Output);
+                        lightPort.setValue(false);
+                    } catch (IOException ex) {
+                        LOGGER.error ("Could not initialize sync light port.", ex);
+                    }
+                    
+                    try {
+                        buzzerPort.setDirection(GpioDirection.Output);
+                        buzzerPort.setValue(false);
+                    } catch (IOException ex) {
+                        LOGGER.error ("Could not initialize sync buzzer port.", ex);
+                    }
+                });
     }
     
     /**
@@ -339,6 +370,7 @@ class PlatformFactory {
                     
                     return toReturn;
                 },
-                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"));
+                () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
+                () -> {});
     }
 }
