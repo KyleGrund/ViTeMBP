@@ -27,6 +27,7 @@ import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,7 +73,7 @@ public class AmazonSQSControl {
     /**
      * The URL to use when accessing the queue.
      */
-    private final String queueUrl;
+    private String queueUrl = null;
     
     /**
      * Initializes a new instance of the AmazonSQSControl class.
@@ -83,14 +84,19 @@ public class AmazonSQSControl {
         
         // save the name of the queue for this device
         this.queueName = queueName;
-        
-        // create the queue
-        this.sqsClient.createQueue(new CreateQueueRequest()
-            .withQueueName(queueName)
-            .addAttributesEntry("ReceiveMessageWaitTimeSeconds", "20"));
-        
-        // save the url for use when acknowledging messages
-        this.queueUrl = this.sqsClient.getQueueUrl(queueName).getQueueUrl();
+    }
+
+    /**
+     * Attempts to create the queue for this device.
+     */
+    private void createQueue() {
+        // if the queue was not yet created
+        if (this.queueUrl == null) {
+            // create the queue
+            this.sqsClient.createQueue(new CreateQueueRequest().withQueueName(this.queueName).addAttributesEntry("ReceiveMessageWaitTimeSeconds", "20"));
+            // save the url for use when acknowledging messages
+            this.queueUrl = this.sqsClient.getQueueUrl(this.queueName).getQueueUrl();
+        }
     }
     
     /**
@@ -121,24 +127,57 @@ public class AmazonSQSControl {
         }
     }
     
+    /**
+     * Processes messages from the device's SQS queue.
+     */
     private void processMessages() {
+        int startErrorBackoff = 200;
+        int errorBackoff = startErrorBackoff;
+        float errorFactor = 2;
+        int errorMax = 5000;
         while (isRunning) {
-            // check for new commands
-            ReceiveMessageResult result = sqsClient.receiveMessage(queueUrl);
-            
-            LOGGER.info("Processing messages from SQS device queue.");
-            
-            // process commands
-            result.getMessages().forEach((msg) -> {
-                // get message text
-                String toProcess = msg.getBody();
+            try {
+                // create the queue in this try-block so if the service starts
+                // when a connection is not available it will cleanly retry
+                this.createQueue();
                 
-                // remove message from queue
-                this.sqsClient.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+                // check for new commands
+                ReceiveMessageResult result = sqsClient.receiveMessage(queueUrl);
+
+                LOGGER.info("Processing messages from SQS device queue.");
+
+                // process commands
+                result.getMessages().forEach((msg) -> {
+                    // get message text
+                    String toProcess = msg.getBody();
+
+                    // remove message from queue
+                    this.sqsClient.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+
+                    // process the message
+                    this.parseMessage(toProcess);
+                });
                 
-                // process the message
-                this.parseMessage(toProcess);
-            });
+                // reset error backoff on success
+                errorBackoff = startErrorBackoff;
+            } catch (Exception e) {
+                LOGGER.error("Unexpected Exception processing SQS queue.", e);
+                
+                // wait for the backoff period to prevent retry flooding
+                try {
+                    LOGGER.error("Backing off for " + Integer.toString(errorBackoff) + "ms.");
+                    Thread.sleep(errorBackoff);
+                } catch (InterruptedException ex) {
+                    LOGGER.error("Interrupted while waiting for backoff on SQS queue failure.", ex);
+                }
+                
+                // increase backoff factor until it is at the max value
+                errorBackoff *= errorFactor;
+                if (errorBackoff > errorMax) {
+                    errorBackoff = errorMax;
+                }
+                
+            }
         }
     }
     
