@@ -17,17 +17,26 @@
  */
 package com.vitembp.embedded.interfaces;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeAction;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
+import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.vitembp.embedded.configuration.CloudConfigSync;
 import com.vitembp.embedded.configuration.SystemConfig;
+import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,6 +85,11 @@ public class AmazonSQSControl {
     private String queueUrl = null;
     
     /**
+     * The the client for backing store where the stored commands are located.
+     */
+    private final AmazonDynamoDB client;
+    
+    /**
      * Initializes a new instance of the AmazonSQSControl class.
      */
     private AmazonSQSControl(String queueName) {
@@ -84,6 +98,9 @@ public class AmazonSQSControl {
         
         // save the name of the queue for this device
         this.queueName = queueName;
+        
+        // build DynamoDB client with default credentials
+        this.client = AmazonDynamoDBClient.builder().build();
     }
 
     /**
@@ -106,6 +123,7 @@ public class AmazonSQSControl {
         // if not already started build and start the sync thread
         if (this.isRunning != true) {
             this.messageProcessThread = new Thread(this::processMessages);
+            this.messageProcessThread.setName("AWSSQS-Control");
             this.isRunning = true;
             this.messageProcessThread.start();
             LOGGER.info("AmazonSQSControl service started.");
@@ -190,43 +208,134 @@ public class AmazonSQSControl {
         
         // process message
         String upperCase = toProcess.toUpperCase();
-        if ("REBOOT".equals(upperCase)) {
+        if (upperCase.startsWith("FROMUUID")) {
+            String[] split = toProcess.split(" ");
+            
+            // from must be "FROMUUID [UUID LOCATION]"
+            if (split.length != 2) {
+                LOGGER.error("Invalid format processing FROMUUID command.");
+            } else {
+                UUID location = null;
+                try {
+                    location = UUID.fromString(split[1]);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.error("UUID location is not valid.", e);
+                    return;
+                }
+                
+                String uuidCommand = null;
+                try {
+                    uuidCommand = this.readData(location);
+                } catch (IOException ex) {
+                    LOGGER.error("Could not read command from database store while processing FROMUUID command.", ex);
+                    return;
+                }
+                
+                try {
+                    this.deleteData(location);
+                } catch (IOException ex) {
+                    LOGGER.error("Could not delete command from database store while processing FROMUUID command.", ex);
+                    return;
+                }
+                
+                LOGGER.info("Processing command from database: " + uuidCommand);
+                
+                if (uuidCommand.length() < 37) {
+                    LOGGER.error("Command not of form: \"[UUID] [COMMAND]\".");
+                    return;
+                }
+                
+                UUID responseLocation = null;
+                try {
+                    responseLocation = UUID.fromString(uuidCommand.substring(0, 36));
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.error("UUID location is not valid.", ex);
+                    return;
+                }
+                
+                String result = this.parseUuidMessage(uuidCommand.substring(37));
+                LOGGER.info("Command result: " + result);
+                try {
+                    this.writeData(responseLocation, result);
+                } catch (IOException ex) {
+                    LOGGER.error("Could not write result of proccsing FROMUUID command.", ex);
+                }
+            }
+        } else {
+            // use the uuid processing to prevent duplication
+            String result = this.parseUuidMessage(toProcess);
+            LOGGER.info("Command result: " + result);
+        }
+    }
+    
+    /**
+     * Parses a message sent through the FROMUUID command.
+     * @param toProcess The message to process.
+     */
+    private String parseUuidMessage(String toProcess) {
+        LOGGER.info("Processing uuid message: " + toProcess);
+        String failureReason = null;
+        
+        // process message
+        String upperCase = toProcess.toUpperCase();
+        if ("FROMUUID".startsWith(upperCase)) {
+            failureReason = "Cannot nest FROMUUID messages.";
+            LOGGER.error(failureReason);
+        } else if ("REBOOT".equals(upperCase)) {
             try {
                 HardwareInterface.getInterface().restartSystem();
+                return "Success.";
             } catch (IOException ex) {
-                LOGGER.error("Error processing reboot command.", ex);
+                failureReason = "Error processing reboot command.";
+                LOGGER.error(failureReason, ex);
             }
         } else if ("SHUTDOWN".equals(upperCase)) {
             try {
                 HardwareInterface.getInterface().shutDownSystem();
+                return "Success.";
             } catch (IOException ex) {
-                LOGGER.error("Error processing reboot command.", ex);
+                failureReason = "Error processing reboot command.";
+                LOGGER.error(failureReason, ex);
             }
         } else if ("UPDATECONFIG".equals(upperCase)) {
             // trigger the cloud configuration service to check for updates
             CloudConfigSync.checkForUpdates();
+            return "Success.";
         } else if ("STARTCAPTURE".equals(upperCase)) {
             try {
                 // send the keypress '1' to signal start capture
                 HardwareInterface.getInterface().generateKeyPress('1');
+                return "Sent start capture signal.";
             } catch (InterruptedException ex) {
-                LOGGER.error("Interrupted sending start capture keypress.", ex);
+                failureReason = "Interrupted sending start capture keypress.";
+                LOGGER.error(failureReason, ex);
             }
         } else if ("ENDCAPTURE".equals(upperCase)) {
             try {
                 // send the keypress '4' to signal start capture
                 HardwareInterface.getInterface().generateKeyPress('4');
+                return "Sent end capture signal.";
             } catch (InterruptedException ex) {
-                LOGGER.error("Interrupted sending end capture keypress.", ex);
+                failureReason = "Interrupted sending end capture keypress.";
+                LOGGER.error(failureReason, ex);
             }
+        }
+        
+        // return as specific a failure messsage as possible
+        if (failureReason != null) {
+            return "Failed: " + failureReason;
+        } else {
+            return "Failed.";
         }
     }
     
     /**
      * Gets the singleton instance of the AmazonSQSControl class.
      * @return The singleton instance of the AmazonSQSControl class.
+     * @throws java.lang.InstantiationException If a connection to the database
+     * cannot be made.
      */
-    public synchronized static AmazonSQSControl getSingleton(){
+    public synchronized static AmazonSQSControl getSingleton() throws InstantiationException{
         // build singleton is neccessary.
         if (AmazonSQSControl.singleton == null) {
             String name = QUEUE_PREFIX + SystemConfig.getConfig().getSystemUUID().toString();
@@ -234,5 +343,96 @@ public class AmazonSQSControl {
         }
         
         return AmazonSQSControl.singleton;
+    }
+    
+    /**
+     * Deletes a value from the DATA table.
+     * @param location The location to delete in the table.
+     * @throws IOException If an error occurs deleting the data.
+     */
+    private void deleteData(UUID location) throws IOException {
+        try {
+            // build the request to put toWrite in VALUE at the ID location
+            Map<String, AttributeValue> keyAttribs = new HashMap<>();
+            keyAttribs.put("ID", new AttributeValue().withS(location.toString()));
+
+            // write the request to the DATA table
+            client.deleteItem("DATA", keyAttribs);
+        } catch (Exception ex) {
+            throw new IOException(
+                    "Unexpected exception deleting data from location: " + 
+                            location.toString(),
+                    ex);
+        }
+    }
+    
+    /**
+     * Deletes a value from the DATA table.
+     * @param location The location to delete in the table.
+     * @param toWrite The data to write to the table row.
+     * @throws IOException If an error occurs writing the data.
+     */
+    private void writeData(UUID location, String toWrite) throws IOException {
+        try {
+            // build the request to put toWrite in VALUE at the ID location
+            Map<String, AttributeValue> keyAttribs = new HashMap<>();
+            keyAttribs.put("ID", new AttributeValue().withS(location.toString()));
+            Map<String, AttributeValueUpdate> updateAttribs = new HashMap<>();
+            updateAttribs.put("VALUE", new AttributeValueUpdate()
+                    .withValue(new AttributeValue().withS(toWrite))
+                    .withAction(AttributeAction.PUT));
+
+            // write the request to the DATA table
+            client.updateItem("DATA", keyAttribs, updateAttribs);
+        } catch (Exception ex) {
+            throw new IOException(
+                    "Unexpected exception writing \"" + 
+                            toWrite  +
+                            "\" to location: " +
+                            location.toString(),
+                    ex);
+        }
+    }
+    
+    /**
+     * Reads a value from the DATA table.
+     * @param location The location to read VALUE from in the table.
+     * @return The data from the table.
+     * @throws IOException If an error occurs reading the data.
+     */
+    private String readData(UUID location) throws IOException{
+        try {
+            Map<String, AttributeValue> reqkey = new HashMap<>();
+            reqkey.put("ID", new AttributeValue().withS(location.toString()));
+
+            GetItemRequest request = new GetItemRequest()
+                    .withTableName("DATA")
+                    .withKey(reqkey)
+                    .withAttributesToGet(Arrays.asList(new String[] { "VALUE" }));
+
+            // try to get the data
+            GetItemResult result = client.getItem(request);
+            if (result != null && result.getItem() != null) {
+                // parse data from response if the table has the attributes
+                Map<String, AttributeValue> attributes = result.getItem();
+
+                // can not continue if the VALUE is attribute is not present
+                if (!attributes.containsKey("VALUE")) {
+                    LOGGER.error("Value attribute is not in database.");
+                    return null;
+                }
+
+                // data are present, get their values
+                return result.getItem().get("VALUE").getS();
+            } else {
+                // query failed so do not continue
+                LOGGER.error("Could not get value from databse.");
+                return null;
+            }
+        } catch (Exception ex) {
+            throw new IOException(
+                    "Unexpected exception reading from location: " + location.toString(),
+                    ex);
+        }
     }
 }

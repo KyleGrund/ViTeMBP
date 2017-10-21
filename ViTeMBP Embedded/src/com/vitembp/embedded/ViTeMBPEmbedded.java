@@ -21,11 +21,16 @@ import com.vitembp.embedded.controller.StateMachine;
 import com.vitembp.embedded.gui800x480.GUI;
 import com.vitembp.embedded.interfaces.AmazonSQSControl;
 import com.vitembp.embedded.interfaces.CommandLine;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Class containing the main entry point for program.
  */
 public class ViTeMBPEmbedded {
+    /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
     /**
      * @param args the command line arguments
@@ -43,7 +48,11 @@ public class ViTeMBPEmbedded {
         // start state machine
         machine.start();
         
-        // start the remote control service for our AWS SQS device queue
-        AmazonSQSControl.getSingleton().start();
+        try {
+            // start the remote control service for our AWS SQS device queue
+            AmazonSQSControl.getSingleton().start();
+        } catch (InstantiationException ex) {
+            LOGGER.error("Could not start AWS SQS remote control service.", ex);
+        }
     }
 }

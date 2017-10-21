@@ -17,7 +17,6 @@
  */
 package com.vitembp.embedded.controller;
 
-import com.vitembp.embedded.hardware.Sensor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -129,7 +128,7 @@ public class StateMachine {
         // loop processing states until the isRunning signal is false
         while (this.isRunning) {
             try {
-                LOGGER.info("Executing: " + nextState.getSimpleName());
+                LOGGER.trace("Executing: " + nextState.getSimpleName());
                 nextState = this.states.get(nextState).execute(this.context);
             } catch (Exception ex) {
                 LOGGER.error("Exception occurred running controller state: " + nextState.getSimpleName(), ex);
