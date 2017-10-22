@@ -25,8 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -177,13 +180,20 @@ public class HardwareInterface {
      * @throws IOException if the shutdown process cannot be started.
      */
     public void shutDownSystem() throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-h", "now"});
-        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
-        // execute the command
-        Process proc = pb.start();
-        
-        LOGGER.info("Sytem shutting down.");
-        System.exit(0);
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                Thread.sleep(1000);
+                ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-h", "now"});
+                LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+                // execute the command
+                Process proc = pb.start();
+                
+                LOGGER.info("Sytem shutting down.");
+            } catch (Exception ex) {
+            } finally {
+                System.exit(0);
+            }
+        });
     }
     
     /**
@@ -191,13 +201,20 @@ public class HardwareInterface {
      * @throws IOException if the shutdown process cannot be started.
      */
     public void restartSystem() throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-r", "now"});
-        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
-        // execute the command
-        Process proc = pb.start();
-        
-        LOGGER.info("Sytem shutting down.");
-        System.exit(0);
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                Thread.sleep(1000);
+                ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-r", "now"});
+                LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
+                // execute the command
+                Process proc = pb.start();
+                
+                LOGGER.info("Sytem shutting down.");
+            } catch (Exception ex) {
+            } finally {
+                System.exit(0);
+            }
+        });
     }
     
     /**
