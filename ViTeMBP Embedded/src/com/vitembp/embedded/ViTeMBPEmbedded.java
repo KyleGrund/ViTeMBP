@@ -17,10 +17,12 @@
  */
 package com.vitembp.embedded;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.controller.StateMachine;
 import com.vitembp.embedded.gui800x480.GUI;
 import com.vitembp.embedded.interfaces.AmazonSQSControl;
 import com.vitembp.embedded.interfaces.CommandLine;
+import com.vitembp.embedded.interfaces.SQSTarget;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -48,11 +50,8 @@ public class ViTeMBPEmbedded {
         // start state machine
         machine.start();
         
-        try {
-            // start the remote control service for our AWS SQS device queue
-            AmazonSQSControl.getSingleton().start();
-        } catch (InstantiationException ex) {
-            LOGGER.error("Could not start AWS SQS remote control service.", ex);
-        }
+        // start sqs message processor
+        String queueName = "ViTeMBP-Device-" + SystemConfig.getConfig().getSystemUUID().toString();
+        new AmazonSQSControl(queueName, SQSTarget::parseUuidMessage).start();
     }
 }

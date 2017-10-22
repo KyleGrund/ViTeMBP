@@ -28,15 +28,12 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.vitembp.embedded.configuration.CloudConfigSync;
-import com.vitembp.embedded.configuration.SystemConfig;
-import com.vitembp.embedded.data.CaptureTypes;
-import com.vitembp.embedded.hardware.HardwareInterface;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,11 +45,6 @@ public class AmazonSQSControl {
      * Class logger instance.
      */
     private static final Logger LOGGER = LogManager.getLogger();
-    
-    /**
-     * The string to prepend to the queue name when creating queues.
-     */
-    private static final String QUEUE_PREFIX = "ViTeMBP-Device-";
     
     /**
      * The singleton instance of this class.
@@ -90,11 +82,19 @@ public class AmazonSQSControl {
     private final AmazonDynamoDB client;
     
     /**
+     * The function which parses messages.
+     */
+    private final Function<String, String> messageParser;
+    
+    /**
      * Initializes a new instance of the AmazonSQSControl class.
      */
-    private AmazonSQSControl(String queueName) {
+    public AmazonSQSControl(String queueName, Function<String, String> msgParser) {
         // create client to use to communicate with sqs
         this.sqsClient = AmazonSQSClientBuilder.defaultClient();
+        
+        // save the function which parses messages
+        this.messageParser = msgParser;
         
         // save the name of the queue for this device
         this.queueName = queueName;
@@ -106,7 +106,7 @@ public class AmazonSQSControl {
     /**
      * Attempts to create the queue for this device.
      */
-    private void createQueue() {
+    public void createQueue() {
         // if the queue was not yet created
         if (this.queueUrl == null) {
             // create the queue
@@ -253,7 +253,7 @@ public class AmazonSQSControl {
                     return;
                 }
                 
-                String result = this.parseUuidMessage(uuidCommand.substring(37));
+                String result = this.messageParser.apply(uuidCommand.substring(37));
                 LOGGER.info("Command result: " + result);
                 try {
                     this.writeData(responseLocation, result);
@@ -263,86 +263,9 @@ public class AmazonSQSControl {
             }
         } else {
             // use the uuid processing to prevent duplication
-            String result = this.parseUuidMessage(toProcess);
+            String result = this.messageParser.apply(toProcess);
             LOGGER.info("Command result: " + result);
         }
-    }
-    
-    /**
-     * Parses a message sent through the FROMUUID command.
-     * @param toProcess The message to process.
-     */
-    private String parseUuidMessage(String toProcess) {
-        LOGGER.info("Processing uuid message: " + toProcess);
-        String failureReason = null;
-        
-        // process message
-        String upperCase = toProcess.toUpperCase();
-        if ("FROMUUID".startsWith(upperCase)) {
-            failureReason = "Cannot nest FROMUUID messages.";
-            LOGGER.error(failureReason);
-        } else if ("REBOOT".equals(upperCase)) {
-            try {
-                HardwareInterface.getInterface().restartSystem();
-                return "Success.";
-            } catch (IOException ex) {
-                failureReason = "Error processing reboot command.";
-                LOGGER.error(failureReason, ex);
-            }
-        } else if ("SHUTDOWN".equals(upperCase)) {
-            try {
-                HardwareInterface.getInterface().shutDownSystem();
-                return "Success.";
-            } catch (IOException ex) {
-                failureReason = "Error processing reboot command.";
-                LOGGER.error(failureReason, ex);
-            }
-        } else if ("UPDATECONFIG".equals(upperCase)) {
-            // trigger the cloud configuration service to check for updates
-            CloudConfigSync.checkForUpdates();
-            return "Success.";
-        } else if ("STARTCAPTURE".equals(upperCase)) {
-            try {
-                // send the keypress '1' to signal start capture
-                HardwareInterface.getInterface().generateKeyPress('1');
-                return "Sent start capture signal.";
-            } catch (InterruptedException ex) {
-                failureReason = "Interrupted sending start capture keypress.";
-                LOGGER.error(failureReason, ex);
-            }
-        } else if ("ENDCAPTURE".equals(upperCase)) {
-            try {
-                // send the keypress '4' to signal start capture
-                HardwareInterface.getInterface().generateKeyPress('4');
-                return "Sent end capture signal.";
-            } catch (InterruptedException ex) {
-                failureReason = "Interrupted sending end capture keypress.";
-                LOGGER.error(failureReason, ex);
-            }
-        }
-        
-        // return as specific a failure messsage as possible
-        if (failureReason != null) {
-            return "Failed: " + failureReason;
-        } else {
-            return "Failed.";
-        }
-    }
-    
-    /**
-     * Gets the singleton instance of the AmazonSQSControl class.
-     * @return The singleton instance of the AmazonSQSControl class.
-     * @throws java.lang.InstantiationException If a connection to the database
-     * cannot be made.
-     */
-    public synchronized static AmazonSQSControl getSingleton() throws InstantiationException{
-        // build singleton is neccessary.
-        if (AmazonSQSControl.singleton == null) {
-            String name = QUEUE_PREFIX + SystemConfig.getConfig().getSystemUUID().toString();
-            AmazonSQSControl.singleton = new AmazonSQSControl(name);
-        }
-        
-        return AmazonSQSControl.singleton;
     }
     
     /**
