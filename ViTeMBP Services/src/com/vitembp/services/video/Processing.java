@@ -96,7 +96,7 @@ public class Processing {
         }
         
         // crate images with ffmpeg
-        Conversion.extractFrames(videoFile, tempDir, 0, 300, fileGenerator);
+        Conversion.extractFrames(videoFile, tempDir, 0, 900, fileGenerator);
         
         // create histogram list from images
         HistogramList histograms = HistogramList.loadFromDirectory(tempDir, fileGenerator);

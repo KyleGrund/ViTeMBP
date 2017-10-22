@@ -17,12 +17,10 @@
  */
 package com.vitembp.services.interfaces;
 
+import com.vitembp.embedded.interfaces.AmazonSQSControl;
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.config.ServicesConfig;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,65 +59,17 @@ public class ServiceControl {
      * @return A boolean value indicating whether the service stated
      * successfully.
      */
-    private static boolean startSqsService(ApiFunctions functions, String name) {
-        //create callback consumer which processes commands on the queue
-        Consumer<String> callback = (str) -> {
-            // we will process the strings from toProcess and put them
-            // into found
-            List<String> toProcess = new ArrayList<>(Arrays.asList(str.split(" ")));
-            ArrayList<String> found = new ArrayList<>();
-            
-            // prime our algorithm by putting the first element to
-            // process into found
-            if (!toProcess.isEmpty()) {
-                found.add(toProcess.remove(0));
-            }
-            
-            while (!toProcess.isEmpty()) {
-                // if the last found element starts with a quote and
-                // doesn't end with one, just append the next element
-                // as we are still inside a quote region othwerwise
-                // just add the element
-                if (found.get(found.size() - 1).startsWith("\"") &&
-                        !found.get(found.size() - 1).endsWith("\"")) {
-                    found.set(
-                            found.size() - 1,
-                            found.get(found.size() - 1) + " " + toProcess.remove(0));
-                } else {
-                    found.add(toProcess.remove(0));
-                }
-            }
-            
-            // trim open and closed quotes
-            for (int i = 0; i < found.size(); i++) {
-                String toProc = found.get(i);
-                if (toProc.startsWith("\"") && toProc.endsWith("\"")) {
-                    found.set(i, toProc.substring(1, toProc.length() - 1));
-                }
-                
-                LOGGER.info(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
-            }
-            
-            String[] foundArgs = found.toArray(new String[0]);
-            LOGGER.info("Got args: " + Arrays.toString(foundArgs));
-            
-            // execute command
-            boolean result = CommandLine.processStandardCommands(
-                    foundArgs,
-                    functions);
-            
-            if (result) {
-                LOGGER.info("Execution succeeded.");
-            } else {
-                LOGGER.info("Execution failed.");
-            }
-        };
-        
-        // create the SQS interface
-        AmazonSimpleQueueService sqs = new AmazonSimpleQueueService(
-                functions,
-                callback,
-                name);
+    private static boolean startSqsService(final ApiFunctions functions, String name) {
+        try {
+            // create the SQS interface
+            AmazonSQSControl sqs = new AmazonSQSControl(
+                    name,
+                    (cmd) -> SQSTarget.parseCommand(cmd, functions));
+            sqs.start();
+        } catch (Exception ex) {
+            LOGGER.error("Unexpected exception starting SQS service.", ex);
+            return false;
+        }
         return true;
     }
 
