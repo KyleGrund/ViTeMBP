@@ -18,9 +18,13 @@
 package com.vitembp.services.interfaces;
 
 import com.vitembp.services.ApiFunctions;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -39,60 +43,77 @@ public class SQSTarget {
      */
     public static String parseCommand(String cmd, ApiFunctions functions) {
         LOGGER.info("Processing SQS message: " + cmd);
-        // process command
-        try {
-            // we will process the strings from toProcess and put them
-            // into found
-            List<String> toProcess = new ArrayList<>(Arrays.asList(cmd.split(" ")));
-            ArrayList<String> found = new ArrayList<>();
-
-            // prime our algorithm by putting the first element to
-            // process into found
-            if (!toProcess.isEmpty()) {
-                found.add(toProcess.remove(0));
+        
+        if (cmd.toUpperCase().startsWith("DELETE")) {
+            if (cmd.length() != 43) {
+                return "Delete command must be of form: \"delete [capture uuid]\".";
             }
+            
+            UUID toDelete = UUID.fromString(cmd.substring(7));
+            
+            try {
+                return functions.deleteCapture(toDelete);
+            } catch (IOException ex) {
+                LOGGER.error("IOException while deleting capture.", ex);
+                return "Could not delete capture.";
+            }
+        } else {
+        
+            // process command
+            try {
+                // we will process the strings from toProcess and put them
+                // into found
+                List<String> toProcess = new ArrayList<>(Arrays.asList(cmd.split(" ")));
+                ArrayList<String> found = new ArrayList<>();
 
-            while (!toProcess.isEmpty()) {
-                // if the last found element starts with a quote and
-                // doesn't end with one, just append the next element
-                // as we are still inside a quote region othwerwise
-                // just add the element
-                if (found.get(found.size() - 1).startsWith("\"") &&
-                        !found.get(found.size() - 1).endsWith("\"")) {
-                    found.set(
-                            found.size() - 1,
-                            found.get(found.size() - 1) + " " + toProcess.remove(0));
-                } else {
+                // prime our algorithm by putting the first element to
+                // process into found
+                if (!toProcess.isEmpty()) {
                     found.add(toProcess.remove(0));
                 }
-            }
 
-            // trim open and closed quotes
-            for (int i = 0; i < found.size(); i++) {
-                String toProc = found.get(i);
-                if (toProc.startsWith("\"") && toProc.endsWith("\"")) {
-                    found.set(i, toProc.substring(1, toProc.length() - 1));
+                while (!toProcess.isEmpty()) {
+                    // if the last found element starts with a quote and
+                    // doesn't end with one, just append the next element
+                    // as we are still inside a quote region othwerwise
+                    // just add the element
+                    if (found.get(found.size() - 1).startsWith("\"") &&
+                            !found.get(found.size() - 1).endsWith("\"")) {
+                        found.set(
+                                found.size() - 1,
+                                found.get(found.size() - 1) + " " + toProcess.remove(0));
+                    } else {
+                        found.add(toProcess.remove(0));
+                    }
                 }
 
-                LOGGER.info(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
-            }
+                // trim open and closed quotes
+                for (int i = 0; i < found.size(); i++) {
+                    String toProc = found.get(i);
+                    if (toProc.startsWith("\"") && toProc.endsWith("\"")) {
+                        found.set(i, toProc.substring(1, toProc.length() - 1));
+                    }
 
-            String[] foundArgs = found.toArray(new String[0]);
-            LOGGER.info("Got args: " + Arrays.toString(foundArgs));
+                    LOGGER.info(Integer.toString(i) + ": " + toProc + " -> " + found.get(i));
+                }
 
-            // execute command
-            boolean result = CommandLine.processStandardCommands(
-                    foundArgs,
-                    functions);
+                String[] foundArgs = found.toArray(new String[0]);
+                LOGGER.info("Got args: " + Arrays.toString(foundArgs));
 
-            if (result) {
-                return "Execution succeeded.";
-            } else {
+                // execute command
+                boolean result = CommandLine.processStandardCommands(
+                        foundArgs,
+                        functions);
+
+                if (result) {
+                    return "Execution succeeded.";
+                } else {
+                    return "Execution failed.";
+                }
+            } catch (Exception ex) {
+                LOGGER.error("Unexpected exception processing SQS message: " + cmd, ex);
                 return "Execution failed.";
             }
-        } catch (Exception ex) {
-            LOGGER.error("Unexpected exception processing SQS message: " + cmd, ex);
-            return "Execution failed.";
         }
     }
 }
