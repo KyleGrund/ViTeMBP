@@ -135,7 +135,7 @@ class UuidStringStoreGZip implements UuidStringStore {
     }
 
     @Override
-    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
+    public void removeCaptureDescription(UUID toRemove) throws IOException {
         this.store.removeCaptureDescription(toRemove);
     }
 }

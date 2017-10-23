@@ -328,11 +328,11 @@ class UuidStringStoreH2 implements UuidStringStore {
     }
     
     @Override
-    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {        
+    public void removeCaptureDescription(UUID toRemove) throws IOException {        
         // build query to delete the data for the capture at UUID location
         StringBuilder query = new StringBuilder();
         query.append("DELETE FROM CAPTURES WHERE LOCATION='");
-        query.append(toRemove.getLocation().toString());
+        query.append(toRemove.toString());
         query.append("'");
         
         try {

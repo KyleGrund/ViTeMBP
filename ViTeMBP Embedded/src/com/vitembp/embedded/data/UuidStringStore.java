@@ -63,11 +63,11 @@ interface UuidStringStore {
     
     /**
      * Removes a description of a capture in the store.
-     * @param toRemove The capture to remove.
+     * @param location The location of the capture to remove.
      * @throws IOException If an exception occurs while removing the UUID to the
      * list of captures in the persistent store.
      */
-    public abstract void removeCaptureDescription(CaptureDescription toRemove) throws IOException;
+    public abstract void removeCaptureDescription(UUID location) throws IOException;
     
     /**
      * Returns a boolean description of a capture in the store.

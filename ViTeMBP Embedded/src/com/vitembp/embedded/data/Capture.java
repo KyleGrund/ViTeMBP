@@ -44,6 +44,11 @@ public abstract class Capture {
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
     
     /**
+     * The callback which deletes this capture.
+     */
+    private final RunnableIOException deleteCallback;
+    
+    /**
      * The time this capture was created.
      */
     private Instant createdTime = Instant.now();
@@ -65,8 +70,12 @@ public abstract class Capture {
     
     /**
      * Initializes a new instance of the Capture class.
+     * @param deleteCallback The callback which deletes this capture.
      */
-    Capture() {
+    Capture(RunnableIOException deleteCallback) {
+        // save params
+        this.deleteCallback = deleteCallback;
+        
         // default to 29.9Hz, the standard us video frame rate
         this.sampleFrequency = 29.9;
         
@@ -76,9 +85,12 @@ public abstract class Capture {
     
     /**
      * Initializes a new instance of the Capture class.
+     * @param deleteCallback The callback which deletes this capture.
      * @param sampleFrequency The frequency at which samples were taken.
      */
-    Capture(double sampleFrequency) {
+    Capture(RunnableIOException deleteCallback, double sampleFrequency) {
+        // save params
+        this.deleteCallback = deleteCallback;
         this.sampleFrequency = sampleFrequency;
         
         // calculate the update interval from the sample frequency
@@ -138,10 +150,19 @@ public abstract class Capture {
     public abstract void load() throws IOException;
     
     /**
+     * Deletes this capture session's data from persistent storage.
+     * @throws java.io.IOException If an IO exception occurs while loading data.
+     */
+    protected abstract void deleteData() throws IOException;
+    
+    /**
      * Deletes this capture session from persistent storage.
      * @throws java.io.IOException If an IO exception occurs while loading data.
      */
-    public abstract void delete() throws IOException;
+    public void delete() throws IOException {
+        this.deleteData();
+        this.deleteCallback.run();
+    }
     
     /**
      * Reads in samples from an XMLStreamReader.

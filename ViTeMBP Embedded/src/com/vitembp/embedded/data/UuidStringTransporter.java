@@ -208,7 +208,7 @@ public class UuidStringTransporter {
                         LOGGER.debug("Synced capture description: " + desc.getLocation().toString());
                     } else if (this.deleteAfterTransfer) {
                         // was in destination, and set to delete after transfer
-                        this.from.removeCaptureDescription(desc);
+                        this.from.removeCaptureDescription(desc.getLocation());
                         LOGGER.debug("Deleted capture description: " + desc.getLocation().toString());
                     }
                 }

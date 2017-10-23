@@ -26,6 +26,7 @@ import com.amazonaws.services.dynamodbv2.model.DeleteItemResult;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
+import com.amazonaws.services.dynamodbv2.model.ReturnItemCollectionMetrics;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.vitembp.embedded.configuration.SystemConfig;
@@ -170,7 +171,10 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
         Map<String, AttributeValue> reqkey = new HashMap<>();
         reqkey.put("ID", new AttributeValue().withS(key.toString()));
         
-        DeleteItemRequest request = new DeleteItemRequest().withTableName("DATA").withKey(reqkey);
+        DeleteItemRequest request = new DeleteItemRequest()
+                .withTableName("DATA")
+                .withKey(reqkey)
+                .withReturnItemCollectionMetrics(ReturnItemCollectionMetrics.SIZE);
         
         DeleteItemResult result = client.deleteItem(request);
     }
@@ -211,9 +215,9 @@ class UuidStringStoreDynamoDB implements UuidStringStore {
     }
 
     @Override
-    public void removeCaptureDescription(CaptureDescription toRemove) throws IOException {
+    public void removeCaptureDescription(UUID location) throws IOException {
         Map<String, AttributeValue> attrs = new HashMap<>();
-        attrs.put("LOCATION", new AttributeValue(toRemove.getLocation().toString()));
+        attrs.put("LOCATION", new AttributeValue(location.toString()));
         DeleteItemRequest request = new DeleteItemRequest().withTableName("CAPTURES").withKey(attrs);
         DeleteItemResult result = client.deleteItem(request);
     }

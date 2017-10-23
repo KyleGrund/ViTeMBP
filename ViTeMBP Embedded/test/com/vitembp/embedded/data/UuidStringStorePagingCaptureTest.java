@@ -81,7 +81,8 @@ public class UuidStringStorePagingCaptureTest {
     private UuidStringStorePagingCapture buildCapture() throws InstantiationException {
         double frequency = 29.9;
         UuidStringStore memStore = UuidStringStoreFactory.build(CaptureTypes.InMemory);
-        UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
+        UUID loc = UUID.randomUUID();
+        UuidStringLocation store = new UuidStringLocation(memStore, loc);
         // model one page every 10sec
         int pageSize = 299;
         // build a map of sensor types for the capture
@@ -89,7 +90,12 @@ public class UuidStringStorePagingCaptureTest {
         nameToIds.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         
-        return new UuidStringStorePagingCapture(frequency, store, pageSize, nameToIds);
+        return new UuidStringStorePagingCapture(
+                () -> memStore.removeCaptureDescription(loc),
+                frequency,
+                store,
+                pageSize,
+                nameToIds);
     }
     
     /**
@@ -168,7 +174,8 @@ public class UuidStringStorePagingCaptureTest {
         System.out.println("load");
         double frequency = 29.9;
         UuidStringStore memStore = UuidStringStoreFactory.build(CaptureTypes.InMemory);
-        UuidStringLocation store = new UuidStringLocation(memStore, UUID.randomUUID());
+        UUID loc = UUID.randomUUID();
+        UuidStringLocation store = new UuidStringLocation(memStore, loc);
         // model one page every 10sec
         int pageSize = 299;
         // build a map of sensor types for the capture
@@ -176,11 +183,18 @@ public class UuidStringStorePagingCaptureTest {
         nameToIds.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         
-        UuidStringStorePagingCapture instance = new UuidStringStorePagingCapture(frequency, store, pageSize, nameToIds);
+        UuidStringStorePagingCapture instance = new UuidStringStorePagingCapture(
+                () -> memStore.removeCaptureDescription(loc),
+                frequency, store, pageSize, nameToIds);
         List<Map<String, String>> addedData = this.seedData(instance, 3000);
         instance.save();
         
-        instance = new UuidStringStorePagingCapture(frequency, store, pageSize, nameToIds);
+        instance = new UuidStringStorePagingCapture(
+                () -> memStore.removeCaptureDescription(loc),
+                frequency,
+                store,
+                pageSize,
+                nameToIds);
         assertEquals(0, instance.getSampleCount());
         
         instance.load();

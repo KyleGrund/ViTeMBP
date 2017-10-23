@@ -69,8 +69,8 @@ class UuidStringStoreCapture extends Capture {
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    UuidStringStoreCapture(double frequency, UuidStringLocation store, Map<String, UUID> nameToIds) {
-        super(frequency);
+    UuidStringStoreCapture(RunnableIOException deleteCallback, double frequency, UuidStringLocation store, Map<String, UUID> nameToIds) {
+        super(deleteCallback, frequency);
         
         // save refrences to parameters        
         this.store = store;
@@ -100,7 +100,7 @@ class UuidStringStoreCapture extends Capture {
     }
     
     @Override
-    public void delete() throws IOException {
+    public void deleteData() throws IOException {
         this.store.delete();
     }
 

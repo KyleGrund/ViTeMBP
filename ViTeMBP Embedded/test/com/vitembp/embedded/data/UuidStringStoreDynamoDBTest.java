@@ -258,6 +258,7 @@ public class UuidStringStoreDynamoDBTest {
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
         Capture toAdd = new UuidStringStoreCapture(
+                () -> instance.removeCaptureDescription(locationID),
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
@@ -280,6 +281,7 @@ public class UuidStringStoreDynamoDBTest {
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
         Capture toAdd = new UuidStringStoreCapture(
+                () -> instance.removeCaptureDescription(locationID),
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
@@ -294,7 +296,7 @@ public class UuidStringStoreDynamoDBTest {
         assertNotNull(added);
         
         // remove it
-        instance.removeCaptureDescription(added);
+        instance.removeCaptureDescription(added.getLocation());
         
         // ensure it was removed
         assertFalse(instance.getCaptureLocations().anyMatch((cap) -> cap.getLocation().equals(locationID)));
@@ -313,6 +315,7 @@ public class UuidStringStoreDynamoDBTest {
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
         Capture toAdd = new UuidStringStoreCapture(
+                () -> instance.removeCaptureDescription(locationID),
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);

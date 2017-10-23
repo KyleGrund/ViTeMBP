@@ -113,8 +113,13 @@ public class UuidStringStoreCaptureTest {
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         UuidStringStore toTest = UuidStringStoreFactory.build(CaptureTypes.InMemory);
-        UuidStringLocation hashMapStore = new UuidStringLocation(toTest, UUID.randomUUID());
-        UuidStringStoreCapture instance = new UuidStringStoreCapture(29.97, hashMapStore, sensorTypes);
+        UUID loc = UUID.randomUUID();
+        UuidStringLocation hashMapStore = new UuidStringLocation(toTest, loc);
+        UuidStringStoreCapture instance = new UuidStringStoreCapture(
+                () -> toTest.removeCaptureDescription(loc),
+                29.97,
+                hashMapStore,
+                sensorTypes);
         this.data.forEach(instance::addSample);
         return instance;
     }

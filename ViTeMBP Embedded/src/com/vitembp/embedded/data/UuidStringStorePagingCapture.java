@@ -81,8 +81,8 @@ class UuidStringStorePagingCapture extends Capture {
      * @param nameToIds A map of sensor names to type UUIDs.
      * in the store.
      */
-    UuidStringStorePagingCapture(double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
-        super(frequency);
+    UuidStringStorePagingCapture(RunnableIOException deleteCallback, double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
+        super(deleteCallback, frequency);
         
         // save refrences to parameters        
         this.names = new HashSet<>(nameToIds.keySet());
@@ -98,7 +98,9 @@ class UuidStringStorePagingCapture extends Capture {
      * @param store The persistent storage this instance uses.
      * @param nameToIds A map of sensor names to type UUIDs.
      */
-    UuidStringStorePagingCapture(UuidStringLocation store) throws IOException {
+    UuidStringStorePagingCapture(RunnableIOException deleteCallback, UuidStringLocation store) throws IOException {
+        super(deleteCallback);
+        
         // save refrences to parameters        
         this.store = store;
         
@@ -187,7 +189,7 @@ class UuidStringStorePagingCapture extends Capture {
     }
 
     @Override
-    public void delete() throws IOException {
+    public void deleteData() throws IOException {
         this.manager.delete();
         this.store.delete();
     }

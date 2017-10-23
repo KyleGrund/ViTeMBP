@@ -39,15 +39,18 @@ public class CaptureFactory {
         switch (type) { 
             case InMemory:
                 UuidStringStore inMemory = UuidStringStoreFactory.build(CaptureTypes.InMemory);
-                UuidStringLocation hashMapStore = new UuidStringLocation(inMemory, UUID.randomUUID());
-                return new UuidStringStoreCapture(frequency, hashMapStore, nameToIds);
+                UUID locationID = UUID.randomUUID();
+                UuidStringLocation hashMapStore = new UuidStringLocation(inMemory, locationID);
+                RunnableIOException delCallback = () -> inMemory.removeCaptureDescription(locationID);
+                return new UuidStringStoreCapture(delCallback, frequency, hashMapStore, nameToIds);
             case EmbeddedH2:
                 try {
                     UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
-                    UUID locationID = UUID.randomUUID();
-                    UuidStringLocation location = new UuidStringLocation(h2Store, locationID);
-                    Capture toReturn = new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
-                    h2Store.addCaptureDescription(new CaptureDescription(toReturn, locationID));
+                    UUID h2LocationID = UUID.randomUUID();
+                    UuidStringLocation location = new UuidStringLocation(h2Store, h2LocationID);
+                    RunnableIOException delH2 = () -> h2Store.removeCaptureDescription(h2LocationID);
+                    Capture toReturn = new UuidStringStorePagingCapture(delH2, frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    h2Store.addCaptureDescription(new CaptureDescription(toReturn, h2LocationID));
                     return toReturn;
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
@@ -55,10 +58,11 @@ public class CaptureFactory {
             case AmazonDynamoDB:
                 try {
                     UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
-                    UUID locationID = UUID.randomUUID();
-                    UuidStringLocation location = new UuidStringLocation(ddbStore, locationID);
-                    Capture toReturn = new UuidStringStorePagingCapture(frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
-                    ddbStore.addCaptureDescription(new CaptureDescription(toReturn, locationID));
+                    UUID adbLocationID = UUID.randomUUID();
+                    UuidStringLocation location = new UuidStringLocation(ddbStore, adbLocationID);
+                    RunnableIOException delAdb = () -> ddbStore.removeCaptureDescription(adbLocationID);
+                    Capture toReturn = new UuidStringStorePagingCapture(delAdb, frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    ddbStore.addCaptureDescription(new CaptureDescription(toReturn, adbLocationID));
                     return toReturn;
                 } catch (IOException ex) {
                     throw new InstantiationException("Could not create new capture location. " + ex.getLocalizedMessage());
@@ -81,7 +85,9 @@ public class CaptureFactory {
                     UuidStringStore h2Store = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
                     List<Capture> toReturn = new ArrayList<>();
                     for (UUID id : (Iterable<UUID>)h2Store.getCaptureLocations().map((c) -> c.getLocation())::iterator) {
-                        toReturn.add(new UuidStringStorePagingCapture(new UuidStringLocation(h2Store, id)));
+                        toReturn.add( new UuidStringStorePagingCapture(
+                                () -> h2Store.removeCaptureDescription(id),
+                                new UuidStringLocation(h2Store, id)));
                     }
                     return toReturn;
                 } catch (IOException ex) {
@@ -92,7 +98,9 @@ public class CaptureFactory {
                     UuidStringStore ddbStore = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
                     List<Capture> toReturn = new ArrayList<>();
                     for (UUID id : (Iterable<UUID>)ddbStore.getCaptureLocations().map((c) -> c.getLocation())::iterator) {
-                        toReturn.add(new UuidStringStorePagingCapture(new UuidStringLocation(ddbStore, id)));
+                        toReturn.add(new UuidStringStorePagingCapture(
+                                () -> ddbStore.removeCaptureDescription(id),
+                                new UuidStringLocation(ddbStore, id)));
                     }
                     return toReturn;
                 } catch (IOException ex) {

@@ -185,7 +185,7 @@ class SamplePageManager {
         // reached
         SamplePage currentPage = firstPage;
         SamplePage finalPage = lastPage;
-        while (currentPage != finalPage) {
+        while (!currentPage.getNextPageLocation().equals(finalPage.getNextPageLocation())) {
             SamplePage next = currentPage.getNextPage();
             currentPage.delete();
             currentPage = next;

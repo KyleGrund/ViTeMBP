@@ -206,7 +206,12 @@ public class UuidStringStoreH2Test {
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
-        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
+        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(
+                () -> instance.removeCaptureDescription(id),
+                29.9,
+                loc,
+                299,
+                new HashMap<>());
         instance.addCaptureDescription(new CaptureDescription(usspc, id));
         assertTrue(instance.getCaptureLocations().anyMatch((uid) -> id.equals(uid.getLocation())));
     }
@@ -220,7 +225,12 @@ public class UuidStringStoreH2Test {
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
-        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
+        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(
+                () -> instance.removeCaptureDescription(id),
+                29.9,
+                loc,
+                299,
+                new HashMap<>());
         instance.addCaptureDescription(new CaptureDescription(usspc, id));
     }
 
@@ -233,7 +243,12 @@ public class UuidStringStoreH2Test {
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.EmbeddedH2);
         UUID id = UUID.randomUUID();
         UuidStringLocation loc = new UuidStringLocation(instance, id);
-        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(29.9, loc, 299, new HashMap<>());
+        UuidStringStorePagingCapture usspc = new UuidStringStorePagingCapture(
+                () -> instance.removeCaptureDescription(id),
+                29.9,
+                loc,
+                299,
+                new HashMap<>());
         instance.addCaptureDescription(new CaptureDescription(usspc, id));
         List<UUID> locations = new ArrayList<>();
         instance.getCaptureLocations().map((d) -> d.getLocation()).forEach(locations::add);
@@ -254,6 +269,7 @@ public class UuidStringStoreH2Test {
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
         Capture toAdd = new UuidStringStoreCapture(
+                () -> instance.removeCaptureDescription(locationID),
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
@@ -275,6 +291,7 @@ public class UuidStringStoreH2Test {
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
         Capture toAdd = new UuidStringStoreCapture(
+                () -> instance.removeCaptureDescription(locationID),
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
@@ -289,7 +306,7 @@ public class UuidStringStoreH2Test {
         assertNotNull(added);
         
         // remove it
-        instance.removeCaptureDescription(added);
+        instance.removeCaptureDescription(added.getLocation());
         
         // ensure it was removed
         assertFalse(instance.getCaptureLocations().anyMatch((cap) -> cap.getLocation().equals(locationID)));
@@ -308,6 +325,7 @@ public class UuidStringStoreH2Test {
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
         Capture toAdd = new UuidStringStoreCapture(
+                () -> instance.removeCaptureDescription(locationID),
                 freq,
                 new UuidStringLocation(instance, locationID),
                 names);
