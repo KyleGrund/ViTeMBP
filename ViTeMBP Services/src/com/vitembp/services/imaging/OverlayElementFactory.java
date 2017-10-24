@@ -78,7 +78,7 @@ class OverlayElementFactory {
                                 .findFirst()
                                 .get();
                 Sensor rightBinding = sensors.stream()
-                                .filter((s) -> s.getName().equals(left.getName()))
+                                .filter((s) -> s.getName().equals(right.getName()))
                                 .findFirst()
                                 .get();
                 

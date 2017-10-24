@@ -17,16 +17,14 @@
  */
 package com.vitembp.services;
 
-import com.vitembp.embedded.data.Capture;
-import com.vitembp.embedded.data.CaptureFactory;
-import com.vitembp.embedded.data.CaptureTypes;
+import com.vitembp.services.data.CaptureCalculations;
+import com.vitembp.services.data.CaptureOperations;
 import com.vitembp.services.video.Processing;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -104,23 +102,25 @@ public final class ApiFunctions {
         Processing.processVideo(capture, videoFile, detinationBucket, destinationFilename);
     }
     
+    /**
+     * Deletes a capture and all of its associated data and index entries.
+     * @param toDelete The UUID of the capture to delete.
+     * @return A message indicating the disposition of the request.
+     * @throws IOException If there is an error deleting form the data store.
+     */
     public String deleteCapture(UUID toDelete) throws IOException {
-        // get the capture to delete from the database
-        Capture toProcess;
-        try {
-            Stream<Capture> allCaptures = java.util.stream.StreamSupport.stream(
-                    CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB).spliterator(),
-                    false);
-            toProcess = allCaptures.filter((Capture c) -> c.getId().equals(toDelete)).findFirst().get();
-        } catch (InstantiationException ex) {
-            throw new IOException("Could not read captures from database.", ex);
-        }
-
-        // delete the capture
-        toProcess.delete();
-        
-        return "Capture successfully deleted.";
-}
+        return CaptureOperations.delete(toDelete);
+    }
+    
+    /**
+     * Builds and returns summary data for the capture.
+     * @param toSummarize The UUID of the capture to summarize.
+     * @return A JSON string of summary data.
+     * @throws IOException If there is an error reading from the data store.
+     */
+    public String summarizeCapture(UUID toSummarize) throws IOException {
+        return CaptureCalculations.getSummaryData(toSummarize);
+    }
     
     /**
      * Returns a set of hashes of database entries to use when syncing.

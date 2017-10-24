@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -44,7 +42,20 @@ public class SQSTarget {
     public static String parseCommand(String cmd, ApiFunctions functions) {
         LOGGER.info("Processing SQS message: " + cmd);
         
-        if (cmd.toUpperCase().startsWith("DELETE")) {
+        if (cmd.toUpperCase().startsWith("CAPTURESUMMARY")) {
+            if (cmd.length() != 51) {
+                return "Capture summary command must be of form: \"capturesummary [capture uuid]\".";
+            }
+            
+            UUID toDelete = UUID.fromString(cmd.substring(15));
+            
+            try {
+                return functions.summarizeCapture(toDelete);
+            } catch (Exception ex) {
+                LOGGER.error("Exception while summarizing capture.", ex);
+                return "Could not summarize capture.";
+            }
+        } else if (cmd.toUpperCase().startsWith("DELETE")) {
             if (cmd.length() != 43) {
                 return "Delete command must be of form: \"delete [capture uuid]\".";
             }
@@ -53,8 +64,8 @@ public class SQSTarget {
             
             try {
                 return functions.deleteCapture(toDelete);
-            } catch (IOException ex) {
-                LOGGER.error("IOException while deleting capture.", ex);
+            } catch (Exception ex) {
+                LOGGER.error("Exception while deleting capture.", ex);
                 return "Could not delete capture.";
             }
         } else {
