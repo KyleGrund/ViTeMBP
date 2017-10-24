@@ -162,8 +162,6 @@ public class AmazonSQSControl {
                 // check for new commands
                 ReceiveMessageResult result = sqsClient.receiveMessage(queueUrl);
 
-                LOGGER.info("Processing messages from SQS device queue.");
-
                 // process commands
                 result.getMessages().forEach((msg) -> {
                     // get message text

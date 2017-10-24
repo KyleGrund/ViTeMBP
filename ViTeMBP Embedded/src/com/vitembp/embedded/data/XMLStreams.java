@@ -60,6 +60,7 @@ public class XMLStreams {
      */
     public static String readElement(String name, XMLStreamReader toReadFrom) throws XMLStreamException {
         // check starting element
+        String readName = toReadFrom.getLocalName();
         if (toReadFrom.getEventType()!= XMLStreamConstants.START_ELEMENT || !name.equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected <" + name + "> not found.", toReadFrom.getLocation());
         }

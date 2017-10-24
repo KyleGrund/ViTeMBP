@@ -181,7 +181,10 @@ class UuidStringStorePagingCapture extends Capture {
         // is none we can just go with defaults as this is a new page
         if (savedData != null && !"".equals(savedData)) {
             try {
-                this.readFrom(XMLStreams.createReader(savedData), (sensors) -> { this.types = sensors; });
+                this.readFrom(XMLStreams.createReader(savedData), (sensors) -> {
+                    this.types = sensors;
+                    this.names = sensors.keySet();
+                });
             } catch (XMLStreamException ex) {
                 throw new IOException("XMLStreamException occured reading capture from persistnat storage.", ex);
             }
@@ -214,7 +217,7 @@ class UuidStringStorePagingCapture extends Capture {
     }
 
     @Override
-    protected int getSampleCount() {
+    public int getSampleCount() {
         // if the manager hasn't been created it indicates no samples added yet
         if (manager == null) {
             return 0;

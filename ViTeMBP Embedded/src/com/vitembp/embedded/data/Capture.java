@@ -115,7 +115,7 @@ public abstract class Capture {
      * Gets the number of samples in the capture.
      * @return The number of samples in the capture.
      */
-    protected abstract int getSampleCount();
+    public abstract int getSampleCount();
     
     /**
      * Adds a new sample to the sample set.

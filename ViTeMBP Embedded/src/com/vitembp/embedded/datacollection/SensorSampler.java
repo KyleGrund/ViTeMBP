@@ -101,17 +101,16 @@ public class SensorSampler {
      */
     private void collectData() {
         // hashmap for storing data
-        HashMap<String, String> data = new HashMap<>();
         HashMap<String, String> skippedData = new HashMap<>();
         
         // calculate the start time of the next data collection interval
         Long nextStart = System.nanoTime() + this.nanoSecondInterval;
-        Long toWait = 0l;
+        Long toWait;
         
         // collect data
         while (this.isRunning) {            
             // take data
-            data.clear();
+            HashMap<String, String> data = new HashMap<>();
             this.sensors.forEach((sensorName, sensor) -> {
                 String sample;
                 if (sensor != null) {

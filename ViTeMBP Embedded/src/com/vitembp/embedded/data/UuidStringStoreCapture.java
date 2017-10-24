@@ -145,7 +145,7 @@ class UuidStringStoreCapture extends Capture {
     }
 
     @Override
-    protected int getSampleCount() {
+    public int getSampleCount() {
         return this.samples.size();
     }
 

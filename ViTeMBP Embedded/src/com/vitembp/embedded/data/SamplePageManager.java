@@ -40,7 +40,7 @@ class SamplePageManager {
     /**
      * The number of samples for each page to hold.
      */
-    private final int pageSize;
+    private int pageSize;
     
     /**
      * The location to read and write this instance to.
@@ -211,6 +211,10 @@ class SamplePageManager {
         toWriteTo.writeStartElement("lastpagelocation");
         toWriteTo.writeCharacters(this.lastPageLocation.toString());
         toWriteTo.writeEndElement();
+        
+        toWriteTo.writeStartElement("pagesize");
+        toWriteTo.writeCharacters(Integer.toString(this.pageSize));
+        toWriteTo.writeEndElement();
     }
     
     /**
@@ -225,7 +229,9 @@ class SamplePageManager {
         UUID firstLocation = UUID.fromString(XMLStreams.readElement("firstpagelocation", toReadFrom));
         // read in value for this.lastPageLocation
         UUID lastLocation = UUID.fromString(XMLStreams.readElement("lastpagelocation", toReadFrom));
-        
+        // read in page size
+        this.pageSize = Integer.parseInt(XMLStreams.readElement("pagesize", toReadFrom));
+                
         // load the first page
         SamplePage newFirstPage = new SamplePage(
                 this.store.getNewLocation(firstLocation),
