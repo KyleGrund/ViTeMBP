@@ -138,39 +138,35 @@ public class RotaryEncoderEAW0J extends Sensor {
     public Calibrator getCalibrator() {
         List<String> userPrompts = Arrays.asList(new String[] {
             "To calibrate the far point of the rotary sensor, place the " + 
-                    "sensor at the furthest point of travel.",
+                    "sensor at the furthest point of travel and then click " +
+                    "next while it is at that point.",
             "To calibrate the near point of the rotary sensor, place the " + 
-                    "sensor at the closest point of travel."
+                    "sensor at the closest point of travel and then click " +
+                    "next while it is at that point."
         });
         
         // these will hold maximum values of the data readings
-        final Map<String, Float> value = new HashMap<>();
-        value.put("maximum", Float.MIN_VALUE);
-        value.put("minimum", Float.MAX_VALUE);
+        final Map<String, Integer> value = new HashMap<>();
+        value.put("far", Integer.MIN_VALUE);
+        value.put("near", Integer.MIN_VALUE);
         
         // build up the data consumers
         List<Consumer<String>> sampleConsumers = new ArrayList<>();
         sampleConsumers.add(
             (String s) -> {
-               // parse value
-               int x = Integer.parseInt(s);
-               
-               // update maximum values
-               value.put("maximum", Float.max(value.get("maximum"), x));
+               // update to latest value
+               value.put("far", Integer.parseInt(s));
             });
         sampleConsumers.add(
             (String s) -> {
-               // parse value
-               int x = Integer.parseInt(s);
-               
-               // update minimum values
-               value.put("minimum", Float.max(value.get("minimum"), x));
+               // update to latest value
+               value.put("near", Integer.parseInt(s));
             });
         
         // formats and returns the calibration data
         Supplier<String> getDataCallback = () -> {
-            return "(" + Float.toString(value.get("minimum")) + "," +
-                    Float.toString(value.get("maximum")) + ")";
+            return "(" + Integer.toString(value.get("near")) + "," +
+                    Integer.toString(value.get("far")) + ")";
         };
         
         // return the calibrator

@@ -17,20 +17,27 @@
  */
 package com.vitembp.embedded.gui800x480;
 
-import com.vitembp.embedded.configuration.SystemConfig;
+import com.vitembp.embedded.hardware.Calibrator;
+import com.vitembp.embedded.hardware.HardwareInterface;
 
 /**
- *
- * @author kgrund
+ * The sensors menu interface.
  */
 public class SensorsMenu extends javax.swing.JDialog {
-
+    /**
+     * The calibrator that is currently being used.
+     */
+    private Calibrator sensorCalibator;
+    
     /**
      * Creates new form CaptureStatus
      */
     public SensorsMenu(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        // add all sensor names to the list
+        HardwareInterface.getInterface().getSensors().keySet().forEach(this.jComboBoxSensorList::addItem);
     }
 
     /**
@@ -48,12 +55,12 @@ public class SensorsMenu extends javax.swing.JDialog {
         networkingButton = new javax.swing.JButton();
         optionsButton = new javax.swing.JButton();
         jPanelSystemID = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        captureStatusButton1 = new javax.swing.JButton();
+        jComboBoxSensorList = new javax.swing.JComboBox<>();
+        calibrateSensorButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
+        jButtonNextStep = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextAreaCalMessage = new javax.swing.JTextArea();
         jPanelSystemID1 = new javax.swing.JPanel();
         jComboBoxBindings = new javax.swing.JComboBox<>();
         jComboBoxBindings1 = new javax.swing.JComboBox<>();
@@ -66,7 +73,6 @@ public class SensorsMenu extends javax.swing.JDialog {
         setMinimumSize(new java.awt.Dimension(800, 480));
         setName("captureStatus"); // NOI18N
         setUndecorated(true);
-        setPreferredSize(new java.awt.Dimension(800, 480));
         setSize(new java.awt.Dimension(800, 480));
 
         jPanelNavBar.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
@@ -117,30 +123,34 @@ public class SensorsMenu extends javax.swing.JDialog {
         jPanelSystemID.setMinimumSize(new java.awt.Dimension(800, 200));
         jPanelSystemID.setPreferredSize(new java.awt.Dimension(800, 201));
 
-        jComboBox1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBoxSensorList.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
 
-        captureStatusButton1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        captureStatusButton1.setText("Calibrate Sensor");
-        captureStatusButton1.setMaximumSize(new java.awt.Dimension(193, 50));
-        captureStatusButton1.setMinimumSize(new java.awt.Dimension(193, 50));
-        captureStatusButton1.setPreferredSize(new java.awt.Dimension(193, 50));
-        captureStatusButton1.addActionListener(new java.awt.event.ActionListener() {
+        calibrateSensorButton.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        calibrateSensorButton.setText("Calibrate Sensor");
+        calibrateSensorButton.setMaximumSize(new java.awt.Dimension(193, 50));
+        calibrateSensorButton.setMinimumSize(new java.awt.Dimension(193, 50));
+        calibrateSensorButton.setPreferredSize(new java.awt.Dimension(193, 50));
+        calibrateSensorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                captureStatusButton1ActionPerformed(evt);
+                calibrateSensorButtonActionPerformed(evt);
             }
         });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Calibration"));
 
-        jButton1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jButton1.setText("Next Step");
-        jButton1.setEnabled(false);
+        jButtonNextStep.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jButtonNextStep.setText("Next Step");
+        jButtonNextStep.setEnabled(false);
+        jButtonNextStep.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonNextStepActionPerformed(evt);
+            }
+        });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setText("Click 'Calibrate Sensor' button to being calibrating the selected sensor.");
-        jScrollPane1.setViewportView(jTextArea1);
+        jTextAreaCalMessage.setColumns(20);
+        jTextAreaCalMessage.setRows(5);
+        jTextAreaCalMessage.setText("Click 'Calibrate Sensor' button to being calibrating the selected sensor.");
+        jScrollPane1.setViewportView(jTextAreaCalMessage);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -150,9 +160,9 @@ public class SensorsMenu extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jButtonNextStep, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -160,7 +170,7 @@ public class SensorsMenu extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1))
+                .addComponent(jButtonNextStep))
         );
 
         javax.swing.GroupLayout jPanelSystemIDLayout = new javax.swing.GroupLayout(jPanelSystemID);
@@ -168,9 +178,9 @@ public class SensorsMenu extends javax.swing.JDialog {
         jPanelSystemIDLayout.setHorizontalGroup(
             jPanelSystemIDLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelSystemIDLayout.createSequentialGroup()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 519, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jComboBoxSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 519, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(captureStatusButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(calibrateSensorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -178,8 +188,8 @@ public class SensorsMenu extends javax.swing.JDialog {
             jPanelSystemIDLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelSystemIDLayout.createSequentialGroup()
                 .addGroup(jPanelSystemIDLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(captureStatusButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jComboBoxSensorList, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(calibrateSensorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -282,9 +292,20 @@ public class SensorsMenu extends javax.swing.JDialog {
         GUI.showCaptureControl();
     }//GEN-LAST:event_captureStatusButtonActionPerformed
 
-    private void captureStatusButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureStatusButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_captureStatusButton1ActionPerformed
+    private void calibrateSensorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calibrateSensorButtonActionPerformed
+        // disable start button to prevent restarts
+        this.calibrateSensorButton.setEnabled(false);
+        
+        // get the calibrator
+        String sensorName = this.jComboBoxSensorList.getSelectedItem().toString();
+        this.sensorCalibator = HardwareInterface.getInterface().getSensors().get(sensorName).getCalibrator();
+        
+        // enable the next button
+        this.jButtonNextStep.setEnabled(true);
+        
+        // show the cal text
+        showCalStep();
+    }//GEN-LAST:event_calibrateSensorButtonActionPerformed
 
     private void addBindingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBindingButtonActionPerformed
         // TODO add your handling code here:
@@ -297,6 +318,27 @@ public class SensorsMenu extends javax.swing.JDialog {
     private void optionsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_optionsButtonActionPerformed
         GUI.showOptionsControl();
     }//GEN-LAST:event_optionsButtonActionPerformed
+
+    private void jButtonNextStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonNextStepActionPerformed
+        // go to the next step
+        this.sensorCalibator.nextStep();
+        
+        // show calibration step
+        showCalStep();
+    }//GEN-LAST:event_jButtonNextStepActionPerformed
+
+    private void showCalStep() {
+        // if calibration is still running
+        if (this.sensorCalibator.isCalibrating()) {
+            // show current prompt
+            this.jTextAreaCalMessage.setText(this.sensorCalibator.getStepPrompt());
+        } else {
+            // show cal results and reset buttons enable state
+            this.jTextAreaCalMessage.setText(this.sensorCalibator.getCalibrationData());
+            this.jButtonNextStep.setEnabled(false);
+            this.calibrateSensorButton.setEnabled(true);
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -345,20 +387,20 @@ public class SensorsMenu extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBindingButton;
+    private javax.swing.JButton calibrateSensorButton;
     private javax.swing.JButton captureStatusButton;
-    private javax.swing.JButton captureStatusButton1;
     private javax.swing.JButton captureStatusButton3;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JButton jButtonNextStep;
     private javax.swing.JComboBox<String> jComboBoxBindings;
     private javax.swing.JComboBox<String> jComboBoxBindings1;
+    private javax.swing.JComboBox<String> jComboBoxSensorList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanelNavBar;
     private javax.swing.JPanel jPanelSystemID;
     private javax.swing.JPanel jPanelSystemID1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTextAreaCalMessage;
     private javax.swing.JButton networkingButton;
     private javax.swing.JButton optionsButton;
     private javax.swing.JButton sensorsSetupButton;

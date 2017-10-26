@@ -140,8 +140,9 @@ class CalibratorReducer extends Calibrator {
         this.currentStep++;
         if (!this.isCalibrating()) {
             this.sampler.stop();
+        } else {
+            this.currentSampleConsumer = this.readingConsumers.get(this.currentStep);
         }
-        this.currentSampleConsumer = this.readingConsumers.get(this.currentStep);
     }
     
     /**
