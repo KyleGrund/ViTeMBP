@@ -33,6 +33,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,9 +90,20 @@ public class AmazonSQSControl {
     private final Function<String, String> messageParser;
     
     /**
-     * Initializes a new instance of the AmazonSQSControl class.
+     * The number of threads to dispatch messages to.
      */
-    public AmazonSQSControl(String queueName, Function<String, String> msgParser) {
+    private final int threadCount;
+    
+    /**
+     * Initializes a new instance of the AmazonSQSControl class.
+     * @param queueName The name of the queue to connect to.
+     * @param msgParser The parser that handles messages.
+     * @param threads The number of message handling threads.
+     */
+    public AmazonSQSControl(String queueName, Function<String, String> msgParser, int threads) {
+        // save thread count
+        this.threadCount = threads;
+        
         // create client to use to communicate with sqs
         this.sqsClient = AmazonSQSClientBuilder.defaultClient();
         
@@ -149,51 +163,58 @@ public class AmazonSQSControl {
      * Processes messages from the device's SQS queue.
      */
     private void processMessages() {
-        int startErrorBackoff = 200;
-        int errorBackoff = startErrorBackoff;
-        float errorFactor = 2;
-        int errorMax = 5000;
-        while (isRunning) {
-            try {
-                // create the queue in this try-block so if the service starts
-                // when a connection is not available it will cleanly retry
-                this.createQueue();
-                
-                // check for new commands
-                ReceiveMessageResult result = sqsClient.receiveMessage(queueUrl);
+        ExecutorService executor = Executors.newFixedThreadPool(this.threadCount);
+        
+        // create processor threads
+        for (int i = 0; i < this.threadCount; i++) {
+            executor.submit(() -> {
+                int startErrorBackoff = 200;
+                int errorBackoff = startErrorBackoff;
+                float errorFactor = 2;
+                int errorMax = 5000;
 
-                // process commands
-                result.getMessages().forEach((msg) -> {
-                    // get message text
-                    String toProcess = msg.getBody();
+                while (isRunning) {
+                    try {
+                        // create the queue in this try-block so if the service starts
+                        // when a connection is not available it will cleanly retry
+                        this.createQueue();
 
-                    // remove message from queue
-                    this.sqsClient.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+                        // check for new commands
+                        ReceiveMessageResult result = sqsClient.receiveMessage(queueUrl);
 
-                    // process the message
-                    this.parseMessage(toProcess);
-                });
-                
-                // reset error backoff on success
-                errorBackoff = startErrorBackoff;
-            } catch (Exception e) {
-                LOGGER.error("Unexpected Exception processing SQS queue.", e);
-                
-                // wait for the backoff period to prevent retry flooding
-                try {
-                    LOGGER.error("Backing off for " + Integer.toString(errorBackoff) + "ms.");
-                    Thread.sleep(errorBackoff);
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Interrupted while waiting for backoff on SQS queue failure.", ex);
+                        // process commands
+                        result.getMessages().forEach((msg) -> {
+                            // get message text
+                            String toProcess = msg.getBody();
+
+                            // remove message from queue
+                            this.sqsClient.deleteMessage(this.queueUrl, msg.getReceiptHandle());
+
+                            // process the message
+                            this.parseMessage(toProcess);
+                        });
+
+                        // reset error backoff on success
+                        errorBackoff = startErrorBackoff;
+                    } catch (Exception e) {
+                        LOGGER.error("Unexpected Exception processing SQS queue.", e);
+
+                        // wait for the backoff period to prevent retry flooding
+                        try {
+                            LOGGER.error("Backing off for " + Integer.toString(errorBackoff) + "ms.");
+                            Thread.sleep(errorBackoff);
+                        } catch (InterruptedException ex) {
+                            LOGGER.error("Interrupted while waiting for backoff on SQS queue failure.", ex);
+                        }
+
+                        // increase backoff factor until it is at the max value
+                        errorBackoff *= errorFactor;
+                        if (errorBackoff > errorMax) {
+                            errorBackoff = errorMax;
+                        }
+                    }
                 }
-                
-                // increase backoff factor until it is at the max value
-                errorBackoff *= errorFactor;
-                if (errorBackoff > errorMax) {
-                    errorBackoff = errorMax;
-                }
-                
-            }
+            });
         }
     }
     

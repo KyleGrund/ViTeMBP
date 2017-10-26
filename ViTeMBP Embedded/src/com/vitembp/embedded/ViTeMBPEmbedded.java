@@ -52,6 +52,6 @@ public class ViTeMBPEmbedded {
         
         // start sqs message processor
         String queueName = "ViTeMBP-Device-" + SystemConfig.getConfig().getSystemUUID().toString();
-        new AmazonSQSControl(queueName, SQSTarget::parseUuidMessage).start();
+        new AmazonSQSControl(queueName, SQSTarget::parseUuidMessage, 1).start();
     }
 }
