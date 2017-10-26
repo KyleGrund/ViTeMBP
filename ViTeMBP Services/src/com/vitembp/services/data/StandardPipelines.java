@@ -133,7 +133,7 @@ public class StandardPipelines {
         
         return new Pipeline(toBuild);
     }
-
+    
     /**
      * Adds average elements to a pipeline being built for various sensor types.
      * @param sensor The sensor to add the average for.

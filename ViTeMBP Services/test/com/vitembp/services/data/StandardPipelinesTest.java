@@ -89,7 +89,7 @@ public class StandardPipelinesTest {
         }
         
         Function<Capture, Map<String, Object>> pipe = (cap) -> 
-                CaptureProcessor.process(cap, StandardPipelines.captureStatisticsPipeline(source, sensors));
+                CaptureProcessor.process(cap.getSamples(), StandardPipelines.captureStatisticsPipeline(source, sensors));
         Map<String, Object> results = pipe.apply(source);
         
         // get resutls collections

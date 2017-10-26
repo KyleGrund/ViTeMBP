@@ -123,6 +123,17 @@ public final class ApiFunctions {
     }
     
     /**
+     * Builds data for displaying graph of the sensor data.
+     * @param capture The capture to build data for.
+     * @param points The number of points to reduce the data to.
+     * @return The calculated data for graphing.
+     * @throws IOException If there is an error reading from the data store.
+     */
+    public String calculageGraphData(UUID capture, int points) throws IOException {
+        return CaptureCalculations.buildGraphDataForCapture(capture, points);
+    }
+    
+    /**
      * Returns a set of hashes of database entries to use when syncing.
      * @param toHash The entries to hash.
      * @return A Map of UUID keys to hash values.

@@ -21,7 +21,6 @@ import com.vitembp.embedded.interfaces.AmazonSQSControl;
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.config.ServicesConfig;
 import java.io.IOException;
-import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,7 +63,8 @@ public class ServiceControl {
             // create the SQS interface
             AmazonSQSControl sqs = new AmazonSQSControl(
                     name,
-                    (cmd) -> SQSTarget.parseCommand(cmd, functions));
+                    (cmd) -> SQSTarget.parseCommand(cmd, functions),
+                    4);
             sqs.start();
         } catch (Exception ex) {
             LOGGER.error("Unexpected exception starting SQS service.", ex);

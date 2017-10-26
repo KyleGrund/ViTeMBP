@@ -126,6 +126,9 @@ public class Processing {
     /**
      * Processes a video with a capture.
      * @param capture The capture containing data to overlay on the video.
+     * @param inputBucket The bucket to read the video from.
+     * @param outputBucket The bucket to store the output video in.
+     * @param videoKey The S3 key pointing to the file to process.
      * @throws java.io.IOException If there is an IOException processing the
      * video file.
      */
@@ -145,39 +148,39 @@ public class Processing {
         List<Integer> frames = Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(), ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT);
         
         if (frames.isEmpty()) {
-            throw new IOException("No sync frames detected.");
-        } else {
-            // create a temporary file for the output
-            Path localTempOutput = 
-                    Files.createTempFile(tempDir, null, videoFilename.toString());
-            localTempOutput.toFile().delete();
-            
-            // get the capture to process from the database
-            Capture toProcess;
-            try {
-                Stream<Capture> allCaptures = java.util.stream.StreamSupport.stream(
-                        CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB).spliterator(),
-                        false);
-                toProcess = allCaptures.filter((Capture c) -> c.getId().equals(capture)).findFirst().get();
-            } catch (InstantiationException ex) {
-                throw new IOException("Could not read captures from database.", ex);
-            }
-        
-            // build up the processing pipeline
-            Pipeline toTest;
-            try {
-                toTest = StandardPipelines.captureVideoOverlayPipeline(toProcess, localVideoSourcePath, localTempOutput, StandardOverlayDefinitions.getStandardFourQuadrant());
-            } catch (InstantiationException ex) {
-                LOGGER.error("Could not create overlay pipeline.", ex);
-                throw new IOException("Could not create overlay pipeline.", ex);
-            }
-        
-            // process the data
-            Map<String, Object> results = CaptureProcessor.processUntilFlush(toProcess, toTest, 75);
-            
-            // upload to the destination in the target S3 bucket.
-            destinationBucket.uploadPublic(localTempOutput.toFile(), videoKey);
+            LOGGER.warn("No sync frames detected, will sync to frame 0.");
+            frames.add(0);
         }
+        // create a temporary file for the output
+        Path localTempOutput = 
+                Files.createTempFile(tempDir, null, videoFilename.toString());
+        localTempOutput.toFile().delete();
+
+        // get the capture to process from the database
+        Capture toProcess;
+        try {
+            Stream<Capture> allCaptures = java.util.stream.StreamSupport.stream(
+                    CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB).spliterator(),
+                    false);
+            toProcess = allCaptures.filter((Capture c) -> c.getId().equals(capture)).findFirst().get();
+        } catch (InstantiationException ex) {
+            throw new IOException("Could not read captures from database.", ex);
+        }
+
+        // build up the processing pipeline
+        Pipeline toTest;
+        try {
+            toTest = StandardPipelines.captureVideoOverlayPipeline(toProcess, localVideoSourcePath, localTempOutput, StandardOverlayDefinitions.getStandardFourQuadrant());
+        } catch (InstantiationException ex) {
+            LOGGER.error("Could not create overlay pipeline.", ex);
+            throw new IOException("Could not create overlay pipeline.", ex);
+        }
+
+        // process the data
+        Map<String, Object> results = CaptureProcessor.processUntilFlush(toProcess, toTest, 75);
+
+        // upload to the destination in the target S3 bucket.
+        destinationBucket.uploadPublic(localTempOutput.toFile(), videoKey);
     }
 
     /**

@@ -18,9 +18,18 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.data.Sample;
+import com.vitembp.services.sensors.Sensor;
+import com.vitembp.services.sensors.SensorFactory;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Class containing calculations which can be performed on Captures.
@@ -65,5 +74,85 @@ public class CaptureCalculations {
         data.append("}");
         
         return data.toString();
+    }
+    
+    /**
+     * Calculates and returns summary information about the capture.
+     * @param captureLocation The location of the capture in the data store.
+     * @param points The number of points to reduce the data to.
+     * @return The summarized data about the capture.
+     * @throws java.io.IOException If an error occurs reading from data store.
+     */
+    public static String buildGraphDataForCapture(UUID captureLocation, int points) throws IOException {
+        // load the capture
+        Capture toProcess = CaptureOperations.getCaptureAtLocation(captureLocation);
+        
+        // build pipeline to get statistics
+        Pipeline statsPipe = StandardPipelines.captureStatisticsPipeline(
+                toProcess,
+                SensorFactory.getSensors(toProcess));
+        
+        // find number of samples per point
+        int samplesPerPoint = (int)Math.ceil(
+                ((double)toProcess.getSampleCount()) / ((double)points));
+        
+        // create maps for final results
+        List<Map<String, Double>> min = new ArrayList<>();
+        List<Map<String, Double>> max = new ArrayList<>();
+        List<Map<String, Double>> avg = new ArrayList<>();
+                
+        // step through data and calculate the results
+        Iterator<Sample> iter = toProcess.getSamples().iterator();
+        List<Sample> toProc = new ArrayList<>();
+        
+        while (iter.hasNext()) {
+            toProc.add(iter.next());
+            if (toProc.size() >= samplesPerPoint) {
+                Map<String, Object> stats = CaptureProcessor.process(toProc.stream(), statsPipe);
+                
+                // get specific results changing map key to sensor name
+                min.add(((Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING)).entrySet().stream()
+                        .collect(toMap(e -> e.getKey().getName(), Entry::getValue)));
+                max.add(((Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING)).entrySet().stream()
+                        .collect(toMap(e -> e.getKey().getName(), Entry::getValue)));
+                avg.add(((Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING)).entrySet().stream()
+                        .collect(toMap(e -> e.getKey().getName(), Entry::getValue)));
+                
+                // clear the Items
+                toProc.clear();
+            }
+        }
+        
+        // build return string
+        StringBuilder toReturn = new StringBuilder();
+        
+        Set<String> sensorNames = toProcess.getSensorNames();
+        
+        toReturn.append("[['index',");
+        
+        sensorNames.forEach((n) -> {
+            toReturn.append("'");
+            toReturn.append(n);
+            toReturn.append("',");
+        });
+        
+        toReturn.setCharAt(toReturn.length() - 1, ']');
+        toReturn.append(",");
+        
+        for (int i = 0; i < avg.size(); i++) {
+            Map<String, Double> pt = avg.get(i);
+            toReturn.append("[");
+            toReturn.append(i);
+            toReturn.append(",");
+            sensorNames.forEach(n -> {
+                toReturn.append(pt.get(n));
+                toReturn.append(",");
+            });
+            toReturn.setCharAt(toReturn.length() - 1, ']');
+            toReturn.append(",");
+        }
+        toReturn.setCharAt(toReturn.length() - 1, ']');
+        
+        return toReturn.toString();
     }
 }

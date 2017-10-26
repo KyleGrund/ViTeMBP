@@ -64,7 +64,7 @@ class FrameDataOverlayGeneratorElement implements PipelineElement {
         
         // calculate basic statistics for capture
         Pipeline statsPipe = StandardPipelines.captureStatisticsPipeline(toBuildFor, sensors);
-        Map<String, Object> stats = CaptureProcessor.process(toBuildFor, statsPipe);
+        Map<String, Object> stats = CaptureProcessor.process(toBuildFor.getSamples(), statsPipe);
         
         this.overlay = OverlayFactory.buildOverlay(
                 overlayDefinition,

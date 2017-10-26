@@ -85,7 +85,7 @@ public class CaptureProcessorTest {
         RotarySensor brakeSensor = (RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake"));
         pipe.add(new SampleMaxValueElement(brakeSensor::getPositionDegrees, "max pos", brakeSensor));
         
-        Map<String, Object> result = CaptureProcessor.process(source, new Pipeline(pipe));
+        Map<String, Object> result = CaptureProcessor.process(source.getSamples(), new Pipeline(pipe));
         
         assertEquals(128L, (long)result.get("count"));
         assertEquals(365d, (double)((Map<Sensor, Double>)result.get("max pos")).get(brakeSensor), 0.001);

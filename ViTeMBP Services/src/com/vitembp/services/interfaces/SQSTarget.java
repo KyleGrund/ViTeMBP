@@ -18,7 +18,6 @@
 package com.vitembp.services.interfaces;
 
 import com.vitembp.services.ApiFunctions;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +41,21 @@ public class SQSTarget {
     public static String parseCommand(String cmd, ApiFunctions functions) {
         LOGGER.info("Processing SQS message: " + cmd);
         
-        if (cmd.toUpperCase().startsWith("CAPTURESUMMARY")) {
+        if (cmd.toUpperCase().startsWith("CAPTUREGRAPHDATA")) {
+            if (cmd.length() != 53) {
+                return "Capture summary command must be of form: \"capturesummary [capture uuid]\".";
+            }
+            
+            UUID capture = UUID.fromString(cmd.substring(17));
+            
+            try {
+                return functions.calculageGraphData(capture, 400);
+            } catch (Exception ex) {
+                LOGGER.error("Exception while calculating graph data for capture.", ex);
+                return "Could not create graph data for capture.";
+            }
+            
+        } else if (cmd.toUpperCase().startsWith("CAPTURESUMMARY")) {
             if (cmd.length() != 51) {
                 return "Capture summary command must be of form: \"capturesummary [capture uuid]\".";
             }

@@ -35,9 +35,9 @@ public class CaptureProcessor {
      * @param pipeline The pipeline of elements used to process the data.
      * @return The results of the pipeline application.
      */
-    public static Map<String, Object> process(Capture source, Pipeline pipeline) {
+    public static Map<String, Object> process(Stream<Sample> source, Pipeline pipeline) {
         Map<String, Object> toReturn = new HashMap<>();
-        Iterator<Sample> samples = source.getSamples().iterator();
+        Iterator<Sample> samples = source.iterator();
         pipeline.execute(() -> {
             if (samples.hasNext()) {
                 toReturn.put("sample", samples.next());
