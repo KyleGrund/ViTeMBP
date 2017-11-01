@@ -37,19 +37,20 @@ public class SensorFactory {
      * Gets a sensor for the name and type provided.
      * @param name The name of the sensor to build.
      * @param type The type of the sensor to build.
+     * @param calData The sensor calibration data.
      * @return A sensor object for the provided name and type.
      * @throws InstantiationException If the sensor type is unknown.
      */
-    public static Sensor getSensor(String name, UUID type) throws InstantiationException {
+    public static Sensor getSensor(String name, UUID type, String calData) throws InstantiationException {
         // build sensor object based on type UUID
         if (RotaryEncoderEAW0J.TYPE_UUID.equals(type)) {
-            return new RotaryEncoderEAW0J(name);
+            return new RotaryEncoderEAW0J(name, calData);
         } else if (AccelerometerFXOS8700CQSerial.TYPE_UUID.equals(type)) {
-            return new AccelerometerFXOS8700CQSerial(name);
+            return new AccelerometerFXOS8700CQSerial(name, calData);
         } else if (DistanceVL53L0X.TYPE_UUID.equals(type)) {
-            return new DistanceVL53L0X(name);
+            return new DistanceVL53L0X(name, calData);
         } else if (AccelerometerADXL326.TYPE_UUID.equals(type)){
-            return new AccelerometerADXL326(name);
+            return new AccelerometerADXL326(name, calData);
         }
         
         // throw exception indicating no sensor type could be built
@@ -72,7 +73,10 @@ public class SensorFactory {
         toBuildFor.getSensorTypes().entrySet().stream()
                 .map((entry) -> {
                     try {
-                        return SensorFactory.getSensor(entry.getKey(), entry.getValue());
+                        return SensorFactory.getSensor(
+                                entry.getKey(),
+                                entry.getValue(),
+                                toBuildFor.getSensorCalibrations().get(entry.getKey()));
                     } catch (InstantiationException ex) {
                         LOGGER.error("Unknown sensor: " + entry.getKey() + ", " + entry.getValue().toString() + ".", ex);
                         return null;

@@ -32,11 +32,18 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
     public static final UUID TYPE_UUID = UUID.fromString("f06ee9e1-345a-490d-8b03-a736a5e5d7bf");
     
     /**
+     * The sensor calibration data.
+     */
+    private final String calibration;
+    
+    /**
      * Initializes a new instance of the AccelerometerADXL326 class.
      * @param name The name of the sensor as used in the system configuration.
+     * @param calData The sensor calibration data.
      */
-    AccelerometerADXL326(String name) {
+    AccelerometerADXL326(String name, String calData) {
         super(name);
+        this.calibration = calData;
     }
 
     @Override

@@ -36,11 +36,47 @@ class RotaryEncoderEAW0J extends RotarySensor {
     static final UUID TYPE_UUID = UUID.fromString("75d05ba8-639c-46e6-a940-591d920a2d86");
     
     /**
+     * The sensor calibration near point position.
+     */
+    private double calNear;
+    
+    /**
+     * The sensor calibration middle point position.
+     */
+    private double calMiddle;
+    
+    /**
+     * The sensor calibration far point position.
+     */
+    private double calFar;
+    
+    /**
      * Instantiates a new instance of the RotaryEncoderEAW0J class.
      * @param name The name of the sensor.
+     * @param calData The sensor calibration data.
      */
-    public RotaryEncoderEAW0J(String name) {
+    public RotaryEncoderEAW0J(String name, String calData) {
         super(name);
+        
+        // decode cal data of the form "([min],[max])"
+        if (calData != null && !calData.isEmpty()) {
+            if (!calData.startsWith("(") || !calData.endsWith(")")) {
+                throw new IllegalArgumentException("EAW0J calibration data must be of the form \"([near],[middle],[far])\".");
+            }
+            
+            String[] split = calData.substring(1, calData.length() - 2).split(",");
+            if (split.length != 3) {
+                throw new IllegalArgumentException("EAW0J calibration data must be of the form \"([near],[middle],[far])\".");
+            }
+            
+            try {
+                this.calNear = Double.parseDouble(split[0].substring(1));
+                this.calMiddle = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
+                this.calFar = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException("VL53L0X calibration data must be of the form \"([min],[max])\".", ex);
+            }
+        }
     }
     
     @Override

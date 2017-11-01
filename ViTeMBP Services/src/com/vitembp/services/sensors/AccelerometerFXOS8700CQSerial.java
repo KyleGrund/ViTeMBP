@@ -29,13 +29,20 @@ class AccelerometerFXOS8700CQSerial extends AccelerometerThreeAxis {
      * A UUID representing the type of this sensor.
      */
     static final UUID TYPE_UUID = UUID.fromString("fe3c4af2-feb4-4c9b-a717-2d0db3052293");
+    
+    /**
+     * The sensor calibration data.
+     */
+    private final String calibration;
 
     /**
      * Initializes a new instance of the AccelerometerFXOS8700CQSerial class.
      * @param name The name of the sensor.
+     * @param calData The sensor calibration data.
      */
-    public AccelerometerFXOS8700CQSerial(String name) {
+    public AccelerometerFXOS8700CQSerial(String name, String calData) {
         super(name);
+        this.calibration = calData;
     }
 
     @Override

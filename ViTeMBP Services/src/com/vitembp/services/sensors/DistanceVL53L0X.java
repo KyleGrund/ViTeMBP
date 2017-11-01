@@ -32,11 +32,37 @@ class DistanceVL53L0X extends DistanceSensor {
     static final UUID TYPE_UUID = UUID.fromString("3972d3a9-d55f-4e74-a61f-f2f8fe62f858");
     
     /**
+     * The calibrated minimum value.
+     */
+    private double calMinimum = Double.MIN_VALUE;
+    
+    /**
+     * The calibrated maximum value.
+     */
+    private double calMaximum = Double.MAX_VALUE;
+    
+    /**
      * Initializes a new instance of the DistanceVL53L0X class.
      * @param name The name of the sensor.
+     * @param calData The sensor calibration data.
      */
-    DistanceVL53L0X(String name) {
+    DistanceVL53L0X(String name, String calData) {
         super(name);
+        
+        // decode cal data of the form "([min],[max])"
+        if (calData != null && !calData.isEmpty()) {
+            String[] split = calData.split(",");
+            if (split.length != 2) {
+                throw new IllegalArgumentException("VL53L0X calibration data must be of the form \"([min],[max])\".");
+            }
+            
+            try {
+                this.calMinimum = Double.parseDouble(split[0].substring(1));
+                this.calMaximum = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException("VL53L0X calibration data must be of the form \"([min],[max])\".", ex);
+            }
+        }
     }
 
     @Override
@@ -45,7 +71,15 @@ class DistanceVL53L0X extends DistanceSensor {
         if (data == null) {
             return Optional.empty();
         } else {
-            return Optional.of(Double.parseDouble(data));
+            // get the sensor reading value
+            double value = Double.parseDouble(data);
+            
+            // apply calibration
+            value = Math.min(value, this.calMaximum);
+            value = Math.max(value, this.calMinimum);
+            
+            // return calibrated value
+            return Optional.of(value);
         }
     }    
 }

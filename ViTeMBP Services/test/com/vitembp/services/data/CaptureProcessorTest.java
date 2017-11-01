@@ -82,7 +82,7 @@ public class CaptureProcessorTest {
         
         List<PipelineElement> pipe = new ArrayList<>();
         pipe.add(new CountElement("count"));
-        RotarySensor brakeSensor = (RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake"));
+        RotarySensor brakeSensor = (RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake"), "(12,31)");
         pipe.add(new SampleMaxValueElement(brakeSensor::getPositionDegrees, "max pos", brakeSensor));
         
         Map<String, Object> result = CaptureProcessor.process(source.getSamples(), new Pipeline(pipe));

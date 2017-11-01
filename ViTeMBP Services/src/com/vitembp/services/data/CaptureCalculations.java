@@ -30,11 +30,18 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import static java.util.stream.Collectors.toMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Class containing calculations which can be performed on Captures.
  */
 public class CaptureCalculations {
+    /**
+     * Class logger instance.
+     */
+    private static final Logger LOGGER = LogManager.getLogger();
+    
     /**
      * Calculates and returns summary information about the capture.
      * @param captureLocation The location of the capture in the data store.
@@ -117,6 +124,13 @@ public class CaptureCalculations {
                         .collect(toMap(e -> e.getKey().getName(), Entry::getValue)));
                 avg.add(((Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING)).entrySet().stream()
                         .collect(toMap(e -> e.getKey().getName(), Entry::getValue)));
+                
+                double mini = min.get(min.size() -1).get("Front Shock");
+                double maxi = max.get(min.size() -1).get("Front Shock");
+                double avgi = avg.get(min.size() -1).get("Front Shock");
+                if (avgi > maxi || avgi < mini || avgi > 500.0) {
+                    LOGGER.error("Averaging error.");
+                }
                 
                 // clear the Items
                 toProc.clear();

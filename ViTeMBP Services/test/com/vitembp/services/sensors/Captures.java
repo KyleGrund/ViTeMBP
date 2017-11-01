@@ -41,6 +41,7 @@ public class Captures {
         nameToIds.put("Frame Accelerometer", AccelerometerFXOS8700CQSerial.TYPE_UUID);
         nameToIds.put("Front Shock", DistanceVL53L0X.TYPE_UUID);
         nameToIds.put("Rear Shock", DistanceVL53L0X.TYPE_UUID);
-        return CaptureFactory.buildCapture(CaptureTypes.InMemory, 29.9, nameToIds);
+        Map<String, String> calibrations = new HashMap<>();
+        return CaptureFactory.buildCapture(CaptureTypes.InMemory, 29.9, nameToIds, calibrations);
     }
 }
