@@ -43,21 +43,27 @@ class CreateCapture implements ControllerState {
         SystemConfig config = state.getConfig();
         
         // create new capture
-        // make map of sensor names to types
+        // make map of sensor names to types and cal data
         Map<String, UUID> sensorTypes = new HashMap<>();
+        Map<String, String> calData = new HashMap<>();
+        
         hardware.getSensors().forEach((n, s) -> {
             if (s == null) {
                 LOGGER.error("Sensor \"" + n + "\" not bound.");
             } else {
+                // add sensor type
                 sensorTypes.put(n, s.getType());
+                
+                // add calibration data if available
+                calData.put(n, SystemConfig.getConfig().getSensorCalibration(n));
             }
         });
-
+        
         // create the capture data store
         Capture dataStore = null;
         
         try {
-            dataStore = CaptureFactory.buildCapture(config.getCaptureType(), config.getSamplingFrequency(), sensorTypes);
+            dataStore = CaptureFactory.buildCapture(config.getCaptureType(), config.getSamplingFrequency(), sensorTypes, calData);
         } catch (InstantiationException ex) {
             LOGGER.error("Could not create capture for configured type \"" + config.getCaptureType().toString() + "\".", ex);
         }
@@ -67,7 +73,8 @@ class CreateCapture implements ControllerState {
                 dataStore = CaptureFactory.buildCapture(
                         CaptureTypes.InMemory,
                         config.getSamplingFrequency(),
-                        sensorTypes);
+                        sensorTypes,
+                        calData);
             } catch (InstantiationException ex) {
                 LOGGER.error("Could not create a data Capture target.", ex);
                 throw new IllegalStateException("Could not create a data Capture target.", ex);

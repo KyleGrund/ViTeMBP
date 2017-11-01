@@ -45,7 +45,7 @@ class UuidStringStoreCapture extends Capture {
     /**
      * The names of the sensors whose data is represented by this sample.
      */
-    private final Set<String> names;
+    private Set<String> names;
     
     /**
      * The set of samples.
@@ -61,6 +61,11 @@ class UuidStringStoreCapture extends Capture {
      * The map of sensor names to their UUID type.
      */
     private Map<String, UUID> types;
+    
+    /**
+     * The map of sensor names to their calibration data.
+     */
+    private Map<String, String> calibrations;
     
     /**
      * Initializes a new instance of the InMemoryCapture class and stores it to
@@ -110,7 +115,11 @@ class UuidStringStoreCapture extends Capture {
             // read data from the underyling data store
             String toRead = this.store.read();
             int len = toRead.length();
-            this.readFrom(XMLStreams.createReader(toRead), (sensors) -> { this.types = sensors; });
+            this.readFrom(XMLStreams.createReader(toRead), (sensors, calData) -> {
+                this.types = sensors;
+                this.names = sensors.keySet();
+                this.calibrations = calData;
+            });
         } catch (XMLStreamException ex) {
             LOGGER.error("Exception while loading Capture from UUID String store.", ex);
             throw new IOException("Exception while loading Capture from UUID String store.", ex);
@@ -159,5 +168,10 @@ class UuidStringStoreCapture extends Capture {
     @Override
     public UUID getId() {
         return this.store.getLocation();
+    }
+
+    @Override
+    public Map<String, String> getSensorCalibrations() {
+        return Collections.unmodifiableMap(this.calibrations);
     }
 }

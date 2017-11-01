@@ -46,7 +46,7 @@ public class CloudConfigSync {
     /**
      * The interval in milliseconds between configuration checks.
      */
-    private static final int CHECK_INTERVAL_MS = 30 * 1000;
+    private static final int CHECK_INTERVAL_MS = 60 * 1000;
     
     /**
      * Thread that runs the sync target.
@@ -85,7 +85,7 @@ public class CloudConfigSync {
             CloudConfigSync.syncThread = new Thread(CloudConfigSync::syncThreadTarget);
             CloudConfigSync.isRunning = true;
             CloudConfigSync.syncThread.start();
-            LOGGER.info("Configuration cloud sync service started.");
+            LOGGER.info("Configuration cloud sync polling service started.");
         }
     }
     
@@ -97,7 +97,7 @@ public class CloudConfigSync {
             CloudConfigSync.isRunning = false;
             try {
                 CloudConfigSync.syncThread.join();
-                LOGGER.info("Configuration cloud sync service stopped.");
+                LOGGER.info("Configuration cloud sync polling service stopped.");
             } catch (InterruptedException ex) {
                 LOGGER.error("Interrupted wiating for config sync thread to complete.", ex);
             }
@@ -158,7 +158,7 @@ public class CloudConfigSync {
 
         // check if configuration has changed
         boolean hasChanged;
-        String newConfig;
+        String remoteConfig;
         
         // perform query
         Map<String, AttributeValue> reqkey = new HashMap<>();
@@ -184,17 +184,17 @@ public class CloudConfigSync {
             
             // attributes are present, get their values
             hasChanged = Boolean.parseBoolean(result.getItem().get("UPDATED").getS());
-            newConfig = result.getItem().get("CONFIG").getS();
+            remoteConfig = result.getItem().get("CONFIG").getS();
         } else {
             // query failed so do not continue
             LOGGER.error("Could not query configuration in databse.");
             return;
         }
         
-        // update if changed
+        // update if tagged as changed, prefering the remote config over the local
         if (hasChanged) {
             try {
-                loadConfigFromRemote(newConfig);
+                loadConfigFromRemote(remoteConfig);
             } catch (XMLStreamException ex) {
                 LOGGER.error("Could not update configuration.", ex);
                 return;
@@ -222,7 +222,7 @@ public class CloudConfigSync {
             }
             
             // update remote as needed
-            if (!newConfig.equals(localConfig)) {
+            if (!remoteConfig.equals(localConfig)) {
                 // updated configuration with local
                 Map<String, AttributeValue> keyAttribs = new HashMap<>();
                 keyAttribs.put("ID", new AttributeValue().withS(SystemConfig.getConfig().getSystemUUID().toString()));

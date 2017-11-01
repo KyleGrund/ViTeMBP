@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.data;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -136,6 +137,12 @@ public abstract class Capture {
      * @return A Map of sensor name strings to sensor type strings.
      */
     public abstract Map<String, UUID> getSensorTypes();
+    
+    /**
+     * Gets a Map of sensor name strings to sensor calibration data.
+     * @return A Map of sensor name strings to sensor calibration data.
+     */
+    public abstract Map<String, String> getSensorCalibrations();
     
     /**
      * Saves this capture session to persistent storage.
@@ -258,6 +265,9 @@ public abstract class Capture {
             toWriteTo.writeStartElement("type");
             toWriteTo.writeCharacters(sensors.get(name).toString());
             toWriteTo.writeEndElement();
+            toWriteTo.writeStartElement("calibration");
+            toWriteTo.writeCharacters(SystemConfig.getConfig().getSensorCalibration(name));
+            toWriteTo.writeEndElement();
             toWriteTo.writeEndElement();
         }
         toWriteTo.writeEndElement();
@@ -276,7 +286,7 @@ public abstract class Capture {
      * @param setSensorsCallback The callback used to set the sensor values.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
-    protected void readFrom(XMLStreamReader toReadFrom, Consumer<Map<String, UUID>> setSensorsCallback) throws XMLStreamException {
+    protected void readFrom(XMLStreamReader toReadFrom, BiConsumer<Map<String, UUID>, Map<String, String>> setSensorsCallback) throws XMLStreamException {
         if (toReadFrom.getEventType() != XMLStreamConstants.START_DOCUMENT) {
             throw new XMLStreamException("Expected start of document not found.", toReadFrom.getLocation());
         }
@@ -321,6 +331,9 @@ public abstract class Capture {
         // map of sensor name to type
         Map<String, UUID> sensorTypes = new HashMap<>();
         
+        // map of calibration data
+        Map<String, String> sensorCalibrations = new HashMap<>();
+        
         // add a sensor element for each data entry
         toReadFrom.next();
         while (toReadFrom.getEventType() == XMLStreamConstants.START_ELEMENT  && "sensor".equals(toReadFrom.getLocalName())) {
@@ -330,6 +343,9 @@ public abstract class Capture {
             
             // read type element
             String sensorType = XMLStreams.readElement("type", toReadFrom);
+            
+            // read the calibration data
+            String calibrationData = XMLStreams.readElementWithEmpty("calibration", toReadFrom);
         
             // read close element
             if (toReadFrom.getEventType()!= XMLStreamConstants.END_ELEMENT || !"sensor".equals(toReadFrom.getLocalName())) {
@@ -338,13 +354,14 @@ public abstract class Capture {
             
             // successfully found a sensor, save it
             sensorTypes.put(sensorName, UUID.fromString(sensorType));
+            sensorCalibrations.put(sensorName, calibrationData);
             
             // read past close element
             toReadFrom.next();
         }
         
         // store the sensor values
-        setSensorsCallback.accept(sensorTypes);
+        setSensorsCallback.accept(sensorTypes, sensorCalibrations);
         
         // read into close element
         if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensors".equals(toReadFrom.getLocalName())) {

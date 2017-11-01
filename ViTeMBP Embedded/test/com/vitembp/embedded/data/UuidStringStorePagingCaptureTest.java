@@ -89,13 +89,17 @@ public class UuidStringStorePagingCaptureTest {
         HashMap<String, UUID> nameToIds = new HashMap<>();
         nameToIds.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        Map<String, String> nameToCal = new HashMap<>();
+        nameToCal.put(SENSOR_NAMES[0], "(0)");
+        nameToCal.put(SENSOR_NAMES[1], "(1)");
         
         return new UuidStringStorePagingCapture(
                 () -> memStore.removeCaptureDescription(loc),
                 frequency,
                 store,
                 pageSize,
-                nameToIds);
+                nameToIds,
+                nameToCal);
     }
     
     /**
@@ -182,10 +186,13 @@ public class UuidStringStorePagingCaptureTest {
         HashMap<String, UUID> nameToIds = new HashMap<>();
         nameToIds.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
+        Map<String, String> nameToCal = new HashMap<>();
+        nameToCal.put(SENSOR_NAMES[0], "(0)");
+        nameToCal.put(SENSOR_NAMES[1], "(1)");
         
         UuidStringStorePagingCapture instance = new UuidStringStorePagingCapture(
                 () -> memStore.removeCaptureDescription(loc),
-                frequency, store, pageSize, nameToIds);
+                frequency, store, pageSize, nameToIds, nameToCal);
         List<Map<String, String>> addedData = this.seedData(instance, 3000);
         instance.save();
         
@@ -194,7 +201,8 @@ public class UuidStringStorePagingCaptureTest {
                 frequency,
                 store,
                 pageSize,
-                nameToIds);
+                nameToIds,
+                nameToCal);
         assertEquals(0, instance.getSampleCount());
         
         instance.load();

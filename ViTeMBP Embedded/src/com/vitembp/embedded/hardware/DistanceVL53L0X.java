@@ -137,8 +137,8 @@ public class DistanceVL53L0X extends Sensor {
     @Override
     public Calibrator getCalibrator() {
         List<String> userPrompts = Arrays.asList(new String[] {
-            "To calibrate the distance sensor, move the sensor through its " +
-                    "full range of travel."
+            "To calibrate the distance sensor, slowly move the sensor through " +
+                    "its full range of travel and then click next."
         });
         
         // these will hold maximum values of the data readings
@@ -155,7 +155,7 @@ public class DistanceVL53L0X extends Sensor {
                
                // update maximum values
                value.put("maximum", Float.max(value.get("maximum"), x));
-               value.put("minimum", Float.max(value.get("minimum"), x));
+               value.put("minimum", Float.min(value.get("minimum"), x));
             });
         
         // formats and returns the calibration data

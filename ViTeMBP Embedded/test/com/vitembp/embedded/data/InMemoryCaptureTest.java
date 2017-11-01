@@ -110,13 +110,17 @@ public class InMemoryCaptureTest {
      */
     private Capture createInstance() throws InstantiationException {
         // build a map of sensor types for the capture
+        Map<String, String> nameToCal = new HashMap<>();
+        nameToCal.put(SENSOR_NAMES[0], "(0)");
+        nameToCal.put(SENSOR_NAMES[1], "(1)");
         HashMap<String, UUID> sensorTypes = new HashMap<>();
         sensorTypes.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         sensorTypes.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
         Capture instance = CaptureFactory.buildCapture(
                 CaptureTypes.InMemory, 
                 29.97,
-                sensorTypes);
+                sensorTypes,
+                nameToCal);
         this.data.forEach(instance::addSample);
         return instance;
     }

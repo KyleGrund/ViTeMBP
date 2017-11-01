@@ -22,20 +22,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A factory class that creates Capture instances.
  */
 public class CaptureFactory {
     /**
+     * Class logger instance.
+     */
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    
+    /**
      * Builds a new capture with the specified parameters.
      * @param type The type of the capture, reflecting the backing store it uses.
      * @param frequency The sample frequency of the capture.
      * @param nameToIds A map of the Sensor names to types.
+     * @param calData Calibration data for sensors.
      * @return A new capture with the specified parameters.
      * @throws InstantiationException If an appropriate capture cannot be created.
      */
-    public static Capture buildCapture(CaptureTypes type, double frequency, Map<String, UUID> nameToIds) throws InstantiationException {
+    public static Capture buildCapture(CaptureTypes type, double frequency, Map<String, UUID> nameToIds, Map<String, String> calData) throws InstantiationException {
         switch (type) { 
             case InMemory:
                 UuidStringStore inMemory = UuidStringStoreFactory.build(CaptureTypes.InMemory);
@@ -49,7 +56,7 @@ public class CaptureFactory {
                     UUID h2LocationID = UUID.randomUUID();
                     UuidStringLocation location = new UuidStringLocation(h2Store, h2LocationID);
                     RunnableIOException delH2 = () -> h2Store.removeCaptureDescription(h2LocationID);
-                    Capture toReturn = new UuidStringStorePagingCapture(delH2, frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    Capture toReturn = new UuidStringStorePagingCapture(delH2, frequency, location, (int)Math.ceil(frequency * 10), nameToIds, calData);
                     h2Store.addCaptureDescription(new CaptureDescription(toReturn, h2LocationID));
                     return toReturn;
                 } catch (IOException ex) {
@@ -61,7 +68,7 @@ public class CaptureFactory {
                     UUID adbLocationID = UUID.randomUUID();
                     UuidStringLocation location = new UuidStringLocation(ddbStore, adbLocationID);
                     RunnableIOException delAdb = () -> ddbStore.removeCaptureDescription(adbLocationID);
-                    Capture toReturn = new UuidStringStorePagingCapture(delAdb, frequency, location, (int)Math.ceil(frequency * 10), nameToIds);
+                    Capture toReturn = new UuidStringStorePagingCapture(delAdb, frequency, location, (int)Math.ceil(frequency * 10), nameToIds, calData);
                     ddbStore.addCaptureDescription(new CaptureDescription(toReturn, adbLocationID));
                     return toReturn;
                 } catch (IOException ex) {
@@ -104,6 +111,7 @@ public class CaptureFactory {
                     }
                     return toReturn;
                 } catch (IOException ex) {
+                    LOGGER.error("Could not load DynamoDB database capture index.", ex);
                     throw new InstantiationException("Could not load DynamoDB database capture index. " + ex.getLocalizedMessage());
                 }
         }

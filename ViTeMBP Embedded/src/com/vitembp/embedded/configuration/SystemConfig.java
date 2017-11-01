@@ -100,6 +100,11 @@ public class SystemConfig {
     private Map<String, UUID> sensorBindings = new HashMap<>();
     
     /**
+     * The mapping of sensor UUIDs to calibration strings.
+     */
+    private Map<UUID, String> sensorCalibrations = new HashMap<>();
+    
+    /**
      * A boolean value indicating whether we loaded the configuration from
      * the file system at startup.
      */
@@ -175,6 +180,11 @@ public class SystemConfig {
         } else {
             LOGGER.info("System configuration not found on filesystem.");
         }
+        
+        // start config polling to sync when push events fail
+        if (this.loadedConfigFromFile) {
+            CloudConfigSync.startPolling();
+        }
     }
 
     /**
@@ -209,6 +219,39 @@ public class SystemConfig {
      */
     public Map<String, UUID> getSensorBindings() {
         return Collections.unmodifiableMap(this.sensorBindings);
+    }
+    
+    /**
+     * Gets calibration data for the sensor name if available.
+     * @return The calibration data if available or an empty String.
+     */
+    public String getSensorCalibration(String name) {
+        // if there is a binding available for the name
+        if (this.sensorBindings.containsKey(name)) {
+            // if there is a calibration available for the binding
+            UUID binding = this.sensorBindings.get(name);
+            if (this.sensorCalibrations.containsKey(binding)) {
+                // return the cal data
+                return this.sensorCalibrations.get(binding);
+            }
+        }
+        
+        // no cal data avialable so return empty string
+        return "";
+    }
+    
+    /**
+     * Saves sensor calibration data.
+     * @param sensor The binding site of the sensor.
+     * @param calibration The sensor calibration.
+     */
+    public void setSensorCalibration(UUID sensor, String calibration) {
+        this.sensorCalibrations.put(sensor, calibration);
+        try {
+            this.saveToLocalSystem();
+        } catch (IOException ex) {
+            LOGGER.error("Could not save config after updating calibration data.", ex);
+        }
     }
     
     /**
@@ -480,6 +523,25 @@ public class SystemConfig {
         }
         toWriteTo.writeEndElement();
         
+        // save sensor bindings
+        toWriteTo.writeStartElement("sensorcalibrations");
+        for (UUID site : this.sensorCalibrations.keySet()) {
+            toWriteTo.writeStartElement("sensorcalibration");
+
+            // save sensor UUID
+            toWriteTo.writeStartElement("site");
+            toWriteTo.writeCharacters(site.toString());
+            toWriteTo.writeEndElement();
+            
+            // save cal data
+            toWriteTo.writeStartElement("calibration");
+            toWriteTo.writeCharacters(this.sensorCalibrations.get(site));
+            toWriteTo.writeEndElement();
+            
+            toWriteTo.writeEndElement();
+        }
+        toWriteTo.writeEndElement();
+        
         // save capture type
         toWriteTo.writeStartElement("capturetype");
         toWriteTo.writeCharacters(this.captureType.name());
@@ -617,6 +679,32 @@ public class SystemConfig {
             throw new XMLStreamException("Expected </sensorbindings> not found.", toReadFrom.getLocation());
         }
         
+        // read into sensorbindings element
+        if (toReadFrom.next() != XMLStreamConstants.START_ELEMENT || !"sensorcalibrations".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <sensorcalibrations> not found.", toReadFrom.getLocation());
+        }
+        
+        // map of sensor bindings to cal data
+        Map<UUID, String> readSensorCalibrations = new HashMap<>();
+        
+        // add a cal data element for each site entry
+        while (toReadFrom.next() == XMLStreamConstants.START_ELEMENT && "sensorcalibration".equals(toReadFrom.getLocalName())) {
+            // read name element
+            toReadFrom.next();
+            UUID sensorName = UUID.fromString(XMLStreams.readElement("site", toReadFrom));
+            
+            // read binding         
+            String sensorBinding = XMLStreams.readElement("calibration", toReadFrom);
+            
+            // successfully found a sensor name, save it
+            readSensorCalibrations.put(sensorName, sensorBinding);
+        }
+        
+        // read into close element
+        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"sensorcalibrations".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected </sensorcalibrations> not found.", toReadFrom.getLocation());
+        }
+        
         // read capture type
         toReadFrom.next();
         this.captureType = Enum.valueOf(CaptureTypes.class, XMLStreams.readElement("capturetype", toReadFrom));
@@ -702,6 +790,7 @@ public class SystemConfig {
         // configuration successfully read, safe to update settings
         this.sensorNames = readSensorNames;
         this.sensorBindings = readSensorBindings;
+        this.sensorCalibrations = readSensorCalibrations;
         
         // only ever add binding site to avoid sync related erasure
         this.sensorBindingSites.addAll(readSensorBindingSites);

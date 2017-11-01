@@ -69,12 +69,15 @@ public class CaptureSessionTest {
         Map<String, Sensor> sensors = new HashMap<>();
         sensors.put("Sensor 1", new AccelerometerMock());
         sensors.put("Sensor 2", new AccelerometerMock());
+        Map<String, String> nameToCal = new HashMap<>();
+        nameToCal.put("Sensor 1", "(0)");
+        nameToCal.put("Sensor 2", "(1)");
         
         // fill a hashmap with sensor types for crating capture
         Map<String, UUID> sensorTypes = new HashMap<>();
         sensors.values().forEach((s) -> sensorTypes.put(s.getSerial().toString(), s.getType()));
         
-        Capture capturedData = CaptureFactory.buildCapture(CaptureTypes.EmbeddedH2, 29.97, sensorTypes);
+        Capture capturedData = CaptureFactory.buildCapture(CaptureTypes.EmbeddedH2, 29.97, sensorTypes, nameToCal);
         toTest = new CaptureSession(sensors, capturedData);
         
         // take test data for 1 seconds

@@ -64,8 +64,9 @@ public class CaptureFactoryTest {
         CaptureTypes type = CaptureTypes.EmbeddedH2;
         double frequency = 29.9;
         Map<String, UUID> nameToIds = new HashMap<>();
+        Map<String, String> nameToCal = new HashMap<>();
         nameToIds.put("Sensor 1", UUID.randomUUID());
-        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds, nameToCal);
         assertNotNull(result);
     }
     
@@ -79,8 +80,9 @@ public class CaptureFactoryTest {
         CaptureTypes type = CaptureTypes.AmazonDynamoDB;
         double frequency = 29.9;
         Map<String, UUID> nameToIds = new HashMap<>();
+        Map<String, String> nameToCal = new HashMap<>();
         nameToIds.put("Sensor 1", UUID.randomUUID());
-        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds, nameToCal);
         assertNotNull(result);
     }
 
@@ -94,8 +96,9 @@ public class CaptureFactoryTest {
         CaptureTypes type = CaptureTypes.EmbeddedH2;
         double frequency = 29.9;
         Map<String, UUID> nameToIds = new HashMap<>();
+        Map<String, String> nameToCal = new HashMap<>();
         nameToIds.put("Sensor 1", UUID.randomUUID());
-        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds, nameToCal);
         result.save();
         Iterable<Capture> captures = CaptureFactory.getCaptures(CaptureTypes.EmbeddedH2);
         List<Capture> loaded = new ArrayList<>();
@@ -113,7 +116,8 @@ public class CaptureFactoryTest {
         CaptureTypes type = CaptureTypes.AmazonDynamoDB;
         double frequency = 29.9;
         Map<String, UUID> nameToIds = new HashMap<>();
-        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds);
+        Map<String, String> nameToCal = new HashMap<>();
+        Capture result = CaptureFactory.buildCapture(type, frequency, nameToIds, nameToCal);
         result.save();
         Iterable<Capture> captures = CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB);
         List<Capture> loaded = new ArrayList<>();

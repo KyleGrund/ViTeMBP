@@ -54,6 +54,11 @@ class UuidStringStorePagingCapture extends Capture {
     private Map<String, UUID> types;
     
     /**
+     * The map of sensor names to their calibration data.
+     */
+    private Map<String, String> calibrations;
+    
+    /**
      * The persistent storage this instance uses.
      */
     private final UuidStringLocation store;
@@ -81,12 +86,13 @@ class UuidStringStorePagingCapture extends Capture {
      * @param nameToIds A map of sensor names to type UUIDs.
      * in the store.
      */
-    UuidStringStorePagingCapture(RunnableIOException deleteCallback, double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds) {
+    UuidStringStorePagingCapture(RunnableIOException deleteCallback, double frequency, UuidStringLocation store, int pageSize, Map<String, UUID> nameToIds, Map<String, String> calibrations) {
         super(deleteCallback, frequency);
         
         // save refrences to parameters        
         this.names = new HashSet<>(nameToIds.keySet());
         this.types = new HashMap<>(nameToIds);
+        this.calibrations = new HashMap<>(calibrations);
         this.pageSize = pageSize;
         this.store = store;
     }
@@ -181,9 +187,10 @@ class UuidStringStorePagingCapture extends Capture {
         // is none we can just go with defaults as this is a new page
         if (savedData != null && !"".equals(savedData)) {
             try {
-                this.readFrom(XMLStreams.createReader(savedData), (sensors) -> {
+                this.readFrom(XMLStreams.createReader(savedData), (sensors, caldata) -> {
                     this.types = sensors;
                     this.names = sensors.keySet();
+                    this.calibrations = caldata;
                 });
             } catch (XMLStreamException ex) {
                 throw new IOException("XMLStreamException occured reading capture from persistnat storage.", ex);
@@ -205,6 +212,11 @@ class UuidStringStorePagingCapture extends Capture {
     @Override
     public Map<String, UUID> getSensorTypes() {
         return Collections.unmodifiableMap(this.types);
+    }
+    
+    @Override
+    public Map<String, String> getSensorCalibrations() {
+        return Collections.unmodifiableMap(this.calibrations);
     }
 
     @Override

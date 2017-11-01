@@ -17,6 +17,7 @@
  */
 package com.vitembp.embedded.hardware;
 
+import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.datacollection.SensorSampler;
 import java.util.HashMap;
 import java.util.List;
@@ -139,7 +140,13 @@ class CalibratorReducer extends Calibrator {
     private void beginNextStep() {
         this.currentStep++;
         if (!this.isCalibrating()) {
+            // stop the sampler
             this.sampler.stop();
+            
+            // save the data to local configuration
+            SystemConfig.getConfig().setSensorCalibration(
+                    this.toCalibrate.getSerial(),
+                    this.getCalibrationData());
         } else {
             this.currentSampleConsumer = this.readingConsumers.get(this.currentStep);
         }

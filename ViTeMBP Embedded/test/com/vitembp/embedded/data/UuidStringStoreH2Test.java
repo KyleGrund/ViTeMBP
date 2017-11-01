@@ -211,6 +211,7 @@ public class UuidStringStoreH2Test {
                 29.9,
                 loc,
                 299,
+                new HashMap<>(),
                 new HashMap<>());
         instance.addCaptureDescription(new CaptureDescription(usspc, id));
         assertTrue(instance.getCaptureLocations().anyMatch((uid) -> id.equals(uid.getLocation())));
@@ -230,6 +231,7 @@ public class UuidStringStoreH2Test {
                 29.9,
                 loc,
                 299,
+                new HashMap<>(),
                 new HashMap<>());
         instance.addCaptureDescription(new CaptureDescription(usspc, id));
     }
@@ -248,6 +250,7 @@ public class UuidStringStoreH2Test {
                 29.9,
                 loc,
                 299,
+                new HashMap<>(),
                 new HashMap<>());
         instance.addCaptureDescription(new CaptureDescription(usspc, id));
         List<UUID> locations = new ArrayList<>();

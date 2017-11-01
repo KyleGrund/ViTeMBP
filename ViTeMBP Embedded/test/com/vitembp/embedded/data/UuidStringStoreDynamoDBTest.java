@@ -179,10 +179,13 @@ public class UuidStringStoreDynamoDBTest {
     @Test
     public void testGetCapture() throws Exception {
         // test using 
+        Map<String, String> nameToCal = new HashMap<>();
+        nameToCal.put(SENSOR_NAMES[0], "(0)");
+        nameToCal.put(SENSOR_NAMES[1], "(1)");
         Map<String, UUID> nameToIds = new HashMap<>();
         nameToIds.put(SENSOR_NAMES[0], SENSOR_TYPE_UUID);
         nameToIds.put(SENSOR_NAMES[1], SENSOR_TYPE_UUID);
-        Capture toTest = CaptureFactory.buildCapture(CaptureTypes.AmazonDynamoDB, 29.9, nameToIds);
+        Capture toTest = CaptureFactory.buildCapture(CaptureTypes.AmazonDynamoDB, 29.9, nameToIds, nameToCal);
         CaptureTests.testWriteTo(toTest);
     }
     
@@ -240,8 +243,10 @@ public class UuidStringStoreDynamoDBTest {
         UuidStringStore instance = UuidStringStoreFactory.build(CaptureTypes.AmazonDynamoDB);
         Map<String, UUID> names = new HashMap<>();
         names.put("Sensor 1", UUID.randomUUID());
+        Map<String, String> nameToCal = new HashMap<>();
+        nameToCal.put("Sensor 1", "(0)");
         Double freq = new Random().nextDouble();
-        Capture toAdd = CaptureFactory.buildCapture(CaptureTypes.AmazonDynamoDB, freq, names);
+        Capture toAdd = CaptureFactory.buildCapture(CaptureTypes.AmazonDynamoDB, freq, names, nameToCal);
         Stream<CaptureDescription> result = instance.getCaptureLocations();
         assertTrue(result.anyMatch((cap) -> Math.abs(cap.getFrequency() - freq) < 0.00001));
     }
