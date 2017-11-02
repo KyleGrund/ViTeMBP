@@ -20,6 +20,7 @@ package com.vitembp.services.sensors;
 import com.vitembp.embedded.data.Sample;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * Sensor implementation for EAW0J rotary encoder.
@@ -36,19 +37,9 @@ class RotaryEncoderEAW0J extends RotarySensor {
     static final UUID TYPE_UUID = UUID.fromString("75d05ba8-639c-46e6-a940-591d920a2d86");
     
     /**
-     * The sensor calibration near point position.
+     * The function which applies the calibration data.
      */
-    private double calNear;
-    
-    /**
-     * The sensor calibration middle point position.
-     */
-    private double calMiddle;
-    
-    /**
-     * The sensor calibration far point position.
-     */
-    private double calFar;
+    private Function<Double, Double> calFunction;
     
     /**
      * Instantiates a new instance of the RotaryEncoderEAW0J class.
@@ -64,17 +55,53 @@ class RotaryEncoderEAW0J extends RotarySensor {
                 throw new IllegalArgumentException("EAW0J calibration data must be of the form \"([near],[middle],[far])\".");
             }
             
-            String[] split = calData.substring(1, calData.length() - 2).split(",");
+            String[] split = calData.substring(1, calData.length() - 1).split(",");
             if (split.length != 3) {
                 throw new IllegalArgumentException("EAW0J calibration data must be of the form \"([near],[middle],[far])\".");
             }
             
+            int calNear, calMiddle, calFar;
+            
             try {
-                this.calNear = Double.parseDouble(split[0].substring(1));
-                this.calMiddle = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
-                this.calFar = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
+                calNear = Integer.parseInt(split[0]);
+                calMiddle = Integer.parseInt(split[1]);
+                calFar = Integer.parseInt(split[2]);
             } catch (NumberFormatException ex) {
-                throw new IllegalArgumentException("VL53L0X calibration data must be of the form \"([min],[max])\".", ex);
+                throw new IllegalArgumentException("EAW0J calibration data must be of the form \"([near],[middle],[far])\".", ex);
+            }
+            
+            // sensor values are from 0 to 127 use this and three cal points to determine the direction of rotation
+            if (calNear < calMiddle && calMiddle < calFar) {
+                // N < M < F
+                this.calFunction = (point) -> 1.0d - ((point - calNear) / (calFar - calNear));
+            } else if ((calFar < calNear && calNear < calMiddle) ||
+                    (calMiddle < calFar && calFar < calNear)) {
+                // F < N < M
+                // M < F < N
+                this.calFunction = (point) -> {
+                    double val = point - calNear;
+                    if (val < 0) {
+                        val += 128;
+                    }
+                    return 1.0d - (val / ((128 - calNear) + calFar));
+                };
+            } else if (calFar < calMiddle && calMiddle < calNear) {
+                // F < M < N
+                this.calFunction = (point) -> (point - calFar) / (calNear - calFar);
+            } else if ((calNear < calFar && calFar < calMiddle) ||
+                    (calMiddle < calNear && calNear < calFar)) {
+                // N < F < M
+                // M < N < F
+                this.calFunction = (point) -> {
+                    double val = point;
+                    if (val < calFar) {
+                        val += 128;
+                    }
+                    val -= calFar;
+                    return val / ((128 - calFar) + calNear);
+                };
+            } else {
+                throw new IllegalArgumentException("EAW0J calibration data is invalid, it must contain 3 unique values.");
             }
         }
     }
@@ -97,13 +124,8 @@ class RotaryEncoderEAW0J extends RotarySensor {
         return Optional.empty();
     }
     
-    /**
-     * Gets the position of the encoder as a value from 0 to 1.
-     * @param toDecode The sample to decode.
-     * @return The position of the encoder as a value from 0 to 1.
-     * @throws NumberFormatException If the sensor data is corrupt.
-     */
-    private Optional<Double> getPositionPercentage(Sample toDecode) throws NumberFormatException {
+    @Override
+    public Optional<Double> getPositionPercentage(Sample toDecode) {
         String data = this.getData(toDecode);
         
         // handle missing samples
@@ -111,8 +133,18 @@ class RotaryEncoderEAW0J extends RotarySensor {
             return Optional.empty();
         }
         
+        // get data
         int position = Integer.parseInt(data);
-        double percent = ((double)position) / MAXIMUM_ENCODER_VALUE;
-        return Optional.of(percent);
+        
+        // apply calibration
+        double calibrated = this.calFunction.apply((double)position);
+        
+        if (calibrated < 0) {
+            calibrated = 0;
+        } else if (calibrated > 1) {
+            calibrated = 1;
+        }
+        // convert to percent
+        return Optional.of(calibrated);
     }
 }

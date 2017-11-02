@@ -77,9 +77,20 @@ class DistanceVL53L0X extends DistanceSensor {
             // apply calibration
             value = Math.min(value, this.calMaximum);
             value = Math.max(value, this.calMinimum);
+            value -= this.calMinimum;
             
             // return calibrated value
             return Optional.of(value);
         }
-    }    
+    }
+    
+    @Override
+    public Optional<Double> getDistancePercent(Sample toDecode) {
+        Optional<Double> value = this.getDistanceMilimeters(toDecode);
+        if (value.isPresent()) {
+            return Optional.of(value.get() / (this.calMaximum - this.calMinimum));
+        } else {
+            return Optional.empty();
+        }
+    }
 }

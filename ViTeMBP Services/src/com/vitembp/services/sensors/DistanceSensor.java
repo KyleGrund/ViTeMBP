@@ -38,4 +38,11 @@ public abstract class DistanceSensor extends Sensor {
      * @return The distance the sensor is reading in millimeters.
      */
     public abstract Optional<Double> getDistanceMilimeters(Sample toDecode);
+    
+    /**
+     * Gets the distance the sensor is reading in percent as a value from 0 to 1.
+     * @param toDecode The sample containing the data to decode.
+     * @return The sensor reading as a percentage of total sensor travel.
+     */
+    public abstract Optional<Double> getDistancePercent(Sample toDecode);
 }

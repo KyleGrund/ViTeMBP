@@ -45,4 +45,11 @@ public abstract class RotarySensor extends Sensor {
      * @return The position of the sensor in radians.
      */
     public abstract Optional<Double> getPositionRadians(Sample toDecode);
+    
+    /**
+     * Gets the position of the encoder as a value from 0 to 1.
+     * @param toDecode The sample to decode.
+     * @return The position of the encoder as a value from 0 to 1.
+     */
+    public abstract Optional<Double> getPositionPercentage(Sample toDecode);
 }

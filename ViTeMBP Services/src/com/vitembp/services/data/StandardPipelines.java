@@ -143,11 +143,11 @@ public class StandardPipelines {
         // add averaging elements based on sensor type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
-                    ((RotarySensor)sensor)::getPositionDegrees, ELEMENT_COUNT_BINDING,
+                    ((RotarySensor)sensor)::getPositionPercentage, ELEMENT_COUNT_BINDING,
                     AVERAGE_BINDING, sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
-                    ((DistanceSensor)sensor)::getDistanceMilimeters, ELEMENT_COUNT_BINDING,
+                    ((DistanceSensor)sensor)::getDistancePercent, ELEMENT_COUNT_BINDING,
                     AVERAGE_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
@@ -171,11 +171,11 @@ public class StandardPipelines {
         // add maximum calculating elements based on type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
-                    ((RotarySensor)sensor)::getPositionDegrees,
+                    ((RotarySensor)sensor)::getPositionPercentage,
                     MAX_BINDING, sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
-                    ((DistanceSensor)sensor)::getDistanceMilimeters,
+                    ((DistanceSensor)sensor)::getDistancePercent,
                     MAX_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
@@ -199,11 +199,11 @@ public class StandardPipelines {
         // add minimum calculating elements based on type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
-                    ((RotarySensor)sensor)::getPositionDegrees,
+                    ((RotarySensor)sensor)::getPositionPercentage,
                     MIN_BINDING, sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
-                    ((DistanceSensor)sensor)::getDistanceMilimeters,
+                    ((DistanceSensor)sensor)::getDistancePercent,
                     MIN_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
