@@ -140,6 +140,9 @@ public class RotaryEncoderEAW0J extends Sensor {
             "To calibrate the far point of the rotary sensor, place the " + 
                     "sensor at the furthest point of travel and then click " +
                     "next while it is at that point.",
+            "To calibrate the middle point of the rotary sensor, place the " + 
+                    "sensor at approximately the middle point of travel and " +
+                    "then click next while it is at that point.",
             "To calibrate the near point of the rotary sensor, place the " + 
                     "sensor at the closest point of travel and then click " +
                     "next while it is at that point."
@@ -148,6 +151,7 @@ public class RotaryEncoderEAW0J extends Sensor {
         // these will hold maximum values of the data readings
         final Map<String, Integer> value = new HashMap<>();
         value.put("far", Integer.MIN_VALUE);
+        value.put("middle", Integer.MIN_VALUE);
         value.put("near", Integer.MIN_VALUE);
         
         // build up the data consumers
@@ -160,12 +164,18 @@ public class RotaryEncoderEAW0J extends Sensor {
         sampleConsumers.add(
             (String s) -> {
                // update to latest value
+               value.put("middle", Integer.parseInt(s));
+            });
+        sampleConsumers.add(
+            (String s) -> {
+               // update to latest value
                value.put("near", Integer.parseInt(s));
             });
         
         // formats and returns the calibration data
         Supplier<String> getDataCallback = () -> {
             return "(" + Integer.toString(value.get("near")) + "," +
+                    Integer.toString(value.get("middle")) + "," +
                     Integer.toString(value.get("far")) + ")";
         };
         
