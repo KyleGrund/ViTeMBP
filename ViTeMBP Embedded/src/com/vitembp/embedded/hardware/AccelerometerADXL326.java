@@ -140,8 +140,8 @@ public class AccelerometerADXL326 extends Sensor {
                // parse values
                String[] vals = s.replace("(", "").replace(")", "").split(",");
                float x = Float.parseFloat(vals[0]);
-               float y = Float.parseFloat(vals[0]);
-               float z = Float.parseFloat(vals[0]);
+               float y = Float.parseFloat(vals[1]);
+               float z = Float.parseFloat(vals[2]);
                
                // update maximum values
                maximums.put("x", Float.max(maximums.get("x"), x));
