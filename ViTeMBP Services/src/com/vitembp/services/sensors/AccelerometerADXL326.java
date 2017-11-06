@@ -25,6 +25,10 @@ import java.util.UUID;
  * Sensor driver for the ADXL326 16G accelerometer.
  */
 public class AccelerometerADXL326 extends AccelerometerThreeAxis {
+    /**
+     * Error message for invalid calibration data.
+     */
+    private static final String CALIBRATION_DATA_FORMAT_ERROR = "Calibration data must be of the format: \"[([xMin],[xMax]),([yMin],[yMax]),([zMin],[zMax])]\".";
     
     /**
      * A UUID representing the type of this sensor.
@@ -34,7 +38,7 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
     /**
      * The sensor calibration data.
      */
-    private final String calibration;
+    private final double calXMin, calXMax, calYMin, calYMax, calZMin, calZMax;
     
     /**
      * Initializes a new instance of the AccelerometerADXL326 class.
@@ -43,7 +47,25 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
      */
     AccelerometerADXL326(String name, String calData) {
         super(name);
-        this.calibration = calData;
+        if (!calData.startsWith("[") || !calData.endsWith("]")) {
+            throw new IllegalArgumentException(CALIBRATION_DATA_FORMAT_ERROR);
+        }
+        
+        // split into the x, y, z min/max pairs
+        String[] calPairs = calData.substring(1, calData.length() - 1).split(",");
+        if (calPairs.length != 6 ||
+                !calPairs[0].startsWith("(") || !calPairs[1].endsWith(")") ||
+                !calPairs[2].startsWith("(") || !calPairs[3].endsWith(")") ||
+                !calPairs[4].startsWith("(") || !calPairs[5].endsWith(")")) {
+            throw new IllegalArgumentException(CALIBRATION_DATA_FORMAT_ERROR);
+        }
+        
+        this.calXMin = Double.parseDouble(calPairs[0].substring(1));
+        this.calXMax = Double.parseDouble(calPairs[1].substring(0, calPairs[1].length() - 1));
+        this.calYMin = Double.parseDouble(calPairs[2].substring(1));
+        this.calYMax = Double.parseDouble(calPairs[3].substring(0, calPairs[3].length() - 1));
+        this.calZMin = Double.parseDouble(calPairs[4].substring(1));
+        this.calZMax = Double.parseDouble(calPairs[5].substring(0, calPairs[5].length() - 1));
     }
 
     @Override
@@ -58,6 +80,14 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
         String[] values = data.split(",");
         String trimmed = values[0].trim().substring(1);
         double value = Double.parseDouble(trimmed);
+        
+        // apply calibration
+        if (value < 0) {
+            value /= this.calXMin;
+        } else {
+            value /= this.calXMax;
+        }
+        
         return Optional.of(value);
     }
 
@@ -73,6 +103,14 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
         String[] values = data.split(",");
         String trimmed = values[1].trim();
         double value = Double.parseDouble(trimmed);
+        
+        // apply calibration
+        if (value < 0) {
+            value /= this.calYMin;
+        } else {
+            value /= this.calYMax;
+        }
+        
         return Optional.of(value);
     }
 
@@ -89,6 +127,14 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
         String trimmed = values[2].trim();
         trimmed = trimmed.substring(0, trimmed.length() - 1);
         double value = Double.parseDouble(trimmed);
+        
+        // apply calibration
+        if (value < 0) {
+            value /= this.calZMin;
+        } else {
+            value /= this.calZMax;
+        }
+        
         return Optional.of(value);
     }
 }

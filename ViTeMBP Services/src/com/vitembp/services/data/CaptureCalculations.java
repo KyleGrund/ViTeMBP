@@ -125,13 +125,6 @@ public class CaptureCalculations {
                 avg.add(((Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING)).entrySet().stream()
                         .collect(toMap(e -> e.getKey().getName(), Entry::getValue)));
                 
-                double mini = min.get(min.size() -1).get("Front Shock");
-                double maxi = max.get(min.size() -1).get("Front Shock");
-                double avgi = avg.get(min.size() -1).get("Front Shock");
-                if (avgi > maxi || avgi < mini || avgi > 500.0) {
-                    LOGGER.error("Averaging error.");
-                }
-                
                 // clear the Items
                 toProc.clear();
             }
@@ -158,8 +151,8 @@ public class CaptureCalculations {
             toReturn.append("[");
             toReturn.append(i);
             toReturn.append(",");
-            sensorNames.forEach(n -> {
-                toReturn.append(pt.get(n));
+            sensorNames.forEach(sensorName -> {
+                toReturn.append(pt.get(sensorName));
                 toReturn.append(",");
             });
             toReturn.setCharAt(toReturn.length() - 1, ']');

@@ -20,6 +20,7 @@ package com.vitembp.services.video;
 import com.vitembp.embedded.data.Capture;
 import com.vitembp.embedded.data.CaptureFactory;
 import com.vitembp.embedded.data.CaptureTypes;
+import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.imaging.SyncDiagFrameProcessor;
 import com.vitembp.services.ApiFunctions;
 import com.vitembp.services.FilenameGenerator;
@@ -31,7 +32,13 @@ import com.vitembp.services.data.StandardPipelines;
 import com.vitembp.services.imaging.Histogram;
 import com.vitembp.services.imaging.HistogramList;
 import com.vitembp.services.interfaces.AmazonSimpleStorageService;
+import com.vitembp.services.sensors.AccelerometerThreeAxis;
+import com.vitembp.services.sensors.DistanceSensor;
+import com.vitembp.services.sensors.RotarySensor;
+import com.vitembp.services.sensors.Sensor;
+import com.vitembp.services.sensors.SensorFactory;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -39,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -181,6 +189,172 @@ public class Processing {
 
         // upload to the destination in the target S3 bucket.
         destinationBucket.uploadPublic(localTempOutput.toFile(), videoKey);
+    }
+    
+    /**
+     * Exports un-calibrated data from the capture to a CSV file in the target bucket.
+     * @param capture The capture containing data to overlay on the video.
+     * @param outputBucket The bucket to store the output video in.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public static void exportRawData(UUID capture, String outputBucket) throws IOException {
+        // create S3 bucket to save data to
+        AmazonSimpleStorageService destinationBucket = new AmazonSimpleStorageService(outputBucket);
+        String outputFilename = "RawData.csv";
+        
+        // download the source file to temporary directory
+        Path tempDir = ServicesConfig.getConfig().getTemporaryDirectory();
+        
+        // create a temporary file for the output
+        Path localTempOutput = 
+                Files.createTempFile(tempDir, null, outputFilename);
+        localTempOutput.toFile().delete();
+
+        // get the capture to process from the database
+        Capture toProcess;
+        try {
+            Stream<Capture> allCaptures = java.util.stream.StreamSupport.stream(
+                    CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB).spliterator(),
+                    false);
+            toProcess = allCaptures.filter((Capture c) -> c.getId().equals(capture)).findFirst().get();
+        } catch (InstantiationException ex) {
+            throw new IOException("Could not read captures from database.", ex);
+        }
+
+        // write out header
+        try ( // create output file
+                FileWriter outFile = new FileWriter(localTempOutput.toFile())) {
+            // write out header
+            String[] names = toProcess.getSensorNames().toArray(new String[0]);
+            StringBuilder nameLine = new StringBuilder();
+            toProcess.getSensorNames().forEach((name) -> {
+                nameLine.append(name);
+                nameLine.append(",");
+            });
+            nameLine.deleteCharAt(nameLine.length() - 1);
+            nameLine.append('\n');
+            outFile.write(nameLine.toString());
+            
+            // process the data
+            Iterator<Sample> samples = toProcess.getSamples().iterator();
+            while (samples.hasNext()) {
+                Sample toWrite = samples.next();
+                StringBuilder nextLine = new StringBuilder();
+                for (String name : names) {
+                    if (toWrite.getSensorData().containsKey(name)) {
+                        nextLine.append('"');
+                        nextLine.append(toWrite.getSensorData().get(name));
+                        nextLine.append('"');
+                        nextLine.append(',');
+                    }
+                }
+                nextLine.deleteCharAt(nextLine.length() - 1);
+                nextLine.append("\n");
+                outFile.write(nextLine.toString());
+            }
+        }
+
+        // upload to the destination in the target S3 bucket.
+        destinationBucket.uploadPublic(localTempOutput.toFile(), capture.toString() + "/" + outputFilename);
+        
+        // delte local file
+        localTempOutput.toFile().delete();
+    }
+    
+    /**
+     * Exports calibrated data from the capture to a CSV file in the target bucket.
+     * @param capture The capture containing data to overlay on the video.
+     * @param outputBucket The bucket to store the output video in.
+     * @throws java.io.IOException If there is an IOException processing the
+     * video file.
+     */
+    public static void exportCalData(UUID capture, String outputBucket) throws IOException {
+        // create S3 bucket to save data to
+        AmazonSimpleStorageService destinationBucket = new AmazonSimpleStorageService(outputBucket);
+        String outputFilename = "CalibratedData.csv";
+        
+        // download the source file to temporary directory
+        Path tempDir = ServicesConfig.getConfig().getTemporaryDirectory();
+        
+        // create a temporary file for the output
+        Path localTempOutput = 
+                Files.createTempFile(tempDir, null, outputFilename);
+        localTempOutput.toFile().delete();
+
+        // get the capture to process from the database
+        Capture toProcess;
+        try {
+            Stream<Capture> allCaptures = java.util.stream.StreamSupport.stream(
+                    CaptureFactory.getCaptures(CaptureTypes.AmazonDynamoDB).spliterator(),
+                    false);
+            toProcess = allCaptures.filter((Capture c) -> c.getId().equals(capture)).findFirst().get();
+        } catch (InstantiationException ex) {
+            throw new IOException("Could not read captures from database.", ex);
+        }
+
+        // create output file
+        try (FileWriter outFile = new FileWriter(localTempOutput.toFile())) {
+            // write out header
+            String[] names = toProcess.getSensorNames().toArray(new String[0]);
+            StringBuilder nameLine = new StringBuilder();
+            toProcess.getSensorNames().forEach((name) -> {
+                nameLine.append(name);
+                nameLine.append(",");
+            });
+            nameLine.deleteCharAt(nameLine.length() - 1);
+            nameLine.append('\n');
+            outFile.write(nameLine.toString());
+            
+            // get sensors for processing calibrated data
+            Map<String, Sensor> sensors = SensorFactory.getSensors(toProcess);
+            
+            // process the data
+            Iterator<Sample> samples = toProcess.getSamples().iterator();
+            while (samples.hasNext()) {
+                Sample toWrite = samples.next();
+                StringBuilder nextLine = new StringBuilder();
+                for (String name : names) {
+                    // write data
+                    if (toWrite.getSensorData().containsKey(name)) {
+                        // get calibrated data
+                        Sensor sensor = sensors.get(name);
+                        String exportData = "";
+                        if (sensor instanceof RotarySensor) {
+                            exportData = Double.toString(
+                                ((RotarySensor)sensor).getPositionPercentage(toWrite).get());
+                        } else if (sensor instanceof DistanceSensor) {
+                            exportData = Double.toString(
+                                ((DistanceSensor)sensor).getDistancePercent(toWrite).get());
+                        }else if (sensor instanceof AccelerometerThreeAxis) {
+                            double x = ((AccelerometerThreeAxis)sensor).getXAxisG(toWrite).get();
+                            double y = ((AccelerometerThreeAxis)sensor).getYAxisG(toWrite).get();
+                            double z = ((AccelerometerThreeAxis)sensor).getZAxisG(toWrite).get();
+                            
+                            exportData = Double.toString(Math.sqrt(
+                                    Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)));
+                        } else {
+                            LOGGER.error("Unknown sensor type exporting calibrated data.");
+                        }
+                        
+                        // write out calibrated data
+                        nextLine.append('"');
+                        nextLine.append(exportData);
+                        nextLine.append('"');
+                        nextLine.append(',');
+                    }
+                }
+                nextLine.deleteCharAt(nextLine.length() - 1);
+                nextLine.append("\n");
+                outFile.write(nextLine.toString());
+            }
+        }
+
+        // upload to the destination in the target S3 bucket.
+        destinationBucket.uploadPublic(localTempOutput.toFile(), capture.toString() + "/" + outputFilename);
+        
+        // delte local file
+        localTempOutput.toFile().delete();
     }
 
     /**

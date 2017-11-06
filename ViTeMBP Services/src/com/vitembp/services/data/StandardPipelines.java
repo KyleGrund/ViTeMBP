@@ -18,6 +18,7 @@
 package com.vitembp.services.data;
 
 import com.vitembp.embedded.data.Capture;
+import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.sensors.AccelerometerThreeAxis;
 import com.vitembp.services.sensors.DistanceSensor;
 import com.vitembp.services.sensors.RotarySensor;
@@ -30,6 +31,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -65,6 +68,30 @@ public class StandardPipelines {
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
+    
+    /**
+     * Function that returns a vector absolute value function for a three axis
+     * accelerometer.
+     */
+    private static Function<AccelerometerThreeAxis, Function<Sample, Optional<Double>>> absoluteValue = (sensor) -> {
+        return (sample) -> {
+            // read out x, y, z values
+            Optional<Double> x = ((AccelerometerThreeAxis)sensor).getXAxisG(sample);
+            Optional<Double> y = ((AccelerometerThreeAxis)sensor).getYAxisG(sample);
+            Optional<Double> z = ((AccelerometerThreeAxis)sensor).getZAxisG(sample);
+
+            // if any values are not present calculation is meaningless, so return empty
+            if (!x.isPresent() || !y.isPresent() || !z.isPresent()) {
+                return Optional.empty();
+            }
+
+            // return the vector absolute value of the reading
+            return Optional.of(Math.sqrt(
+                    Math.pow(x.get(), 2) +
+                    Math.pow(y.get(), 2) +
+                    Math.pow(z.get(), 2)));
+        };
+    };
     
     /**
      * Creates a video overlay generation pipeline.
@@ -125,7 +152,7 @@ public class StandardPipelines {
         
         // add a count for number of elements
         toBuild.add(new CountElement(ELEMENT_COUNT_BINDING));
-        
+                
         // for each sensor calculate min, max, and average elements
         sensors.values().forEach((sensor) -> addAverages(sensor, toBuild));
         sensors.values().forEach((sensor) -> addMaximums(sensor, toBuild));
@@ -151,13 +178,8 @@ public class StandardPipelines {
                     AVERAGE_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
-                    ((AccelerometerThreeAxis)sensor)::getXAxisG, ELEMENT_COUNT_BINDING,
-                    AVERAGE_BINDING, sensor));
-            toBuild.add(new SampleAverageElement(
-                    ((AccelerometerThreeAxis)sensor)::getYAxisG, ELEMENT_COUNT_BINDING,
-                    AVERAGE_BINDING, sensor));
-            toBuild.add(new SampleAverageElement(
-                    ((AccelerometerThreeAxis)sensor)::getZAxisG, ELEMENT_COUNT_BINDING,
+                    StandardPipelines.absoluteValue.apply((AccelerometerThreeAxis)sensor),
+                    ELEMENT_COUNT_BINDING,
                     AVERAGE_BINDING, sensor));
         }
     }
@@ -179,13 +201,7 @@ public class StandardPipelines {
                     MAX_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMaxValueElement(
-                    ((AccelerometerThreeAxis)sensor)::getXAxisG,
-                    MAX_BINDING, sensor));
-            toBuild.add(new SampleMaxValueElement(
-                    ((AccelerometerThreeAxis)sensor)::getYAxisG,
-                    MAX_BINDING, sensor));
-            toBuild.add(new SampleMaxValueElement(
-                    ((AccelerometerThreeAxis)sensor)::getZAxisG,
+                    StandardPipelines.absoluteValue.apply((AccelerometerThreeAxis)sensor),
                     MAX_BINDING, sensor));
         }
     }
@@ -207,13 +223,7 @@ public class StandardPipelines {
                     MIN_BINDING, sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleMinValueElement(
-                    ((AccelerometerThreeAxis)sensor)::getXAxisG,
-                    MIN_BINDING, sensor));
-            toBuild.add(new SampleMinValueElement(
-                    ((AccelerometerThreeAxis)sensor)::getYAxisG,
-                    MIN_BINDING, sensor));
-            toBuild.add(new SampleMinValueElement(
-                    ((AccelerometerThreeAxis)sensor)::getZAxisG,
+                    StandardPipelines.absoluteValue.apply((AccelerometerThreeAxis)sensor),
                     MIN_BINDING, sensor));
         }
     }

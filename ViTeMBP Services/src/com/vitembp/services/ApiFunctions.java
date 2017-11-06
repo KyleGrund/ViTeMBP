@@ -103,6 +103,40 @@ public final class ApiFunctions {
     }
     
     /**
+     * Exports raw data to a CSV file and outputs to the S3 bucket.
+     * @param capture The capture to process.
+     * @param destinationBucket The bucket to store the output in.
+     * @return A string representing the result of the operation.
+     * @throws IOException If there is an IOException processing the data.
+     */
+    public String exportRaw(UUID capture, String destinationBucket) throws IOException {
+        try {
+            Processing.exportRawData(capture, destinationBucket);
+        } catch (Exception ex) {
+            LOGGER.error("Exception exporting raw capture data.", ex);
+            return "Could not export raw capture data.";
+        }
+        return "Raw capture data successfully exported for download.";
+    }
+    
+    /**
+     * Exports calibrated data to a CSV file and outputs to the S3 bucket.
+     * @param capture The capture to process.
+     * @param destinationBucket The bucket to store the output in.
+     * @return A string representing the result of the operation.
+     * @throws IOException If there is an IOException processing the data.
+     */
+    public String exportCal(UUID capture, String destinationBucket) throws IOException {
+        try {
+            Processing.exportCalData(capture, destinationBucket);
+        } catch (Exception ex) {
+            LOGGER.error("Exception exporting calibrated capture data.", ex);
+            return "Could not export calibrated capture data.";
+        }
+        return "Calibrated capture data successfully exported for download.";
+    }
+    
+    /**
      * Deletes a capture and all of its associated data and index entries.
      * @param toDelete The UUID of the capture to delete.
      * @return A message indicating the disposition of the request.

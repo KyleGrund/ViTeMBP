@@ -81,6 +81,44 @@ public class SQSTarget {
                 LOGGER.error("Exception while deleting capture.", ex);
                 return "Could not delete capture.";
             }
+        } else if (cmd.toUpperCase().startsWith("EXPORTRAW")) {
+            if (cmd.length() < 48) {
+                return "Export raw command must be of form: \"exportraw [capture uuid] [outputbucket]\".";
+            }
+            
+            String[] splitCmd = cmd.split(" ");
+            
+            if (splitCmd.length < 3) {
+                return "Export raw command must be of form: \"exportraw [capture uuid] [outputbucket]\".";
+            }
+            
+            UUID toProcess = UUID.fromString(splitCmd[1]);
+            
+            try {
+                return functions.exportRaw(toProcess, splitCmd[2]);
+            } catch (Exception ex) {
+                LOGGER.error("Exception while exporting raw capture data.", ex);
+                return "Could not export raw capture data.";
+            }
+        } else if (cmd.toUpperCase().startsWith("EXPORTCAL")) {
+            if (cmd.length() < 48) {
+                return "Export cal command must be of form: \"exportcal [capture uuid] [outputbucket]\".";
+            }
+            
+            String[] splitCmd = cmd.split(" ");
+            
+            if (splitCmd.length < 3) {
+                return "Export cal command must be of form: \"exportcal [capture uuid] [outputbucket]\".";
+            }
+            
+            UUID toProcess = UUID.fromString(splitCmd[1]);
+            
+            try {
+                return functions.exportCal(toProcess, splitCmd[2]);
+            } catch (Exception ex) {
+                LOGGER.error("Exception while exporting cal capture data.", ex);
+                return "Could not export cal capture data.";
+            }
         } else {
         
             // process command
