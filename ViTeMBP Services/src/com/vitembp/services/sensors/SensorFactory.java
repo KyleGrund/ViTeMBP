@@ -49,6 +49,8 @@ public class SensorFactory {
             return new AccelerometerFXOS8700CQSerial(name, calData);
         } else if (DistanceVL53L0X.TYPE_UUID.equals(type)) {
             return new DistanceVL53L0X(name, calData);
+        }else if (DistanceVL6180X.TYPE_UUID.equals(type)) {
+            return new DistanceVL6180X(name, calData);
         } else if (AccelerometerADXL326.TYPE_UUID.equals(type)){
             return new AccelerometerADXL326(name, calData);
         }
