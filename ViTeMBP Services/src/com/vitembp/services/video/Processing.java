@@ -153,7 +153,8 @@ public class Processing {
         sourceBucket.download(videoKey, localVideoSource);
         
         // find video sync frames
-        List<Integer> frames = Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(), ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT);
+        List<Integer> frames = com.vitembp.services.audio.Processing.findSyncFrames(localVideoSource.getAbsolutePath(), 3000.0);
+        frames.addAll(Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(), ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT));
         
         if (frames.isEmpty()) {
             LOGGER.warn("No sync frames detected, will sync to frame 0.");
