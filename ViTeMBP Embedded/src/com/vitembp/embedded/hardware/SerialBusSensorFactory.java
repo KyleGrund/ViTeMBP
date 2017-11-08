@@ -43,6 +43,8 @@ class SerialBusSensorFactory {
             
             if (DistanceVL53L0X.TYPE_UUID.toString().equals(resp)) {
                 toReturn.add(new DistanceVL53L0X(bus));
+            } else if (DistanceVL6180X.TYPE_UUID.toString().equals(resp)) {
+                toReturn.add(new DistanceVL6180X(bus));
             } else if (AccelerometerFXOS8700CQSerial.TYPE_UUID.toString().equals(resp)) {
                 toReturn.add(new AccelerometerFXOS8700CQSerial(bus));
             } else if (RotaryEncoderEAW0J.TYPE_UUID.toString().equals(resp)) {
@@ -56,5 +58,4 @@ class SerialBusSensorFactory {
             throw new IOException("Error enumerating bus: " + bus.getName(), ex);
         }
     }
-    
 }
