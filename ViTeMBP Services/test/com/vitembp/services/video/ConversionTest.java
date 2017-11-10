@@ -76,6 +76,7 @@ public class ConversionTest {
         } catch (UnsupportedEncodingException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
+        
         // build a temporary directory for images
         Path tempDir = Files.createTempDirectory("vitempbTest");
         
