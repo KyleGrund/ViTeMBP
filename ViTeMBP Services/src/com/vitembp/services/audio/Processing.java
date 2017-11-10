@@ -158,7 +158,7 @@ public class Processing {
         int minRunLength = (int)Math.round(signalFrameLength * 0.25);
         
         // the target maximum run length, serves as a reality check
-        int maxRunLength = (int)Math.round(signalFrameLength * 0.25);
+        int maxRunLength = (int)Math.round(signalFrameLength * 1.25);
         
         // stores a map of run length to first frame the length was found at
         Map<Integer, Integer> values = new HashMap<>();
