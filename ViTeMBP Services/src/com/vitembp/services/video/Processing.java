@@ -46,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -154,12 +155,17 @@ public class Processing {
         
         // find video sync frames
         List<Integer> frames = com.vitembp.services.audio.Processing.findSyncFrames(localVideoSource.getAbsolutePath(), 3000.0);
-        frames.addAll(Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(), ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT));
+        //frames.addAll(Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(), ApiFunctions.COLOR_CHANNELS.GREEN, FilenameGenerator.PNG_NUMERIC_OUT));
         
         if (frames.isEmpty()) {
             LOGGER.warn("No sync frames detected, will sync to frame 0.");
-            frames.add(0);
+        } else {
+            LOGGER.info("Found sync frames: " + Arrays.toString(frames.toArray()));
         }
+        
+        // get the first frame
+        int syncFrame = frames.stream().min(Integer::compare).orElse(0);
+        
         // create a temporary file for the output
         Path localTempOutput = 
                 Files.createTempFile(tempDir, null, videoFilename.toString());
@@ -186,7 +192,7 @@ public class Processing {
         }
 
         // process the data
-        Map<String, Object> results = CaptureProcessor.processUntilFlush(toProcess, toTest, 75);
+        Map<String, Object> results = CaptureProcessor.processUntilFlush(toProcess, toTest, syncFrame);
 
         // upload to the destination in the target S3 bucket.
         destinationBucket.uploadPublic(localTempOutput.toFile(), videoKey);

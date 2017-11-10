@@ -17,22 +17,31 @@
  */
 package com.vitembp.services.audio;
 
-import com.meapsoft.FFT;
 import com.vitembp.services.video.VideoFileInfo;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Functions for processing audio.
  */
 public class Processing {
+    /**
+     * Class logger instance.
+     */
+    private static final Logger LOGGER = LogManager.getLogger();
+    
     /**
      * Finds sync frames based on the audio signal.
      * @param sourceFile The source wave file.
@@ -41,7 +50,7 @@ public class Processing {
      * @throws java.io.IOException
      */
     public static List<Integer> findSyncFrames(String sourceFile, double signalFrequency) throws IOException {
-        List<Integer> syncFrames = new ArrayList<>();
+        Set<Integer> syncFrames = new HashSet<>();
         
         // create a temporary file for the output
         Path localTempOutput = Files.createTempFile("vitembp", ".wav");
@@ -57,103 +66,86 @@ public class Processing {
         VideoFileInfo videoInfo = new VideoFileInfo(new File(sourceFile));
         
         // the list of values for each frame
-        List<Double> frameValues = new ArrayList<Double>();
+        List<Double> frameValues = new ArrayList<>();
         
-        int frameCount = 0;
+        // the number of frames to process (limit to 30 seconds)
+        int frameLimit = (int)Math.round(videoInfo.getFrameRate() * 30);
         
         // somePathName is a pre-existing string whose value was
         // based on a user selection.
         try {
+            // create audio streasm
             AudioInputStream audioInputStream = 
                     AudioSystem.getAudioInputStream(fileIn);
+            
+            // extract important information about audio format
             AudioFormat format = audioInputStream.getFormat();
             int bytesPerFrame = format.getFrameSize();
-            float frameRate = format.getFrameRate();
             int channels = format.getChannels();
             int bytesPerChannel = bytesPerFrame / channels;
             float audioSampleRate = format.getSampleRate();
             int sampleSizeBits = format.getSampleSizeInBits();
             boolean isBigEndian = format.isBigEndian();
             
+            // calculate video/audio related values
             int samplesPerVideoFrame = (int)Math.round(audioSampleRate/videoInfo.getFrameRate());
             int audioBytesPerVideoFrame = samplesPerVideoFrame * bytesPerFrame;
-            
-            // 2 ^ floor(log base 2(samplesPerVideoFrame))
-            int fftSize = (int)Math.pow(2, Math.floor(Math.log(samplesPerVideoFrame) / Math.log(2)));
-            
-            // find the fft bin to examine
-            float binWidth = frameRate / 2;
-            int targetBin = (int)Math.round(signalFrequency / binWidth);
+
+            // find the fft bin to examine for the desired frequency
+            int targetBin = samplesPerVideoFrame - (int)Math.round((signalFrequency / (audioSampleRate / samplesPerVideoFrame)) + 1);
             
             // build input buffer
             byte[] input = new byte[audioBytesPerVideoFrame];
             
-            try {
-                int bytesRead;
-                FFT fft = new FFT(fftSize);
-                double[] real = new double[fftSize];
-                double[] imaginary = new double[fftSize];
-                
-                // continue if we read bytes from the file
-                while ((bytesRead = audioInputStream.read(input)) != -1) {
-                    frameCount++;
-                    // seed fft data
-                    // if we didn't read a full video frame of audio, handle
-                    // the needed offset
-                    int framesRead = bytesRead / bytesPerFrame;
-                    int frameOffset = 0;
-                    if (framesRead < fftSize) {
-                        frameOffset = fftSize - framesRead;
-                        for (int i = 0; i < frameOffset; i++) {
-                            real[i] = 0;
-                            imaginary[i] = 0;
-                        }
-                    }
-                    
-                    for (int i = frameOffset; i < fftSize; i++) {
-                        real[i] = 0;
-                        imaginary[i] = 0;
-                        
-                        // average data from channels
-                        for (int j = 0; j < channels; j++) {
-                            real[i] += getAudioSample(input, i - frameOffset, j, bytesPerChannel, sampleSizeBits, channels, isBigEndian) / channels;
-                        }
-                    }
-                    
-                    // perform the FFT
-                    fft.fft(real, imaginary);
-                    
-                    // calculate magnitude of bin for frame
-                    double value = Math.sqrt(Math.pow(real[targetBin], 2) + Math.pow(imaginary[targetBin], 2));
-                    
-                    // store the frame value for later analysis
-                    frameValues.add(value);
+            // holds the number of bytes read to check for partial data
+            int bytesRead;
+
+            // create FFT engine
+            org.jtransforms.fft.DoubleFFT_1D fft = new org.jtransforms.fft.DoubleFFT_1D(samplesPerVideoFrame);
+
+            // holds audio data for fft processing
+            double[] fftData = new double[samplesPerVideoFrame*2];
+
+            // continue if we read bytes from the file
+            while ((bytesRead = audioInputStream.read(input)) != -1) {
+                // do not process partial data sample
+                if (bytesRead < audioBytesPerVideoFrame) {
+                    break;
                 }
-            } catch (Exception ex) { 
-              // Handle the error...
+                
+                // seed fft data
+                for (int i = 0; i < samplesPerVideoFrame; i++) {
+                    fftData[i * 2] = getAudioSample(input, i, 0, bytesPerChannel, sampleSizeBits, channels, isBigEndian);
+                    fftData[i * 2 + 1] = 0;
+                }
+
+                // perform the FFT
+                fft.realForwardFull(fftData);
+
+                // calculate magnitude of bin for frame
+                double value2 = Math.sqrt(Math.pow(fftData[targetBin], 2) + Math.pow(fftData[targetBin + 1], 2));
+                frameValues.add(value2);
+
+                // only check the beginning of the audio file for signal
+                if (frameValues.size() >= frameLimit) {
+                    break;
+                }
             }
-        } catch (Exception e) {
-          // Handle the error...
+        } catch (IOException | UnsupportedAudioFileException e) {
+          LOGGER.error("Unexpected error performing FFT on video audio.", e);
         }
         
-        // find some average, mean, median, or mode?
-        
-        // find above average by ammount?
-        
-        // find peak frame?
-        int peak = 0;
+        // find peak FFT value
         double max = Double.MIN_VALUE;
         for (int i = 0; i < frameValues.size(); i++) {
             double val = frameValues.get(i);
             if (val > max) {
                 max = val;
-                peak = i;
             }
         }
-        syncFrames.add(peak);
         
-        // find first within %20 of peak
-        double target = 0.8 * max;
+        // find first value within %10 of peak
+        double target = 0.9 * max;
         int firstFrame = -1;
         for (int i = 0; i < frameValues.size(); i++) {
             if (frameValues.get(i) >= target) {
@@ -161,54 +153,102 @@ public class Processing {
                 break;
             }
         }
+        
+        // add this frame to the list of sync frames
         syncFrames.add(firstFrame);
         
         // remove temp file
         localTempOutput.toFile().delete();
         
         // return frames
-        return syncFrames;
+        return new ArrayList<>(syncFrames);
     }
     
+    /**
+     * Calculates the value of the selected audio sample from the give data.
+     * @param data The sampled audio data.
+     * @param offset The offset in audio frames.
+     * @param channel The channel in the wave data to calculate.
+     * @param bytesPerSample The number of bytes per data sample.
+     * @param sampleSizeBits The size of the samples in bits.
+     * @param channelCount The total number of audio channels.
+     * @param isBigEndian Indicates whether the data is stored big endian.
+     * @return The calculated audio sample value.
+     */
     private static double getAudioSample(byte[] data, int offset, int channel, int bytesPerSample, int sampleSizeBits, int channelCount, boolean isBigEndian) {
+        // check the audio channel is in range
         if (channel >= channelCount) {
             throw new IllegalArgumentException("Selected channel was greater than number of chanels in the data.");
         }
         
+        // calculate the index of the selected sample
         int index = offset * bytesPerSample * channelCount + (channel * bytesPerSample);
         
+        // check the sample is contained in the data
         if (index + bytesPerSample >= data.length) {
             throw new IllegalArgumentException("Indexed sample is out of range.");
         }
         
+        // holds the final calculated audio sample value
         double value = 0;
+        
+        // the last(end) byte which must be processed seperately to handle the
+        // sign-bit if 
         int lastByte = 0;
+        
+        // single byte (8-bit) audio sampling is stored as an unsigned byte
+        if (bytesPerSample == 1) {
+            return data[index] & 0x00FF;
+        }
+        
+        // all other audio is stored as a signed value, so the most significant
+        // byte must be processed to interpret the MSB as a sign bit
+        // handle endianess
         if (isBigEndian) {
+            // handle non MSBs as unsigned data
             for (int i = bytesPerSample - 1; i > 0; i--) {
                 long sample = ((long)(data[index + i] & 0x00FF)) << (8 * i);
                 value += sample;
             }
+            
+            // save MSB for processing below
             lastByte = (int)(data[index] & 0x00FF);
         } else {
+            // handle non MSBs as unsigned data
             for (int i = 0; i < bytesPerSample - 1; i++) {
                 long sample = ((long)(data[index + i] & 0x00FF)) << (8 * i);
                 value += sample;
             }
+            
+            // save MSB for processing below
             lastByte = (int)(data[index + (bytesPerSample - 1)] & 0x00FF);
         }
         
-        // handle last byte
+        // handle last byte may not be 'full' if the sample size is not
+        // evenly divisible by 8bits
+        // shift the MSB to the lowest bit (ones place)
         int shiftLen = ((sampleSizeBits - 1) % 8);
         int isNeg = lastByte >> shiftLen;
+        
+        // create a mask to extract all non MSB bits
         int mask = 0x00FF;
         mask >>= (8 - shiftLen);
+        
+        // get the value without the sign bit using the mask
         long lastVal = lastByte & mask;
+        
+        // shift the value to the appropriate bit in the long
         lastVal <<= 8 * (bytesPerSample - 1);
+        
+        // add the value to the audio sample data
         value += lastVal;
+        
+        // negate if the sign bit was a 1
         if (isNeg == 1) {
             value *= -1;
         }
         
+        // return the final extracted value
         return value;
     }
 }
