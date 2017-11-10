@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -53,8 +52,6 @@ public class Processing {
      * @throws java.io.IOException
      */
     public static List<Integer> findSyncFrames(String sourceFile, double signalFrequency) throws IOException {
-        Set<Integer> syncFrames = new HashSet<>();
-        
         // create a temporary file for the output
         Path localTempOutput = Files.createTempFile("vitembp", ".wav");
         localTempOutput.toFile().delete();
@@ -142,6 +139,26 @@ public class Processing {
           LOGGER.error("Unexpected error performing FFT on video audio.", e);
         }
         
+        // find the sync frames
+        Set<Integer> syncFrames = findSyncFramesByRunLength(frameValues, signalFrameLength);
+        
+        // remove temp file
+        localTempOutput.toFile().delete();
+        
+        // return frames
+        return new ArrayList<>(syncFrames);
+    }
+
+    /**
+     * Finds sync frames by finding the maximum value and then the longest run
+     * within a percentage of this value of a reasonable length.
+     * @param frameValues The frame FFT values.
+     * @param signalFrameLength The length of the signal to find.
+     * @return A set containing the frame which was found, if any.
+     */
+    private static Set<Integer> findSyncFramesByRunLength(List<Double> frameValues, int signalFrameLength) {
+        Set<Integer> syncFramesFound = new HashSet<>();
+        
         // find peak FFT value
         double max = Double.MIN_VALUE;
         for (int i = 0; i < frameValues.size(); i++) {
@@ -192,15 +209,45 @@ public class Processing {
             
             // if the run was within the sanity check range, record it
             if (largestRun > minRunLength && largestRun < maxRunLength) {
-                syncFrames.add(values.get(largestRun));
+                syncFramesFound.add(values.get(largestRun));
             }
         }
         
-        // remove temp file
-        localTempOutput.toFile().delete();
+        return syncFramesFound;
+    }
+    
+    /**
+     * Finds sync frames by finding the maximum value and then the first frame
+     * within a percentage of this value.
+     * @param frameValues The frame FFT values.
+     * @return A set containing the frame which was found, if any.
+     */
+    private static Set<Integer> findSyncFramesByFirstCloseToMax(List<Double> frameValues) {
+        Set<Integer> syncFramesFound = new HashSet<>();
         
-        // return frames
-        return new ArrayList<>(syncFrames);
+        // find peak FFT value
+        double max = Double.MIN_VALUE;
+        for (int i = 0; i < frameValues.size(); i++) {
+            double val = frameValues.get(i);
+            if (val > max) {
+                max = val;
+            }
+        }
+        
+        // find first value within %10 of peak
+        double target = 0.9 * max;
+        int firstFrame = -1;
+        for (int i = 0; i < frameValues.size(); i++) {
+            if (frameValues.get(i) >= target) {
+                firstFrame = i;
+                break;
+            }
+        }
+        
+        // add this frame to the list of sync frames
+        syncFramesFound.add(firstFrame);
+        
+        return syncFramesFound;
     }
     
     /**
