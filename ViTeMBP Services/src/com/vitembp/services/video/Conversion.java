@@ -55,6 +55,8 @@ public class Conversion {
                 "-vn",
                 "-f",
                 "wav",
+                "-v",
+                "quiet",
                 destination
         );
         

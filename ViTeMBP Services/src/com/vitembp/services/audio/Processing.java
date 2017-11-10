@@ -23,9 +23,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -70,6 +73,10 @@ public class Processing {
         
         // the number of frames to process (limit to 30 seconds)
         int frameLimit = (int)Math.round(videoInfo.getFrameRate() * 30);
+        
+        // the lenght of the audio signal in frames
+        double signalTimeInSeconds = 2.0;
+        int signalFrameLength = (int)Math.round(videoInfo.getFrameRate() * signalTimeInSeconds);
         
         // somePathName is a pre-existing string whose value was
         // based on a user selection.
@@ -143,19 +150,51 @@ public class Processing {
                 max = val;
             }
         }
+
+        // find first frame with the next 25% of pulse is within %20 of peak
+        double target = 0.8 * max;
         
-        // find first value within %10 of peak
-        double target = 0.9 * max;
-        int firstFrame = -1;
-        for (int i = 0; i < frameValues.size(); i++) {
-            if (frameValues.get(i) >= target) {
-                firstFrame = i;
-                break;
+        // the target minimum run length, serves as a reality check
+        int minRunLength = (int)Math.round(signalFrameLength * 0.25);
+        
+        // the target maximum run length, serves as a reality check
+        int maxRunLength = (int)Math.round(signalFrameLength * 0.25);
+        
+        // stores a map of run length to first frame the length was found at
+        Map<Integer, Integer> values = new HashMap<>();
+        
+        // step through all values
+        for (int startFrame = 0; startFrame < frameValues.size(); startFrame++) {
+            // if the value is in the target check the run length
+            if (frameValues.get(startFrame) >= target) {
+                for (int runLength = 1; runLength < frameValues.size(); runLength++) {
+                    if (frameValues.get(startFrame + runLength) < target) {
+                        // record run length if not already found
+                        // this prefers earlier frames of same length
+                        if (!values.containsKey(runLength)) {
+                            values.put(runLength, startFrame);
+                        }
+                        
+                        // no need to check before this value
+                        startFrame = startFrame + runLength + 1;
+                        break;
+                    }
+                }
             }
         }
         
-        // add this frame to the list of sync frames
-        syncFrames.add(firstFrame);
+        // if we found any valid runs
+        if (values.size() > 0) {
+            // find the longest run, we only check the longest to be in range,
+            // if it is not we likely either have no signal or our signal to
+            // noise ratio is too low
+            int largestRun = values.keySet().stream().sorted(Integer::max).findFirst().get();
+            
+            // if the run was within the sanity check range, record it
+            if (largestRun > minRunLength && largestRun < maxRunLength) {
+                syncFrames.add(values.get(largestRun));
+            }
+        }
         
         // remove temp file
         localTempOutput.toFile().delete();
