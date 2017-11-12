@@ -267,9 +267,14 @@ public class Processing {
                         nextLine.append(',');
                     }
                 }
-                nextLine.deleteCharAt(nextLine.length() - 1);
-                nextLine.append("\n");
-                outFile.write(nextLine.toString());
+                
+                // if there was any sensor data change the trailing comma to a
+                // newline and write the line to the output file.
+                if (nextLine.length() > 0) {
+                    nextLine.deleteCharAt(nextLine.length() - 1);
+                    nextLine.append("\n");
+                    outFile.write(nextLine.toString());
+                }
             }
         }
 
@@ -362,9 +367,14 @@ public class Processing {
                         nextLine.append(',');
                     }
                 }
-                nextLine.deleteCharAt(nextLine.length() - 1);
-                nextLine.append("\n");
-                outFile.write(nextLine.toString());
+                
+                // if there was any sensor data change the trailing comma to a
+                // newline and write the line to the output file.
+                if (nextLine.length() > 0) {
+                    nextLine.deleteCharAt(nextLine.length() - 1);
+                    nextLine.append("\n");
+                    outFile.write(nextLine.toString());
+                }
             }
         }
 
