@@ -146,6 +146,7 @@ public class Processing {
         AmazonSimpleStorageService sourceBucket = new AmazonSimpleStorageService(inputBucket);
         AmazonSimpleStorageService destinationBucket = new AmazonSimpleStorageService(outputBucket);
 
+        LOGGER.info("Downloading video from S3 storage.");
         // download the source file to temporary directory
         Path tempDir = ServicesConfig.getConfig().getTemporaryDirectory();
         Path videoFilename = Paths.get(videoKey).getFileName();
@@ -153,6 +154,7 @@ public class Processing {
         File localVideoSource = localVideoSourcePath.toFile();
         sourceBucket.download(videoKey, localVideoSource);
         
+        LOGGER.info("Detecting audio sync signal.");
         // find video sync frames
         // first try audio signal as it is more reliable
         List<Integer> frames = 
@@ -162,6 +164,7 @@ public class Processing {
         
         // then if that was unsuccessful, try the video signal
         if (frames.size() < 1) {
+            LOGGER.info("Audio sync signal detection failed, trying video.");
             frames.addAll(
                     Processing.findChannelSyncFrames(localVideoSource.getAbsolutePath(),
                             ApiFunctions.COLOR_CHANNELS.GREEN,
