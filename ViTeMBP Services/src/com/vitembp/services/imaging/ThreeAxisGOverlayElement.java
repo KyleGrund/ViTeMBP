@@ -20,6 +20,7 @@ package com.vitembp.services.imaging;
 import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.data.PipelineExecutionException;
 import com.vitembp.services.sensors.AccelerometerThreeAxis;
+import java.text.DecimalFormat;
 
 /**
  * Class creating an overlay for a three-axis accelerometer.
@@ -59,6 +60,11 @@ class ThreeAxisGOverlayElement extends OverlayElement {
      * The sensor that will read data to overlay.
      */
     private final AccelerometerThreeAxis sensor;
+    
+    /**
+     * Used to format the text value display.
+     */
+    private final DecimalFormat formatter = new DecimalFormat("#.##");
     
     /**
      * Initializes a new instance of the ThreeAxisGOverlayElement class.
@@ -113,9 +119,18 @@ class ThreeAxisGOverlayElement extends OverlayElement {
         double yValue = this.sensor.getYAxisG(data).orElse(minValue);
         double zValue = this.sensor.getZAxisG(data).orElse(minValue);
         
+        double magnatude = Math.sqrt(
+                Math.pow(xValue, 2) + Math.pow(yValue, 2) + Math.pow(zValue, 2));
+        
+        // render a bar
+        builder.addHorizontalProgressBar(
+                (float)(magnatude / this.maxValue),
+                topLeftX,
+                topLeftY,
+                topLeftX + TOTAL_WIDTH,
+                topLeftY + 40 - BORDER_PAD);
+        
         // render the data
-        builder.addText("X: " + Double.toString(xValue), topLeftX, topLeftY);
-        builder.addText("Y: " + Double.toString(yValue),  topLeftX, topLeftY + 20);
-        builder.addText("Z: " + Double.toString(zValue),  topLeftX, topLeftY + 40);
+        builder.addText("Gs: " + this.formatter.format(magnatude),  topLeftX, topLeftY + 40);
     }
 }

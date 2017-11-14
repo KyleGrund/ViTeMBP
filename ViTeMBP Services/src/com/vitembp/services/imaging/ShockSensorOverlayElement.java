@@ -20,6 +20,10 @@ package com.vitembp.services.imaging;
 import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.data.PipelineExecutionException;
 import com.vitembp.services.sensors.DistanceSensor;
+import java.text.DecimalFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Creates an overlay for a linear shock sensor.
@@ -46,6 +50,11 @@ public class ShockSensorOverlayElement extends OverlayElement {
     private static final int BORDER_PAD = 20;
     
     /**
+     * The number of data point to average to smooth noisy data.
+     */
+    private static final int SMOOTHING_DEPTH = 3;
+    
+    /**
      * The minimum possible value the sensor can read in Gs.
      */
     private final double minValue;
@@ -60,6 +69,16 @@ public class ShockSensorOverlayElement extends OverlayElement {
      */
     private final DistanceSensor sensor;
     
+    /**
+     * Previous data for averaging.
+     */
+    private final LinkedList<Double> previousValues = new LinkedList<>();
+    
+    /**
+     * Used to format the text value display.
+     */
+    private final DecimalFormat formatter = new DecimalFormat("###");
+        
     /**
      * Initializes a new instance of the ThreeAxisGOverlayElement class.
      * @param upperLeftX The X-coordinate of the upper left bounding point.
@@ -77,11 +96,31 @@ public class ShockSensorOverlayElement extends OverlayElement {
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.sensor = sensor;
+        
+        // seed averaging data
+        while (previousValues.size() < SMOOTHING_DEPTH) {
+            previousValues.add(this.maxValue);
+        }
     }
     
     @Override
     void apply(DataOverlayBuilder builder, Sample data) {
-        double percentage = this.sensor.getDistancePercent(data).orElse(this.minValue);
+        // read in new data failing to an average of previous data if
+        // none is available
+        double percentage;
+        Optional<Double> reading = this.sensor.getDistancePercent(data);
+        if (reading.isPresent()) {
+            percentage= reading.get();
+        } else {
+            percentage = this.average(this.previousValues);
+        }
+
+        // save new data and discard oldest to retain averaging window size
+        this.previousValues.add(percentage);
+        this.previousValues.pop();
+        
+        // re-calculate the percentage as the average of SMOOTHING_DEPTH points
+        percentage = this.average(this.previousValues);
         
         // calculate the upper left origin point of the element
         int topLeftX, topLeftY;
@@ -113,8 +152,22 @@ public class ShockSensorOverlayElement extends OverlayElement {
         // render graphic elements
         builder.addVerticalProgressBar((float)percentage, topLeftX, topLeftY, topLeftX + TOTAL_WIDTH, topLeftY + TOTAL_HEIGHT - (TEXT_HEIGHT * 2));
         builder.addText(
-                this.sensor.getName() + ": " + Double.toString(percentage),
+                this.sensor.getName() + ": " + this.formatter.format(percentage) + "%",
                 topLeftX,
                 topLeftY + TOTAL_HEIGHT - TEXT_HEIGHT);
+    }
+
+    /**
+     * Averages the values in the list.
+     * @param previousValues The values to average.
+     * @return The average of the supplied values.
+     */
+    private double average(List<Double> previousValues) {
+        double result = 0.0;
+        for (double val : previousValues) {
+            result += val / previousValues.size();
+        }
+        
+        return result;
     }
 }
