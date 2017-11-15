@@ -82,12 +82,12 @@ public class CaptureProcessorTest {
         
         List<PipelineElement> pipe = new ArrayList<>();
         pipe.add(new CountElement("count"));
-        RotarySensor brakeSensor = (RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake"), "(12,31)");
+        RotarySensor brakeSensor = (RotarySensor)SensorFactory.getSensor("Front Brake", source.getSensorTypes().get("Front Brake"), "(12,20,31)");
         pipe.add(new SampleMaxValueElement(brakeSensor::getPositionDegrees, "max pos", brakeSensor));
         
         Map<String, Object> result = CaptureProcessor.process(source.getSamples(), new Pipeline(pipe));
         
         assertEquals(128L, (long)result.get("count"));
-        assertEquals(365d, (double)((Map<Sensor, Double>)result.get("max pos")).get(brakeSensor), 0.001);
+        assertEquals(595.5, (double)((Map<Sensor, Double>)result.get("max pos")).get(brakeSensor), 0.1);
     }
 }

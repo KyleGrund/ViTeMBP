@@ -98,11 +98,21 @@ class RotaryEncoderEAW0J extends RotarySensor {
                         val += 128;
                     }
                     val -= calFar;
-                    return val / ((128 - calFar) + calNear);
+                    val /= ((128 - calFar) + calNear);
+                    
+                    return val;
                 };
             } else {
                 throw new IllegalArgumentException("EAW0J calibration data is invalid, it must contain 3 unique values.");
             }
+            
+            // add bounds checking to keep cal funtion between 0 and 1.
+            this.calFunction = 
+                    ((Function<Double, Double>)(v -> (v < 0) ? 0 : (v > 1) ? 1 : v))
+                            .andThen(this.calFunction);
+        } else {
+            // no cal data so just return original value
+            this.calFunction = d -> d;
         }
     }
     
@@ -139,11 +149,7 @@ class RotaryEncoderEAW0J extends RotarySensor {
         // apply calibration
         double calibrated = this.calFunction.apply((double)position);
         
-        if (calibrated < 0) {
-            calibrated = 0;
-        } else if (calibrated > 1) {
-            calibrated = 1;
-        }
+        
         // convert to percent
         return Optional.of(calibrated);
     }

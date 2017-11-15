@@ -99,13 +99,13 @@ public class StandardPipelinesTest {
         
         assertEquals(366L, (long)results.get(StandardPipelines.ELEMENT_COUNT_BINDING));
         
-        assertEquals(174.72d, (double)averages.get(sensors.get("Front Brake")), 0.01);
+        assertEquals(60.8d, (double)averages.get(sensors.get("Front Brake")), 0.01);
         assertEquals(0.0d, (double)minimums.get(sensors.get("Front Brake")), 0.01);
-        assertEquals(365.0d, (double)maximums.get(sensors.get("Front Brake")), 0.01);
+        assertEquals(127.0d, (double)maximums.get(sensors.get("Front Brake")), 0.01);
         
-        assertEquals(174.72d, (double)averages.get(sensors.get("Rear Brake")), 0.01);
+        assertEquals(60.8d, (double)averages.get(sensors.get("Rear Brake")), 0.01);
         assertEquals(0.0d, (double)minimums.get(sensors.get("Rear Brake")), 0.01);
-        assertEquals(365.0d, (double)maximums.get(sensors.get("Rear Brake")), 0.01);
+        assertEquals(127.0d, (double)maximums.get(sensors.get("Rear Brake")), 0.01);
         
         assertEquals(67.39d, (double)averages.get(sensors.get("Front Shock")), 0.01);
         assertEquals(0.0d, (double)minimums.get(sensors.get("Front Shock")), 0.01);
@@ -115,9 +115,9 @@ public class StandardPipelinesTest {
         assertEquals(0.0d, (double)minimums.get(sensors.get("Rear Shock")), 0.01);
         assertEquals(80.0d, (double)maximums.get(sensors.get("Rear Shock")), 0.01);
         
-        assertEquals(2.00d, (double)averages.get(sensors.get("Frame Accelerometer")), 0.1);
-        assertEquals(0.0d, (double)minimums.get(sensors.get("Frame Accelerometer")), 0.01);
-        assertEquals(4.0d, (double)maximums.get(sensors.get("Frame Accelerometer")), 0.01);
+        assertEquals(4.18d, (double)averages.get(sensors.get("Frame Accelerometer")), 0.1);
+        assertEquals(3.16d, (double)minimums.get(sensors.get("Frame Accelerometer")), 0.01);
+        assertEquals(5.10d, (double)maximums.get(sensors.get("Frame Accelerometer")), 0.01);
     }
 
     /**

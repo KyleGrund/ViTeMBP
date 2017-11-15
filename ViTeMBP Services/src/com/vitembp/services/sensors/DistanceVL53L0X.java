@@ -3,6 +3,7 @@ package com.vitembp.services.sensors;
 import com.vitembp.embedded.data.Sample;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 /*
  * Video Telemetry for Mountain Bike Platform back-end services.
@@ -32,14 +33,14 @@ class DistanceVL53L0X extends DistanceSensor {
     static final UUID TYPE_UUID = UUID.fromString("3972d3a9-d55f-4e74-a61f-f2f8fe62f858");
     
     /**
-     * The calibrated minimum value.
+     * The function which applies the calibration data.
      */
-    private double calMinimum = Double.MIN_VALUE;
+    private Function<Double, Double> calFunction;
     
     /**
-     * The calibrated maximum value.
+     * The function which applies the calibration data and returns data as a percentage.
      */
-    private double calMaximum = Double.MAX_VALUE;
+    private Function<Double, Double> calPercentageFunction;
     
     /**
      * Initializes a new instance of the DistanceVL53L0X class.
@@ -56,41 +57,60 @@ class DistanceVL53L0X extends DistanceSensor {
                 throw new IllegalArgumentException("VL53L0X calibration data must be of the form \"([min],[max])\".");
             }
             
+            // calibration values
+            double calMinimum, calMaximum;
             try {
-                this.calMinimum = Double.parseDouble(split[0].substring(1));
-                this.calMaximum = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
+                calMinimum = Double.parseDouble(split[0].substring(1));
+                calMaximum = Double.parseDouble(split[1].substring(0, split[1].length() - 2));
             } catch (NumberFormatException ex) {
                 throw new IllegalArgumentException("VL53L0X calibration data must be of the form \"([min],[max])\".", ex);
             }
+            
+            // this funciton applies the calibration data to a sample
+            this.calFunction = (value) -> {
+                double newVal = value;
+                newVal = Math.min(newVal, calMaximum);
+                newVal = Math.max(newVal, calMinimum);
+                newVal -= calMinimum;
+                return newVal;
+            };
+            
+            // this funciton applies the calibration and then converts the
+            // result to a percentage represented on the 0, 1 interval
+            this.calPercentageFunction = this.calFunction.andThen((value) -> value / (calMaximum - calMinimum));
+        } else {
+            // no calibration data provided so use identity
+            this.calFunction = d -> d;
+            this.calPercentageFunction = d -> d;
         }
     }
 
     @Override
     public Optional<Double> getDistanceMilimeters(Sample toDecode) {
+        return this.decodeData(toDecode, this.calFunction);
+    }
+    
+    @Override
+    public Optional<Double> getDistancePercent(Sample toDecode) {
+        return this.decodeData(toDecode, this.calPercentageFunction);
+    }
+    
+    /**
+     * Decodes the sample data and applies the given calibration function.
+     * @param toDecode The sample to decode.
+     * @param calFunc The function which applies calibration data.
+     * @return Decoded and calibrated data from the sample.
+     */
+    private Optional<Double> decodeData(Sample toDecode, Function<Double, Double> calFunc) {
         String data = this.getData(toDecode);
         if (data == null) {
             return Optional.empty();
         } else {
             // get the sensor reading value
             double value = Double.parseDouble(data);
-            
-            // apply calibration
-            value = Math.min(value, this.calMaximum);
-            value = Math.max(value, this.calMinimum);
-            value -= this.calMinimum;
-            
+
             // return calibrated value
-            return Optional.of(value);
-        }
-    }
-    
-    @Override
-    public Optional<Double> getDistancePercent(Sample toDecode) {
-        Optional<Double> value = this.getDistanceMilimeters(toDecode);
-        if (value.isPresent()) {
-            return Optional.of(value.get() / (this.calMaximum - this.calMinimum));
-        } else {
-            return Optional.empty();
+            return Optional.of(calFunc.apply(value));
         }
     }
 }
