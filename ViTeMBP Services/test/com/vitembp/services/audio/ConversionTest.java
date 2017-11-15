@@ -26,6 +26,7 @@ import java.net.URLDecoder;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import org.junit.After;
@@ -66,15 +67,16 @@ public class ConversionTest {
      */
     @Test
     public void testExtractWaveAudio() throws Exception {
-                System.out.println("extractWaveAudio");
+        System.out.println("extractWaveAudio");
         
-        URL reso = getClass().getResource("GOPR0026.MP4");
+        URL reso = com.vitembp.services.video.ConversionTest.class.getResource("GOPR0026.MP4");
         String source = null;
         try {
             source = new File(URLDecoder.decode(reso.getFile(), "UTF-8")).getAbsolutePath();
         } catch (UnsupportedEncodingException ex) {
             fail("Unexpected exception: " + ex.getMessage());
         }
+        
         // build a temporary directory for images
         Path tempDir = Files.createTempDirectory("vitempbTest");
         
@@ -91,11 +93,29 @@ public class ConversionTest {
     @Test
     public void testCopyAudio() throws Exception {
         System.out.println("copyAudio");
-        Path sourceFile = null;
-        Path destFile = null;
+        
+        String sourceFilename = "GOPR0026.MP4";
+        String destFilename = "GOPR0026dest.MP4";
+        
+        // build a temporary directory for videos
+        Path tempDir = Files.createTempDirectory("vitempbTest");
+        
+        URL reso = com.vitembp.services.video.ConversionTest.class.getResource(sourceFilename);
+        File source = new File(URLDecoder.decode(reso.getFile(), "UTF-8"));
+        
+        // define source and destination filenames
+        Path sourceFile = tempDir.resolve(sourceFilename);
+        Path destFile = tempDir.resolve(destFilename);
+        
+        // copy test video to the source and destination locations
+        Files.copy(source.toPath(), sourceFile);
+        Files.copy(source.toPath(), destFile);
+        
+        // perform the copy
         Conversion.copyAudio(sourceFile, destFile);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        // clean up the temp dir
+        Assert.assertEquals(2, this.DeleteTree(tempDir));
     }
     
     /**
