@@ -84,6 +84,9 @@ class UuidStringStoreCapture extends Capture {
         
         // create store for any added samples
         this.samples = new ArrayList<>();
+        
+        // store for calibration data
+        this.calibrations = new HashMap<>();
     }
     
     @Override

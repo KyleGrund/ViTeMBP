@@ -39,12 +39,14 @@ public class SystemConfigTest {
     /**
      * An XML String when loaded sets the configuration to default values.
      */
-    private static final String DEFAULT = "<?xml version=\"1.0\" ?><configuration><systemid>2ae1239a-3389-4580-b704-ff5c7b4dd3ee</systemid><samplingfrequency>29.97</samplingfrequency><sensornames></sensornames><sensorbindings></sensorbindings><capturetype>EmbeddedH2</capturetype><enablecompression>true</enablecompression><cloud><uploadtocloud>true</uploadtocloud><deleteonuploadtocloud>true</deleteonuploadtocloud></cloud></configuration>";
+    private static final String DEFAULT = "<?xml version=\"1.0\" ?><configuration><systemname></systemname><systemid>2ae1239a-3389-4580-b704-ff5c7b4dd3ee</systemid><samplingfrequency>29.97</samplingfrequency><sensornames></sensornames><sensorbindingsites></sensorbindingsites><sensorbindings></sensorbindings><sensorcalibrations></sensorcalibrations><capturetype>EmbeddedH2</capturetype><enablecompression>true</enablecompression><cloud><uploadtocloud>true</uploadtocloud><deleteonuploadtocloud>true</deleteonuploadtocloud></cloud><networkinterfaces><wiredethernet><metric>0</metric></wiredethernet><wirelessethernet><metric>0</metric></wirelessethernet><bluetooth><metric>0</metric></bluetooth></networkinterfaces></configuration>";
     
     /**
      * An XML String when loaded sets the configuration to have two sensor names and 30 samples per second.
      */
-    private static final String TWO_NAMES_30SPS = "<?xml version=\"1.0\" ?><configuration><systemid>2ae1239a-3389-4580-b704-ff5c7b4dd3ee</systemid><samplingfrequency>30</samplingfrequency><sensornames><name>Name 1</name><name>Name 2</name></sensornames><sensorbindings></sensorbindings><capturetype>EmbeddedH2</capturetype><enablecompression>true</enablecompression><cloud><uploadtocloud>false</uploadtocloud><deleteonuploadtocloud>false</deleteonuploadtocloud></cloud></configuration>";
+    private static final String TWO_NAMES_30SPS = "<?xml version=\"1.0\" ?><configuration><systemname></systemname><systemid>2ae1239a-3389-4580-b704-ff5c7b4dd3ee</systemid><samplingfrequency>30</samplingfrequency><sensornames><name>Name 1</name><name>Name 2</name></sensornames><sensorbindingsites></sensorbindingsites><sensorbindings></sensorbindings><sensorcalibrations></sensorcalibrations><capturetype>EmbeddedH2</capturetype><enablecompression>true</enablecompression><cloud><uploadtocloud>true</uploadtocloud><deleteonuploadtocloud>true</deleteonuploadtocloud></cloud><networkinterfaces><wiredethernet><metric>0</metric></wiredethernet><wirelessethernet><metric>0</metric></wirelessethernet><bluetooth><metric>0</metric></bluetooth></networkinterfaces></configuration>";
+    
+    
     
     public SystemConfigTest() {
     }

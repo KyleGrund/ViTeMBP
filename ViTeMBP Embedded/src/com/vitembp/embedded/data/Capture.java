@@ -74,14 +74,7 @@ public abstract class Capture {
      * @param deleteCallback The callback which deletes this capture.
      */
     Capture(RunnableIOException deleteCallback) {
-        // save params
-        this.deleteCallback = deleteCallback;
-        
-        // default to 29.9Hz, the standard us video frame rate
-        this.sampleFrequency = 29.9;
-        
-        // calculate the update interval from the sample frequency
-        this.calculateIntervalFromFrequency();
+        this(deleteCallback, 29.9);
     }
     
     /**

@@ -95,6 +95,9 @@ class UuidStringStorePagingCapture extends Capture {
         this.calibrations = new HashMap<>(calibrations);
         this.pageSize = pageSize;
         this.store = store;
+        
+        // store for calibration data
+        this.calibrations = new HashMap<>();
     }
     
     /**
