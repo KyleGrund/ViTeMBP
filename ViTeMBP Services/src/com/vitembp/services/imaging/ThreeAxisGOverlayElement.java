@@ -34,7 +34,7 @@ class ThreeAxisGOverlayElement extends OverlayElement {
     /**
      * The total width of the rendered element.
      */
-    private static final int TOTAL_WIDTH = 150;
+    private static final int TOTAL_WIDTH = 400;
     
     /**
      * The total height of the rendered text.
@@ -119,18 +119,18 @@ class ThreeAxisGOverlayElement extends OverlayElement {
         double yValue = this.sensor.getYAxisG(data).orElse(minValue);
         double zValue = this.sensor.getZAxisG(data).orElse(minValue);
         
-        double magnatude = Math.sqrt(
+        double magnitude = Math.sqrt(
                 Math.pow(xValue, 2) + Math.pow(yValue, 2) + Math.pow(zValue, 2));
         
         // render a bar
         builder.addHorizontalProgressBar(
-                (float)(magnatude / this.maxValue),
+                (float)(magnitude / this.maxValue),
                 topLeftX,
-                topLeftY,
+                topLeftY - 80,
                 topLeftX + TOTAL_WIDTH,
                 topLeftY + 40 - BORDER_PAD);
         
         // render the data
-        builder.addText("Gs: " + this.formatter.format(magnatude),  topLeftX, topLeftY + 40);
+        builder.addText("Acceleration Gs: " + this.formatter.format(magnitude),  topLeftX, topLeftY + 40);
     }
 }

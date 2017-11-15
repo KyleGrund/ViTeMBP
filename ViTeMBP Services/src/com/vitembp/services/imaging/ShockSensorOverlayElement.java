@@ -152,7 +152,7 @@ public class ShockSensorOverlayElement extends OverlayElement {
         // render graphic elements
         builder.addVerticalProgressBar((float)percentage, topLeftX, topLeftY, topLeftX + TOTAL_WIDTH, topLeftY + TOTAL_HEIGHT - (TEXT_HEIGHT * 2));
         builder.addText(
-                this.sensor.getName() + ": " + this.formatter.format(percentage) + "%",
+                this.sensor.getName() + ": " + this.formatter.format(percentage * 100) + "%",
                 topLeftX,
                 topLeftY + TOTAL_HEIGHT - TEXT_HEIGHT);
     }

@@ -20,6 +20,7 @@ package com.vitembp.services.imaging;
 import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.data.PipelineExecutionException;
 import com.vitembp.services.sensors.RotarySensor;
+import java.text.DecimalFormat;
 
 /**
  * An element that generates a data overlay for two brake sensors.
@@ -28,12 +29,17 @@ class BrakeSensorOverlayElement extends OverlayElement {
     /**
      * The height of a single line of data.
      */
-    private static final int LINE_HEIGHT = 20;
+    private static final int TEXT_HEIGHT = 20;
+    
+    /**
+     * The height of a single line of data.
+     */
+    private static final int BAR_HEIGHT = 40;
     
     /**
      * The total height of the element.
      */
-    private static final int TOTAL_HEIGHT = 100;
+    private static final int TOTAL_HEIGHT = 200;
     
     /**
      * The total width of the element.
@@ -69,6 +75,11 @@ class BrakeSensorOverlayElement extends OverlayElement {
      * The sensor that will read data to overlay.
      */
     private final RotarySensor rightSensor;
+    
+    /**
+     * Used to format the text value display.
+     */
+    private final DecimalFormat formatter = new DecimalFormat("###");
     
     /**
      * Initializes a new instance of the ThreeAxisGOverlayElement class.
@@ -127,9 +138,9 @@ class BrakeSensorOverlayElement extends OverlayElement {
         }
         
         // render the element to the overlay
-        builder.addText(this.leftSensor.getName() + ": " + Double.toString(leftPercent), topLeftX + (LINE_HEIGHT * 1), topLeftY + (LINE_HEIGHT * 0));
-        builder.addHorizontalProgressBar((float)leftPercent, topLeftX + (LINE_HEIGHT * 1), topLeftY + (LINE_HEIGHT * 1), topLeftX - (LINE_HEIGHT * 1) + TOTAL_WIDTH, topLeftY + (LINE_HEIGHT * 2));
-        builder.addHorizontalProgressBar((float)rightPercent, topLeftX + (LINE_HEIGHT * 1), topLeftY + (LINE_HEIGHT * 2), topLeftX - (LINE_HEIGHT * 1) + TOTAL_WIDTH, topLeftY + (LINE_HEIGHT * 3));
-        builder.addText(this.rightSensor.getName() + ": " + Double.toString(rightPercent), topLeftX + (LINE_HEIGHT * 1), topLeftY + (LINE_HEIGHT * 4));
+        builder.addText(this.leftSensor.getName() + ": " + this.formatter.format(leftPercent * 100) + "%", topLeftX + (TEXT_HEIGHT * 1), topLeftY + (TEXT_HEIGHT * 0));
+        builder.addHorizontalProgressBar((float)leftPercent, topLeftX + (TEXT_HEIGHT * 1), topLeftY + (TEXT_HEIGHT * 1), topLeftX - (TEXT_HEIGHT * 1) + TOTAL_WIDTH, topLeftY + (TEXT_HEIGHT * 4));
+        builder.addHorizontalProgressBar((float)rightPercent, topLeftX + (TEXT_HEIGHT * 1), topLeftY + (TEXT_HEIGHT * 4), topLeftX - (TEXT_HEIGHT * 1) + TOTAL_WIDTH, topLeftY + (TEXT_HEIGHT * 7));
+        builder.addText(this.rightSensor.getName() + ": " + this.formatter.format(rightPercent * 100) + "%", topLeftX + (TEXT_HEIGHT * 1), topLeftY + (TEXT_HEIGHT * 8));
     }
 }
