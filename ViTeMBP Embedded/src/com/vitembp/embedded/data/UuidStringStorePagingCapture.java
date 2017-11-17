@@ -27,6 +27,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -151,7 +154,15 @@ class UuidStringStorePagingCapture extends Capture {
             
             // build a page manager, now that we have the start time all
             // dependencies have been bound
-            this.manager = new SamplePageManager(store, pageSize, this.startTime, this.nanoSecondInterval);
+            this.manager = new SamplePageManager(store, pageSize, this.startTime, this.nanoSecondInterval, this::trySave);
+        }
+    }
+    
+    private void trySave() {
+        try {
+            this.save();
+        } catch (IOException ex) {
+            LOGGER.error("Exception trying to save capture.", ex);
         }
     }
     
@@ -267,7 +278,7 @@ class UuidStringStorePagingCapture extends Capture {
             if (this.manager != null) {
                 this.manager.readFrom(toReadFrom);
             } else {
-                SamplePageManager man = new SamplePageManager(store, this.pageSize, this.startTime, this.nanoSecondInterval);
+                SamplePageManager man = new SamplePageManager(store, this.pageSize, this.startTime, this.nanoSecondInterval, this::trySave);
                 man.readFrom(toReadFrom);
                 this.manager = man;
             }

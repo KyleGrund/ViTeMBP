@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.stream.XMLStreamException;
@@ -83,17 +84,24 @@ class SamplePageManager {
     private final long nanosecondInterval;
     
     /**
+     * The callback used to tell the containing capture to save as a new page
+     * has been created.
+     */
+    private final Runnable saveCallback;
+    
+    /**
      * Initializes a new instance of the SamplePageManager class.
      * @param store The location to store this instant at.
      * @param pageSize The number of samples per page.
      * @param startTime The time of the first sample.
      * @param nanosecondInterval The interval between samples in nanoseconds.
      */
-    SamplePageManager(UuidStringLocation store, int pageSize, Instant startTime, long nanosecondInterval) {
+    SamplePageManager(UuidStringLocation store, int pageSize, Instant startTime, long nanosecondInterval, Runnable saveCallback) {
         this.store = store;
         this.pageSize = pageSize;
         this.startTime = startTime;
         this.nanosecondInterval = nanosecondInterval;
+        this.saveCallback = saveCallback;
 
         this.firstPageLocation = UUID.randomUUID();
         this.lastPageLocation = this.firstPageLocation;
@@ -117,7 +125,7 @@ class SamplePageManager {
         if (lastPage.isFull()) {
             try {
                 this.addPage();
-            } catch (XMLStreamException ex) {
+            } catch (Exception ex) {
                 LOGGER.error("Could not add a new page while adding sample.", ex);
             }
         }
@@ -285,6 +293,9 @@ class SamplePageManager {
         
         // increment the number of pages in the list
         this.pageCount++;
+        
+        // tell the capture to save the updated data
+        this.saveCallback.run();
     }
 
     /**
