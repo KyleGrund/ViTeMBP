@@ -203,7 +203,11 @@ class UuidStringStorePagingCapture extends Capture {
 
     @Override
     public void deleteData() throws IOException {
-        this.manager.delete();
+        // if the capture did not store any data the manager would be null
+        if (this.manager != null) {
+            this.manager.delete();
+        }
+        
         this.store.delete();
     }
     

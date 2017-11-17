@@ -23,6 +23,7 @@ import com.vitembp.embedded.data.CaptureFactory;
 import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -84,6 +85,7 @@ class CreateCapture implements ControllerState {
         // build and return a new capture session
         CaptureSession captureSession = new CaptureSession(hardware.getSensors(), dataStore);
 
+        // save session to state machine state
         state.setCaptureSession(captureSession);
         
         // transition to wait for end class
