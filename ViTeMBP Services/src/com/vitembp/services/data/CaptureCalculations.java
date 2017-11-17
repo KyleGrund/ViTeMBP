@@ -65,17 +65,29 @@ public class CaptureCalculations {
         });
         data.setCharAt(data.length() - 1, ']');
         
+        // capture start time
         data.append(",\"created time\":\"");
         data.append(toProcess.getStartTime().toString());
         data.append("\"");
         
-        data.append(",\"created time\":\"");
+        // capture run time
+        data.append(",\"capture length\":\"");
+        data.append(Double.toString(toProcess.getSampleCount() / toProcess.getSampleFrequency()));
+        data.append("\"");
+        
+        // samling frequency
+        data.append(",\"sample frequency\":\"");
         data.append(Double.toString(toProcess.getSampleFrequency()));
         data.append("\"");
         
         // sample count
         data.append(",\"sample count\":\"");
         data.append(Long.toString(toProcess.getSampleCount()));
+        data.append("\"");
+        
+         // is complete
+        data.append(",\"is complete\":\"");
+        data.append(Boolean.toString(toProcess.isComplete()));
         data.append("\"");
         
         data.append("}");
