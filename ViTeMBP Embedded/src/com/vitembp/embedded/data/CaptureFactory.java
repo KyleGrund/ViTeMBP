@@ -56,7 +56,7 @@ public class CaptureFactory {
                     UUID h2LocationID = UUID.randomUUID();
                     UuidStringLocation location = new UuidStringLocation(h2Store, h2LocationID);
                     RunnableIOException delH2 = () -> h2Store.removeCaptureDescription(h2LocationID);
-                    Capture toReturn = new UuidStringStorePagingCapture(delH2, frequency, location, (int)Math.ceil(frequency * 10), nameToIds, calData);
+                    Capture toReturn = new UuidStringStorePagingCapture(delH2, frequency, location, (int)Math.ceil(frequency * 3), nameToIds, calData);
                     h2Store.addCaptureDescription(new CaptureDescription(toReturn, h2LocationID));
                     return toReturn;
                 } catch (IOException ex) {
@@ -68,7 +68,7 @@ public class CaptureFactory {
                     UUID adbLocationID = UUID.randomUUID();
                     UuidStringLocation location = new UuidStringLocation(ddbStore, adbLocationID);
                     RunnableIOException delAdb = () -> ddbStore.removeCaptureDescription(adbLocationID);
-                    Capture toReturn = new UuidStringStorePagingCapture(delAdb, frequency, location, (int)Math.ceil(frequency * 10), nameToIds, calData);
+                    Capture toReturn = new UuidStringStorePagingCapture(delAdb, frequency, location, (int)Math.ceil(frequency * 3), nameToIds, calData);
                     ddbStore.addCaptureDescription(new CaptureDescription(toReturn, adbLocationID));
                     return toReturn;
                 } catch (IOException ex) {

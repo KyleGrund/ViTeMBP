@@ -61,11 +61,11 @@ public class CaptureSession {
     }
     
     /**
-     * Saves the current capture.
+     * Marks the current capture as complete and then saves it.
      * @throws IOException If an IOException occurs while saving the capture.
      */
-    public void saveCapture() throws IOException {
-        this.data.save();
+    public void completeCapture() throws IOException {
+        this.data.complete();
     }
     
     /**

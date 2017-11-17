@@ -40,7 +40,7 @@ class EndCapture implements ControllerState {
         
         try {
             // save the capture data
-            session.saveCapture();
+            session.completeCapture();
         } catch (IOException ex) {
             LOGGER.error("Error while saving data at end of capture.", ex);
         }

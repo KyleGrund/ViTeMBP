@@ -70,6 +70,11 @@ public abstract class Capture {
     protected long nanoSecondInterval;
     
     /**
+     * Indicates whether this capture has been completed.
+     */
+    private boolean isComplete = false;
+    
+    /**
      * Initializes a new instance of the Capture class.
      * @param deleteCallback The callback which deletes this capture.
      */
@@ -156,6 +161,15 @@ public abstract class Capture {
     protected abstract void deleteData() throws IOException;
     
     /**
+     * Marks this capture as complete and then saves it.
+     * @throws IOException If an I/O error occurs while saving the capture.
+     */
+    public void complete() throws IOException {
+        this.isComplete = true;
+        this.save();
+    }
+    
+    /**
      * Deletes this capture session from persistent storage.
      * @throws java.io.IOException If an IO exception occurs while loading data.
      */
@@ -213,6 +227,14 @@ public abstract class Capture {
     }
     
     /**
+     * Gets a boolean value indicating whether this capture has been completed.
+     * @return A boolean value indicating whether this capture has been completed.
+     */
+    public boolean isComplete() {
+        return this.isComplete;
+    }
+    
+    /**
      * Returns a representation of this class as an XML fragment.
      * @return A representation of this class as an XML fragment.
      */
@@ -267,6 +289,10 @@ public abstract class Capture {
         
         toWriteTo.writeStartElement("samples");
         this.writeSamplesTo(toWriteTo);
+        toWriteTo.writeEndElement();
+        
+        toWriteTo.writeStartElement("iscomplete");
+        toWriteTo.writeCharacters(Boolean.toString(this.isComplete));
         toWriteTo.writeEndElement();
         
         toWriteTo.writeEndElement();
@@ -375,8 +401,18 @@ public abstract class Capture {
             throw new XMLStreamException("Expected </samples> not found.", toReadFrom.getLocation());
         }
         
-        // read into close capture
-        if (toReadFrom.next() != XMLStreamConstants.END_ELEMENT || !"capture".equals(toReadFrom.getLocalName())) {
+        // read is complete if included
+        toReadFrom.next();
+        if (toReadFrom.getEventType() == XMLStreamConstants.START_ELEMENT) {
+            if (!"iscomplete".equals(toReadFrom.getLocalName())) {
+            throw new XMLStreamException("Expected <iscomplete> not found.", toReadFrom.getLocation());
+            }
+            
+            this.isComplete = Boolean.parseBoolean(XMLStreams.readElement("iscomplete", toReadFrom));
+        }
+        
+        // read close capture
+        if (toReadFrom.getEventType() != XMLStreamConstants.END_ELEMENT || !"capture".equals(toReadFrom.getLocalName())) {
             throw new XMLStreamException("Expected </capture> not found.", toReadFrom.getLocation());
         }
         
