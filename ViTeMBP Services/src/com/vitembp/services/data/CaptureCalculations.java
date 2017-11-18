@@ -54,7 +54,7 @@ public class CaptureCalculations {
         Capture toProcess = CaptureOperations.getCaptureAtLocation(captureLocation);
         
         // build summary info
-        data.append("{\"sensor names\":[");
+        data.append("{\"sensorNames\":[");
         
         // sensor names
         Set<String> names = toProcess.getSensorNames();
@@ -66,29 +66,25 @@ public class CaptureCalculations {
         data.setCharAt(data.length() - 1, ']');
         
         // capture start time
-        data.append(",\"created time\":\"");
+        data.append(",\"createdTime\":\"");
         data.append(toProcess.getStartTime().toString());
         data.append("\"");
         
         // capture run time
-        data.append(",\"capture length\":\"");
+        data.append(",\"captureDuration\":");
         data.append(Double.toString(toProcess.getSampleCount() / toProcess.getSampleFrequency()));
-        data.append("\"");
         
         // samling frequency
-        data.append(",\"sample frequency\":\"");
+        data.append(",\"sampleFrequency\":");
         data.append(Double.toString(toProcess.getSampleFrequency()));
-        data.append("\"");
         
         // sample count
-        data.append(",\"sample count\":\"");
+        data.append(",\"sampleCount\":");
         data.append(Long.toString(toProcess.getSampleCount()));
-        data.append("\"");
         
          // is complete
-        data.append(",\"is complete\":\"");
+        data.append(",\"isComplete\":");
         data.append(Boolean.toString(toProcess.isComplete()));
-        data.append("\"");
         
         data.append("}");
         
@@ -147,12 +143,12 @@ public class CaptureCalculations {
         
         Set<String> sensorNames = toProcess.getSensorNames();
         
-        toReturn.append("[['index',");
+        toReturn.append("[[\"index\",");
         
         sensorNames.forEach((n) -> {
-            toReturn.append("'");
+            toReturn.append("\"");
             toReturn.append(n);
-            toReturn.append("',");
+            toReturn.append("\",");
         });
         
         toReturn.setCharAt(toReturn.length() - 1, ']');
