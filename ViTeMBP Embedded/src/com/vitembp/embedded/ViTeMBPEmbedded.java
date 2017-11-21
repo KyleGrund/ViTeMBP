@@ -42,7 +42,7 @@ public class ViTeMBPEmbedded {
         CommandLine.acceptArgs(args);
         
         // create system controller state machine
-        StateMachine machine = new StateMachine();
+        StateMachine machine = StateMachine.getSingleton();
         
         // start GUI
         GUI.start(machine::setSensorsChangedCallback, machine::setSensorsReadCallback);

@@ -30,20 +30,25 @@ class WaitForEnd implements ControllerState {
 
     @Override
     public Class execute(ExecutionContext state) {
-        // wait for a keypress
-        char key = '\0';
+        // wait for a signal event
+        Signal signal = null;
         try {
-            key = state.getHardware().getKeyPress();
+            signal = StateMachine.getSingleton().getSignal();
         } catch (InterruptedException ex) {
-            LOGGER.error("Interrupted waiting for key press.", ex);
+            LOGGER.error("Interrupted waiting for event.", ex);
         }
         
-        // the 4 key triggers starting the capture
-        if (key == '4') {
+        // process the signal by type
+        if (signal instanceof SignalEndCapture) {
+            state.setSignal(signal);
             return EndCapture.class;
         }
         
-        // no valid key was pressed, return to this wait state
+        if (signal != null) {
+            signal.returnResult("Error, capture running.");
+        }
+        
+        // no valid signal received, return to this state
         return this.getClass();
     }
 }

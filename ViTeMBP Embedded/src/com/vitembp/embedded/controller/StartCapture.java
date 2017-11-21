@@ -44,6 +44,9 @@ class StartCapture implements ControllerState {
         HardwareInterface hardware = state.getHardware();
         CaptureSession session = state.getCaptureSession();
         
+        // send capture started response
+        state.getSignal().returnResult("Capture started.");
+        
         // this represents the time to enable the sync light for
         List<Integer> syncLightDuration = Arrays.asList(new Integer[] { LIGHT_DURATION});
 
@@ -58,7 +61,7 @@ class StartCapture implements ControllerState {
         }
         
         try {
-            // flash sync LED
+            // sound the buzzer
             hardware.soundBuzzer(LIGHT_DURATION);
         } catch (IOException ex) {
             LOGGER.error("Error sounding buzzer when starting new capture.", ex);

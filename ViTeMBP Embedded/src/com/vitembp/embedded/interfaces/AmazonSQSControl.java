@@ -168,6 +168,8 @@ public class AmazonSQSControl {
         // create processor threads
         for (int i = 0; i < this.threadCount; i++) {
             executor.submit(() -> {
+                // parameters of an increasing backoff in case of errors to
+                // prevent excessive retry rate
                 int startErrorBackoff = 200;
                 int errorBackoff = startErrorBackoff;
                 float errorFactor = 2;

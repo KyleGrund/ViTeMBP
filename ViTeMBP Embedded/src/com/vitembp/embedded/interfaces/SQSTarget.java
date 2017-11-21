@@ -18,8 +18,15 @@
 package com.vitembp.embedded.interfaces;
 
 import com.vitembp.embedded.configuration.CloudConfigSync;
+import com.vitembp.embedded.controller.SignalCalibrateSensor;
+import com.vitembp.embedded.controller.SignalEndCapture;
+import com.vitembp.embedded.controller.SignalStartCapture;
+import com.vitembp.embedded.controller.StateMachine;
 import com.vitembp.embedded.hardware.HardwareInterface;
+import com.vitembp.embedded.hardware.Sensor;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,22 +73,60 @@ public class SQSTarget {
             CloudConfigSync.checkForUpdates();
             return "Success.";
         } else if ("STARTCAPTURE".equals(upperCase)) {
+            // send start command
+            LinkedBlockingQueue<String> result = new LinkedBlockingQueue<>();
+            StateMachine.getSingleton().enqueueSignal(new SignalStartCapture(result::add));
             try {
-                // send the keypress '1' to signal start capture
-                HardwareInterface.getInterface().generateKeyPress('1');
-                return "Sent start capture signal.";
+                return result.take();
             } catch (InterruptedException ex) {
-                failureReason = "Interrupted sending start capture keypress.";
+                failureReason = "Interrupted waiting for result of start capture command.";
                 LOGGER.error(failureReason, ex);
             }
         } else if ("ENDCAPTURE".equals(upperCase)) {
+            // send the signal to end capture
+            LinkedBlockingQueue<String> result = new LinkedBlockingQueue<>();
+            StateMachine.getSingleton().enqueueSignal(new SignalEndCapture(result::add));
             try {
-                // send the keypress '4' to signal start capture
-                HardwareInterface.getInterface().generateKeyPress('4');
-                return "Sent end capture signal.";
+                return result.take();
             } catch (InterruptedException ex) {
-                failureReason = "Interrupted sending end capture keypress.";
+                failureReason = "Interrupted waiting for result of end capture command.";
                 LOGGER.error(failureReason, ex);
+            }
+        } else if ("LISTSENSORS".equals(upperCase)) {
+            StringBuilder toReturn = new StringBuilder();
+            
+            // start JSON array
+            toReturn.append("[");
+            
+            // add names
+            Map<String, Sensor> toAdd = HardwareInterface.getInterface().getSensors();
+            toAdd.keySet().forEach((name) -> {
+                if (toAdd.get(name) != null) {
+                    toReturn.append("\"");
+                    toReturn.append(name);
+                    toReturn.append("\",");
+                }
+            });
+            
+            // replace last comma with a close array
+            toReturn.setCharAt(toReturn.length() - 1, ']');
+            return toReturn.toString();
+        } else if (upperCase.startsWith("CALSENSOR")) {
+            String[] splitResp = toProcess.split(" ");
+            
+            // command must be of the form: "calsensor [sensor name]"
+            if (splitResp.length != 2) {
+                failureReason = "Sensor name required.";
+            } else {
+                // send start calibration command
+                LinkedBlockingQueue<String> result = new LinkedBlockingQueue<>();
+                StateMachine.getSingleton().enqueueSignal(new SignalCalibrateSensor(splitResp[1], result::add));
+                try {
+                    return result.take();
+                } catch (InterruptedException ex) {
+                    failureReason = "Interrupted waiting for result of start calibration command.";
+                    LOGGER.error(failureReason, ex);
+                }
             }
         }
         

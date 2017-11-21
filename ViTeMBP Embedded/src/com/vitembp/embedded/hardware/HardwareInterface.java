@@ -19,6 +19,9 @@ package com.vitembp.embedded.hardware;
 
 import com.vitembp.embedded.data.ConsumerIOException;
 import com.vitembp.embedded.configuration.SystemConfig;
+import com.vitembp.embedded.controller.SignalEndCapture;
+import com.vitembp.embedded.controller.SignalStartCapture;
+import com.vitembp.embedded.controller.StateMachine;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,10 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -57,15 +56,9 @@ public class HardwareInterface {
     private Map<String, Sensor> sensors;
     
     /**
-     * A queue for key press events.
-     */
-    private final LinkedBlockingQueue<Character> keyPresses;
-    
-    /**
      * Initializes a new instance of the HardwareInterface class.
      */
     private HardwareInterface() {
-        this.keyPresses = new LinkedBlockingQueue<>();
         this.sensors  = new HashMap<>();
         this.initializeResources();
         
@@ -143,36 +136,6 @@ public class HardwareInterface {
             }
         };
         new Thread(buzzTask, "Buzzer").start();
-    }
-    
-    /**
-     * Waits for and returns a key press.
-     * @return The character corresponding to the key pressed.
-     * @throws java.lang.InterruptedException If a Thread wait for a key press
-     * is interrupted.
-     */
-    public Character getKeyPress() throws InterruptedException {
-        return this.keyPresses.take();
-    }
-    
-    /**
-     * Waits for and returns a key press.
-     * @param timeout The number of milliseconds to wait for a key press.
-     * @return The character corresponding to the key pressed.
-     * @throws java.lang.InterruptedException If a Thread wait for a key press
-     * is interrupted.
-     */
-    public Character getKeyPress(int timeout) throws InterruptedException {
-        return this.keyPresses.poll(timeout, TimeUnit.MILLISECONDS);
-    }
-    
-    /**
-     * Adds a key press to the processing queue.
-     * @param key The key to add.
-     * @throws InterruptedException If the insertion operation is interrupted.
-     */
-    public void generateKeyPress(Character key) throws InterruptedException {
-        this.keyPresses.put(key);
     }
     
     /**
@@ -262,7 +225,7 @@ public class HardwareInterface {
         updateSensorBindings();
         
         // register key press listener to store presses into a queue
-        this.platform.setKeypadCallback(this.keyPresses::add);
+        this.platform.setKeypadCallback(this::keyPressListener);
         
         // update the interface metrics
         this.updateInterfaceMetrics();
@@ -281,6 +244,22 @@ public class HardwareInterface {
         }
         
         return HardwareInterface.singleton;
+    }
+    
+    /**
+     * Handles key-press events.
+     * @param key The key that was pressed.
+     */
+    private void keyPressListener(char key) {
+        if (key == '1') {
+            StateMachine.getSingleton().enqueueSignal(new SignalStartCapture((s) -> {
+                LOGGER.debug("Result of \"" + key + "\" key pressed: " + s);
+            }));
+        } else if (key == '4') {
+            StateMachine.getSingleton().enqueueSignal(new SignalEndCapture((s) -> {
+                LOGGER.debug("Result of \"" + key + "\" key pressed: " + s);
+            }));
+        }
     }
     
     /**

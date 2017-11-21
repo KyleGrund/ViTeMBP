@@ -24,30 +24,40 @@ import org.apache.logging.log4j.LogManager;
  */
 class WaitForStart implements ControllerState {
     /**
-     * The time to wait for a key press before going to sensor idle.
-     */
-    private static final int KEY_PRESS_WAIT_TIME_MS = 250;
-    /**
      * Class logger instance.
      */
     private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
     @Override
     public Class execute(ExecutionContext state) {
-        // wait for a keypress
-        Character key = '\0';
+        // wait for a signal event
+        Signal signal = null;
         try {
-            key = state.getHardware().getKeyPress(KEY_PRESS_WAIT_TIME_MS);
+            signal = StateMachine.getSingleton().getSignal();
         } catch (InterruptedException ex) {
-            LOGGER.error("Interrupted waiting for key press.", ex);
+            LOGGER.error("Interrupted waiting for event.", ex);
         }
         
-        // the 1 key triggers starting the capture
-        if (key != null && key == '1') {
+        // process the signal by type
+        if (signal instanceof SignalStartCapture) {
+            state.setSignal(signal);
             return CreateCapture.class;
+        } else if (signal instanceof SignalCalibrateSensor) {
+            state.setSignal(signal);
+            return SensorCalibrationStart.class;
+        } else if (signal instanceof SignalGetCalibrationStatus) {
+            // no caliration running return not running response
+            signal.returnResult(SensorCalibrationStatus.NOT_RUNNING_RESPONSE);
+            
+            // wait for next signal
+            return this.getClass();
         }
         
-        // no valid key was pressed, run idle sensor state
-        return IdleSensor.class;
+        if (signal != null) {
+            signal.returnResult("Error, waiting to start capture.");
+        }
+        
+        // no valid signal received, return to this state
+        return this.getClass();
     }
 }

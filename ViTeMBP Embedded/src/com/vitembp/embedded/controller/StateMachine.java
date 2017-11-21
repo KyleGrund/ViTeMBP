@@ -17,10 +17,13 @@
  */
 package com.vitembp.embedded.controller;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -37,6 +40,11 @@ public class StateMachine {
      * execution to prevent infinite loops.
      */
     private static final int EXCEPTION_LIMIT = 20;
+    
+    /**
+     * The singleton instance of this class.
+     */
+    private static StateMachine singleton;
     
     /**
      * The thread the state machine executes on.
@@ -59,12 +67,20 @@ public class StateMachine {
     private boolean isRunning = true;
     
     /**
+     * The queue for processing external signals.
+     */
+    private final LinkedBlockingQueue<Signal> signalQueue;
+    
+    /**
      * Initializes a new instance of the StateMachine class.
      */
-    public StateMachine() {
+    private StateMachine() {
         // create the thread that runs the executeMachine() function which
         // runs the state machine
         this.executionThread = new Thread(this::executeMachine);
+        
+        // create signal queue
+        this.signalQueue = new LinkedBlockingQueue<>();
         
         // create execution context
         this.context = new ExecutionContext();
@@ -82,6 +98,18 @@ public class StateMachine {
     }
     
     /**
+     * Gets the singleton instance of this class.
+     * @return The singleton instance of this class.
+     */
+    public static synchronized StateMachine getSingleton() {
+        if (StateMachine.singleton == null) {
+            StateMachine.singleton = new StateMachine();
+        }
+        
+        return StateMachine.singleton;
+    }
+    
+    /**
      * Starts the execution of the state machine.
      * @throws IllegalThreadStateException if the state machine has already been started.
      */
@@ -94,6 +122,28 @@ public class StateMachine {
      */
     public void stop() {
         this.isRunning = false;
+    }
+    
+    /**
+     * Enqueues a signal object for processing by the state machine.
+     * @param signal The signal to enqueue.
+     */
+    public void enqueueSignal(Signal signal) {
+        try {
+            this.signalQueue.put(signal);
+        } catch (InterruptedException ex) {
+            LOGGER.error("Interrupted while enqueuing signal.", ex);
+        }
+    }
+    
+    /**
+     * Waits for an external signal event object.
+     * @return An external signal event object.
+     * @throws InterruptedException If the thread is interrupted waiting for an
+     * event.
+     */
+    Signal getSignal() throws InterruptedException {
+        return this.signalQueue.take();
     }
     
     /**
@@ -128,7 +178,7 @@ public class StateMachine {
         // loop processing states until the isRunning signal is false
         while (this.isRunning) {
             try {
-                LOGGER.trace("Executing: " + nextState.getSimpleName());
+                LOGGER.info("Executing: " + nextState.getSimpleName());
                 nextState = this.states.get(nextState).execute(this.context);
             } catch (Exception ex) {
                 LOGGER.error("Exception occurred running controller state: " + nextState.getSimpleName(), ex);

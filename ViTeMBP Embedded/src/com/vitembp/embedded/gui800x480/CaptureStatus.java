@@ -17,7 +17,9 @@
  */
 package com.vitembp.embedded.gui800x480;
 
-import com.vitembp.embedded.hardware.HardwareInterface;
+import com.vitembp.embedded.controller.SignalEndCapture;
+import com.vitembp.embedded.controller.SignalStartCapture;
+import com.vitembp.embedded.controller.StateMachine;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -242,20 +244,16 @@ public class CaptureStatus extends javax.swing.JDialog {
             
             if ("Start Capture".equals(startCaptureButton.getText())) {
                 // starting capture
-                try {
-                    startCaptureButton.setText("Stop Capture");
-                    HardwareInterface.getInterface().generateKeyPress('1');
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Interrupted starting capture from GUI.", ex);
-                }
+                startCaptureButton.setText("Stop Capture");
+                StateMachine.getSingleton().enqueueSignal(new SignalStartCapture((s) -> {
+                    LOGGER.debug("Result of start button clicked: " + s);
+                }));
             } else {
                 // ending capture
-                try {
-                    startCaptureButton.setText("Start Capture");
-                    HardwareInterface.getInterface().generateKeyPress('4');
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Interrupted stopping capture from GUI.", ex);
-                }
+                startCaptureButton.setText("Start Capture");
+                StateMachine.getSingleton().enqueueSignal(new SignalEndCapture((s) -> {
+                    LOGGER.debug("Result of stop button clicked: " + s);
+                }));
             }
         }
     }//GEN-LAST:event_startCaptureButtonActionPerformed

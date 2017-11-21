@@ -41,11 +41,11 @@ class EndCapture implements ControllerState {
         try {
             // save the capture data
             session.completeCapture();
+            state.getSignal().returnResult("Capture ended.");
         } catch (IOException ex) {
             LOGGER.error("Error while saving data at end of capture.", ex);
+            state.getSignal().returnResult("Error, capture ended, but an error occured while saving data.");
         }
-        
-        // signal capture has stopped as needed
         
         return WaitForStartFlashLed.class;
     }

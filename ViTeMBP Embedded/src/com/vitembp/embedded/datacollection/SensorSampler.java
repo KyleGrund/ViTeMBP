@@ -80,7 +80,7 @@ public class SensorSampler {
      * Start data logging.
      */
     public void start() {
-        LOGGER.debug("Starting data logging.");
+        LOGGER.info("Starting data logging.");
         this.isRunning = true;
         this.loggingThread = new Thread(() -> { collectData(); });
         this.loggingThread.setName("DataLogger");
@@ -92,7 +92,7 @@ public class SensorSampler {
      * Stop data logging.
      */
     public void stop() {
-        LOGGER.debug("Stopping data logging.");
+        LOGGER.info("Stopping data logging.");
         this.isRunning = false;
     }
     
@@ -119,7 +119,7 @@ public class SensorSampler {
                     sample = "";
                 }
                 data.put(sensorName, sample);
-                LOGGER.debug("Sensor " + sensorName + ": " + sample);
+                LOGGER.trace("Sensor " + sensorName + ": " + sample);
             });
             
             // notify listeners

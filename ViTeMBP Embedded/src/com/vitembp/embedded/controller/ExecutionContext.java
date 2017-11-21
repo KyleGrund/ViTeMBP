@@ -19,6 +19,7 @@ package com.vitembp.embedded.controller;
 
 import com.vitembp.embedded.configuration.SystemConfig;
 import com.vitembp.embedded.datacollection.CaptureSession;
+import com.vitembp.embedded.hardware.Calibrator;
 import com.vitembp.embedded.hardware.HardwareInterface;
 
 /**
@@ -29,6 +30,16 @@ class ExecutionContext {
      * The capture session currently in use.
      */
     private CaptureSession captureSession;
+    
+    /**
+     * The calibrator used for sensor calibration.
+     */
+    private Calibrator calibrator;
+    
+    /**
+     * The external signal being processed.
+     */
+    private Signal signal;
     
     /**
      * Initializes a new instance of the ExecutionContext class.
@@ -57,6 +68,38 @@ class ExecutionContext {
      */
     void setCaptureSession(CaptureSession session) {
         this.captureSession = session;
+    }
+    
+    /**
+     * Gets the Calibrator object for the sensor being calibrated.
+     * @return The Calibrator object for the sensor being calibrated.
+     */
+    Calibrator getCalibrator() {
+        return this.calibrator;
+    }
+    
+    /**
+     * Sets the Calibrator object for the sensor being calibrated.
+     * @param calibrator The Calibrator object for the sensor being calibrated.
+     */
+    void setCalibrator(Calibrator calibrator) {
+        this.calibrator = calibrator;
+    }
+    
+    /**
+     * Gets the signal being processed.
+     * @return The signal being processed.
+     */
+    Signal getSignal() {
+        return this.signal;
+    }
+    
+    /**
+     * Sets the signal being processed.
+     * @param signal The signal to set.
+     */
+    void setSignal(Signal signal) {
+        this.signal = signal;
     }
     
     /**
