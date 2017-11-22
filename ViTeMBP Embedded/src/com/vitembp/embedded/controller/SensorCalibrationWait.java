@@ -42,6 +42,9 @@ class SensorCalibrationWait implements ControllerState {
         if (signal instanceof SignalCalibrateNextStep) {
             state.setSignal(signal);
             return SensorCalibrationNext.class;
+        } else if (signal instanceof SignalGetCalibrationStatus) {
+            state.setSignal(signal);
+            return SensorCalibrationStatus.class;
         }
         
         if (signal != null) {

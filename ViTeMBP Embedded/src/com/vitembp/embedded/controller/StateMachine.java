@@ -90,6 +90,10 @@ public class StateMachine {
         this.states.put(EndCapture.class, new EndCapture());
         this.states.put(New.class, new New());
         this.states.put(CreateCapture.class, new CreateCapture());
+        this.states.put(SensorCalibrationNext.class, new SensorCalibrationNext());
+        this.states.put(SensorCalibrationStart.class, new SensorCalibrationStart());
+        this.states.put(SensorCalibrationStatus.class, new SensorCalibrationStatus());
+        this.states.put(SensorCalibrationWait.class, new SensorCalibrationWait());
         this.states.put(StartCapture.class, new StartCapture());
         this.states.put(WaitForEnd.class, new WaitForEnd());
         this.states.put(WaitForStart.class, new WaitForStart());

@@ -37,6 +37,11 @@ class ExecutionContext {
     private Calibrator calibrator;
     
     /**
+     * The name of the sensor the calibrator is for.
+     */
+    private String calibratorSensorName;
+    
+    /**
      * The external signal being processed.
      */
     private Signal signal;
@@ -81,9 +86,19 @@ class ExecutionContext {
     /**
      * Sets the Calibrator object for the sensor being calibrated.
      * @param calibrator The Calibrator object for the sensor being calibrated.
+     * @param sensorName The Calibrator object for the sensor being calibrated.
      */
-    void setCalibrator(Calibrator calibrator) {
+    void setCalibrator(Calibrator calibrator, String sensorName) {
         this.calibrator = calibrator;
+        this.calibratorSensorName = sensorName;
+    }
+    
+    /**
+     * Gets the name of the sensor that the Calibrator object is for.
+     * @return The name of the sensor that the Calibrator object is for.
+     */
+    String getCalibratorSensorName() {
+        return this.calibratorSensorName;
     }
     
     /**

@@ -18,8 +18,10 @@
 package com.vitembp.embedded.interfaces;
 
 import com.vitembp.embedded.configuration.CloudConfigSync;
+import com.vitembp.embedded.controller.SignalCalibrateNextStep;
 import com.vitembp.embedded.controller.SignalCalibrateSensor;
 import com.vitembp.embedded.controller.SignalEndCapture;
+import com.vitembp.embedded.controller.SignalGetCalibrationStatus;
 import com.vitembp.embedded.controller.SignalStartCapture;
 import com.vitembp.embedded.controller.StateMachine;
 import com.vitembp.embedded.hardware.HardwareInterface;
@@ -112,21 +114,40 @@ public class SQSTarget {
             toReturn.setCharAt(toReturn.length() - 1, ']');
             return toReturn.toString();
         } else if (upperCase.startsWith("CALSENSOR")) {
-            String[] splitResp = toProcess.split(" ");
-            
             // command must be of the form: "calsensor [sensor name]"
-            if (splitResp.length != 2) {
+            if (toProcess.length() < 10) {
                 failureReason = "Sensor name required.";
             } else {
+                String sensorName = toProcess.substring(10);
                 // send start calibration command
                 LinkedBlockingQueue<String> result = new LinkedBlockingQueue<>();
-                StateMachine.getSingleton().enqueueSignal(new SignalCalibrateSensor(splitResp[1], result::add));
+                StateMachine.getSingleton().enqueueSignal(new SignalCalibrateSensor(sensorName, result::add));
                 try {
                     return result.take();
                 } catch (InterruptedException ex) {
                     failureReason = "Interrupted waiting for result of start calibration command.";
                     LOGGER.error(failureReason, ex);
                 }
+            }
+        } else if ("CALSTATUS".equals(upperCase)) {
+            // send cas status command
+            LinkedBlockingQueue<String> result = new LinkedBlockingQueue<>();
+            StateMachine.getSingleton().enqueueSignal(new SignalGetCalibrationStatus(result::add));
+            try {
+                return result.take();
+            } catch (InterruptedException ex) {
+                failureReason = "Interrupted waiting for result of get calibration status command.";
+                LOGGER.error(failureReason, ex);
+            }
+        } else if ("CALNEXTSTEP".equals(upperCase)) {
+            // send cas status command
+            LinkedBlockingQueue<String> result = new LinkedBlockingQueue<>();
+            StateMachine.getSingleton().enqueueSignal(new SignalCalibrateNextStep(result::add));
+            try {
+                return result.take();
+            } catch (InterruptedException ex) {
+                failureReason = "Interrupted waiting for result of next calibration step command.";
+                LOGGER.error(failureReason, ex);
             }
         }
         

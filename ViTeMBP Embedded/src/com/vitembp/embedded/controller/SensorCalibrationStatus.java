@@ -26,7 +26,7 @@ class SensorCalibrationStatus implements ControllerState {
     /**
      * The response that is sent when a 
      */
-    static final String NOT_RUNNING_RESPONSE = "{\"isCalibrating\":false,\"stepPrompt\":\"\"}";
+    static final String NOT_RUNNING_RESPONSE = "{\"isCalibrating\":false,\"stepPrompt\":\"\",\"sensorName\":\"\"}";
     
     @Override
     public Class execute(ExecutionContext state) {
@@ -36,13 +36,14 @@ class SensorCalibrationStatus implements ControllerState {
         // return an empty json response
         if (calibrator == null) {
             state.getSignal().returnResult(NOT_RUNNING_RESPONSE);
+        } else {
+            // return response
+            state.getSignal().returnResult(
+                    getJsonResponse(calibrator, state.getCalibratorSensorName()));
         }
         
-        // return response
-        state.getSignal().returnResult(getJsonResponse(calibrator));
-        
         // no valid signal received, return to this state
-        return this.getClass();
+        return SensorCalibrationWait.class;
     }
     
     /**
@@ -50,11 +51,13 @@ class SensorCalibrationStatus implements ControllerState {
      * @param calibrator The calibrator to build a status response for.
      * @return The calibrator status as a JSON string.
      */
-    static String getJsonResponse(Calibrator calibrator) {
+    private String getJsonResponse(Calibrator calibrator, String sensorName) {
         return "{\"isCalibrating\":" +
                 Boolean.toString(calibrator.isCalibrating()) +
                 ",\"stepPrompt\":\"" +
                 calibrator.getStepPrompt() +
+                "\",\"sensorName\":\"" +
+                sensorName +
                 "\"}";
     }
 }

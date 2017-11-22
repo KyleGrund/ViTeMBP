@@ -39,7 +39,7 @@ class SensorCalibrationStart implements ControllerState {
         }
         
         // set a calibrator on the state
-        state.setCalibrator(sensors.get(signal.getSensorName()).getCalibrator());
+        state.setCalibrator(sensors.get(signal.getSensorName()).getCalibrator(), signal.getSensorName());
         
         // send response
         signal.returnResult("Calibration started.");

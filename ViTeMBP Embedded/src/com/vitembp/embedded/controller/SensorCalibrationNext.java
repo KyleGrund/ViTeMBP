@@ -31,8 +31,13 @@ class SensorCalibrationNext implements ControllerState {
         calibrator.nextStep();
         
         // if the calibration is finished go to wait for start
-        if (calibrator.isCalibrating()) {
+        if (!calibrator.isCalibrating()) {
             state.getSignal().returnResult("Success, calibration complete.");
+            
+            // clear calibrator state
+            state.setCalibrator(null, "");
+            
+            // go to idle
             return WaitForStart.class;
         }
 
