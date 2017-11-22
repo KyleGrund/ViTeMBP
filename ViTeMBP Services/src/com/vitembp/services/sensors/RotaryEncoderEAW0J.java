@@ -108,8 +108,8 @@ class RotaryEncoderEAW0J extends RotarySensor {
             
             // add bounds checking to keep cal funtion between 0 and 1.
             this.calFunction = 
-                    ((Function<Double, Double>)(v -> (v < 0) ? 0 : (v > 1) ? 1 : v))
-                            .andThen(this.calFunction);
+                    this.calFunction
+                    .andThen((Function<Double, Double>)(v -> (v < 0) ? 0 : (v > 1) ? 1 : v));
         } else {
             // no cal data so just return original value
             this.calFunction = d -> d;
