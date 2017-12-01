@@ -27,7 +27,24 @@ import java.util.Map;
  * A factory class that builds an overlay from a definition.
  */
 public class OverlayFactory {
+    /**
+     * Builds an overlay for the given definition and parameters.
+     * @param definition A String containing the definition of the overlay to
+     * create in XML format.
+     * @param sensors The list sensors that can decode the data in samples to
+     * values that will be used in generating the overlay.
+     * @param minimumValues The minimum values in the data that the overlay can
+     * use to determine the range of values it needs to display.
+     * @param maximumValues The maximum values in the data that the overlay can
+     * use to determine the range of values it needs to display.
+     * @param videoInfo The information object that describes the video that
+     * the overlay is being applied to.
+     * @return The Overlay implementation that can be used to apply the data
+     * overlay to images.
+     * @throws InstantiationException If the Overlay cannot be created.
+     */
     public static Overlay buildOverlay(String definition, List<Sensor> sensors, Map<Sensor, Double> minimumValues, Map<Sensor, Double> maximumValues, VideoFileInfo videoInfo) throws InstantiationException {
+        // load the overlay from the xml string
         OverlayDefinition def;
         try {
             def = OverlayDefinition.getDefinition(definition);
@@ -35,6 +52,7 @@ public class OverlayFactory {
             throw new InstantiationException("Exception loading definition.");
         }
         
+        // make the overlay for each type
         switch (def.getOverlayType()) {
             case FourQuadrant:
                 return new FourQuadrantOveraly(

@@ -103,7 +103,7 @@ class DistanceVL53L0X extends DistanceSensor {
      */
     private Optional<Double> decodeData(Sample toDecode, Function<Double, Double> calFunc) {
         String data = this.getData(toDecode);
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         } else {
             // get the sensor reading value

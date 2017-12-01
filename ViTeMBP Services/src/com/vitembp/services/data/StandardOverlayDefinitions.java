@@ -38,7 +38,7 @@ public class StandardOverlayDefinitions {
                 "</sensorbindings>" +
                 "</element>" +
                 "<element>" +
-                "<type>Shock</type>" +
+                "<type>ShockSensor</type>" +
                 "<location>TopLeft</location>" +
                 "<sensorbindings>" +
                 "<sensor>" +
@@ -48,7 +48,7 @@ public class StandardOverlayDefinitions {
                 "</sensorbindings>" +
                 "</element>" +
                 "<element>" +
-                "<type>Shock</type>" +
+                "<type>ShockSensor</type>" +
                 "<location>TopRight</location>" +
                 "<sensorbindings>" +
                 "<sensor>" +

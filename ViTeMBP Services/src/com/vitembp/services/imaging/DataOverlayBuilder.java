@@ -184,7 +184,7 @@ class DataOverlayBuilder {
         
         // check bar graph percentace
         if (progressScaleFactor > 1.0 || progressScaleFactor < 0.0) {
-            throw new IllegalArgumentException("The percentage must be between 0 and 1.");
+            throw new IllegalArgumentException("The percentage must be between 0 and 1, it was " + Double.toString(progressScaleFactor) + ".");
         }
         
         // draw bar

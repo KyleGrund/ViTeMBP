@@ -41,7 +41,21 @@ public class SQSTarget {
     public static String parseCommand(String cmd, ApiFunctions functions) {
         LOGGER.info("Processing SQS message: " + cmd);
         
-        if (cmd.toUpperCase().startsWith("CAPTUREGRAPHDATA")) {
+        if (cmd.toUpperCase().startsWith("CAPTUREGRAPHDATACSV")) {
+            if (cmd.length() != 56) {
+                return "Capture summary command must be of form: \"capturesummarycsv [capture uuid]\".";
+            }
+            
+            UUID capture = UUID.fromString(cmd.substring(20));
+            
+            try {
+                return functions.calculageGraphDataCsv(capture, 400);
+            } catch (Exception ex) {
+                LOGGER.error("Exception while calculating graph data for capture.", ex);
+                return "Could not create graph data for capture.";
+            }
+            
+        } else if (cmd.toUpperCase().startsWith("CAPTUREGRAPHDATA")) {
             if (cmd.length() != 53) {
                 return "Capture summary command must be of form: \"capturesummary [capture uuid]\".";
             }

@@ -139,7 +139,7 @@ class RotaryEncoderEAW0J extends RotarySensor {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         

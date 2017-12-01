@@ -55,6 +55,8 @@ class OverlayElementFactory {
                     definition.getLocation().name());
             return null;
         }
+        
+        // build elements based on sensor type
         switch (definition.getElementType()) {
             case BrakeSensor:
                 // only uses a single sensor
@@ -106,7 +108,7 @@ class OverlayElementFactory {
                         minimumValues.get(rightBinding),
                         maximumValues.get(rightBinding),
                         (RotarySensor)rightBinding);
-            case Shock:
+            case ShockSensor:
                 // only uses a single sensor
                 if (definition.getSensors().size() != 1) {
                     throw new InstantiationException("Shock sensor element type requires a single sensor definition.");

@@ -170,17 +170,22 @@ public class StandardPipelines {
         // add averaging elements based on sensor type
         if (RotarySensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
-                    ((RotarySensor)sensor)::getPositionPercentage, ELEMENT_COUNT_BINDING,
-                    AVERAGE_BINDING, sensor));
+                    ((RotarySensor)sensor)::getPositionPercentage,
+                    ELEMENT_COUNT_BINDING,
+                    AVERAGE_BINDING,
+                    sensor));
         } else if (DistanceSensor.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
-                    ((DistanceSensor)sensor)::getDistancePercent, ELEMENT_COUNT_BINDING,
-                    AVERAGE_BINDING, sensor));
+                    ((DistanceSensor)sensor)::getDistancePercent,
+                    ELEMENT_COUNT_BINDING,
+                    AVERAGE_BINDING,
+                    sensor));
         } else if (AccelerometerThreeAxis.class.isAssignableFrom(sensor.getClass())) {
             toBuild.add(new SampleAverageElement(
                     StandardPipelines.absoluteValue.apply((AccelerometerThreeAxis)sensor),
                     ELEMENT_COUNT_BINDING,
-                    AVERAGE_BINDING, sensor));
+                    AVERAGE_BINDING,
+                    sensor));
         }
     }
 

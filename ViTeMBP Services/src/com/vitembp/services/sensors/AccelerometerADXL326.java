@@ -97,11 +97,14 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         
         String[] values = data.split(",");
+        if (values.length < 3) {
+            throw new IllegalStateException("Invalid data found parsing ADXL326 X axis, \"" + data + "\"");
+        }
         String trimmed = values[0].trim().substring(1);
         double value = Double.parseDouble(trimmed);
         
@@ -114,11 +117,14 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         
         String[] values = data.split(",");
+        if (values.length < 3) {
+            throw new IllegalStateException("Invalid data found parsing ADXL326 Y axis, \"" + data + "\"");
+        }
         String trimmed = values[1].trim();
         double value = Double.parseDouble(trimmed);
         
@@ -131,11 +137,14 @@ public class AccelerometerADXL326 extends AccelerometerThreeAxis {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         
         String[] values = data.split(",");
+        if (values.length < 3) {
+            throw new IllegalStateException("Invalid data found parsing ADXL326 Z axis, \"" + data + "\"");
+        }
         String trimmed = values[2].trim();
         trimmed = trimmed.substring(0, trimmed.length() - 1);
         double value = Double.parseDouble(trimmed);

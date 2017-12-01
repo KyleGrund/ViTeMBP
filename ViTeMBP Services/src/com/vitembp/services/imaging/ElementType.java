@@ -28,7 +28,7 @@ enum ElementType {
     /**
      * Element which displays a linear shock distance percentage.
      */
-    Shock,
+    ShockSensor,
     /**
      * Element which displays a three-axis G meter.
      */

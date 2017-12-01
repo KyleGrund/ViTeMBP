@@ -21,6 +21,7 @@ import com.vitembp.embedded.data.Sample;
 import com.vitembp.services.data.PipelineExecutionException;
 import com.vitembp.services.sensors.AccelerometerThreeAxis;
 import java.text.DecimalFormat;
+import java.util.Optional;
 
 /**
  * Class creating an overlay for a three-axis accelerometer.
@@ -115,12 +116,19 @@ class ThreeAxisGOverlayElement extends OverlayElement {
         }
         
         // get data to render
-        double xValue = this.sensor.getXAxisG(data).orElse(minValue);
-        double yValue = this.sensor.getYAxisG(data).orElse(minValue);
-        double zValue = this.sensor.getZAxisG(data).orElse(minValue);
+        Optional<Double> xValue = this.sensor.getXAxisG(data);
+        Optional<Double> yValue = this.sensor.getYAxisG(data);
+        Optional<Double> zValue = this.sensor.getZAxisG(data);
         
-        double magnitude = Math.sqrt(
-                Math.pow(xValue, 2) + Math.pow(yValue, 2) + Math.pow(zValue, 2));
+        double magnitude;
+        if (!xValue.isPresent() || !yValue.isPresent() || !zValue.isPresent()){
+            magnitude = this.minValue;
+        } else {
+            magnitude = Math.sqrt(
+                Math.pow(xValue.get(), 2) +
+                        Math.pow(yValue.get(), 2) +
+                        Math.pow(zValue.get(), 2));
+        }
         
         // render a bar
         builder.addHorizontalProgressBar(

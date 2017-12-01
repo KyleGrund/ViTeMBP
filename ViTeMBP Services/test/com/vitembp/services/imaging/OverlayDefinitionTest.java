@@ -147,15 +147,15 @@ public class OverlayDefinitionTest {
         assertEquals(4, defns.size());
         assertEquals(1L, defns.stream().filter(ed -> ed.getElementType().equals(ElementType.BrakeSensor)).count());
         assertEquals(1L, defns.stream().filter(ed -> ed.getElementType().equals(ElementType.ThreeAxisG)).count());
-        assertEquals(2L, defns.stream().filter(ed -> ed.getElementType().equals(ElementType.Shock)).count());
+        assertEquals(2L, defns.stream().filter(ed -> ed.getElementType().equals(ElementType.ShockSensor)).count());
         ElementDefinition brake = defns.stream().filter(ed -> ed.getElementType().equals(ElementType.BrakeSensor)).findFirst().get();
         ElementDefinition accel = defns.stream().filter(ed -> ed.getElementType().equals(ElementType.ThreeAxisG)).findFirst().get();
         ElementDefinition shockLeft = defns.stream()
-                .filter(ed -> ed.getElementType().equals(ElementType.Shock))
+                .filter(ed -> ed.getElementType().equals(ElementType.ShockSensor))
                 .filter(ed -> ed.getLocation() == ElementLocation.TopLeft)
                 .findFirst().get();
         ElementDefinition shockRight = defns.stream()
-                .filter(ed -> ed.getElementType().equals(ElementType.Shock))
+                .filter(ed -> ed.getElementType().equals(ElementType.ShockSensor))
                 .filter(ed -> ed.getLocation() == ElementLocation.TopRight)
                 .findFirst().get();
         assertEquals(brake.getLocation(), ElementLocation.BottomRight);

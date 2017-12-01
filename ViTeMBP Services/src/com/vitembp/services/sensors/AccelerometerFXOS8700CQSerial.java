@@ -50,7 +50,7 @@ class AccelerometerFXOS8700CQSerial extends AccelerometerThreeAxis {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         
@@ -65,7 +65,7 @@ class AccelerometerFXOS8700CQSerial extends AccelerometerThreeAxis {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         
@@ -80,7 +80,7 @@ class AccelerometerFXOS8700CQSerial extends AccelerometerThreeAxis {
         String data = this.getData(toDecode);
         
         // handle missing samples
-        if (data == null) {
+        if (data == null || "".equals(data)) {
             return Optional.empty();
         }
         
