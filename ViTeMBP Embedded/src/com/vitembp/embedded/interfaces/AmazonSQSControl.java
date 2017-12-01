@@ -120,7 +120,7 @@ public class AmazonSQSControl {
     /**
      * Attempts to create the queue for this device.
      */
-    public void createQueue() {
+    private void createQueue() {
         // if the queue was not yet created
         if (this.queueUrl == null) {
             // create the queue

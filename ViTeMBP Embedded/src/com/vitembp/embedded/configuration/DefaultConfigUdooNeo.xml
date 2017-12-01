@@ -1,20 +1,82 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" ?>
 <configuration>
+    <systemname>New</systemname>
     <systemid>2ae1239a-3389-4580-b704-ff5c7b4dd3ee</systemid>
     <samplingfrequency>29.97</samplingfrequency>
     <sensornames>
+        <name>Front Shock</name>
         <name>Frame Accelerometer</name>
+        <name>Rear Shock</name>
+        <name>Front Brake</name>
+        <name>Rear Brake</name>
     </sensornames>
+    <sensorbindingsites>
+        <site>8d79cbc9-a4ec-3de1-92fc-91ba625b13c2</site>
+        <site>acfe9c77-80cc-3657-8295-5e03ad9fde4f</site>
+        <site>1f4a7552-72e5-3613-82b1-348fc58d59f8</site>
+        <site>2569c4a0-3ed2-3d42-9f51-76f67d40e009</site>
+        <site>d7e3e66a-a4f1-3215-8d61-4746d57fcfda</site>
+        <site>d9395313-35f5-4d55-9b52-9948d85e8f41</site>
+    </sensorbindingsites>
     <sensorbindings>
         <sensorbinding>
+            <name>Front Shock</name>
+            <binding>8d79cbc9-a4ec-3de1-92fc-91ba625b13c2</binding>
+        </sensorbinding>
+        <sensorbinding>
             <name>Frame Accelerometer</name>
-            <binding>728714d1-00a7-43fe-872a-591ad51dfb17</binding>
+            <binding>d9395313-35f5-4d55-9b52-9948d85e8f41</binding>
+        </sensorbinding>
+        <sensorbinding>
+            <name>Rear Shock</name>
+            <binding>acfe9c77-80cc-3657-8295-5e03ad9fde4f</binding>
+        </sensorbinding>
+        <sensorbinding>
+            <name>Front Brake</name>
+            <binding>2569c4a0-3ed2-3d42-9f51-76f67d40e009</binding>
+        </sensorbinding>
+        <sensorbinding>
+            <name>Rear Brake</name>
+            <binding>d7e3e66a-a4f1-3215-8d61-4746d57fcfda</binding>
         </sensorbinding>
     </sensorbindings>
+    <sensorcalibrations>
+        <sensorcalibration>
+            <site>8d79cbc9-a4ec-3de1-92fc-91ba625b13c2</site>
+            <calibration>(135.0,279.0)</calibration>
+        </sensorcalibration>
+        <sensorcalibration>
+            <site>acfe9c77-80cc-3657-8295-5e03ad9fde4f</site>
+            <calibration>(0.0,56.0)</calibration>
+        </sensorcalibration>
+        <sensorcalibration>
+            <site>2569c4a0-3ed2-3d42-9f51-76f67d40e009</site>
+            <calibration>(115,111,107)</calibration>
+        </sensorcalibration>
+        <sensorcalibration>
+            <site>d7e3e66a-a4f1-3215-8d61-4746d57fcfda</site>
+            <calibration>(0,6,11)</calibration>
+        </sensorcalibration>
+        <sensorcalibration>
+            <site>d9395313-35f5-4d55-9b52-9948d85e8f41</site>
+            <calibration>[(-0.49266863,0.58651066),(-0.4613881,0.46138763),(-0.273705,0.3988266)]</calibration>
+        </sensorcalibration>
+    </sensorcalibrations>
     <capturetype>EmbeddedH2</capturetype>
     <enablecompression>true</enablecompression>
     <cloud>
         <uploadtocloud>true</uploadtocloud>
         <deleteonuploadtocloud>true</deleteonuploadtocloud>
     </cloud>
+    <networkinterfaces>
+        <wiredethernet>
+            <metric>2</metric>
+        </wiredethernet>
+        <wirelessethernet>
+            <metric>3</metric>
+        </wirelessethernet>
+        <bluetooth>
+            <metric>1</metric>
+        </bluetooth>
+    </networkinterfaces>
 </configuration>

@@ -23,6 +23,7 @@ import com.vitembp.embedded.gui800x480.GUI;
 import com.vitembp.embedded.interfaces.AmazonSQSControl;
 import com.vitembp.embedded.interfaces.CommandLine;
 import com.vitembp.embedded.interfaces.SQSTarget;
+import java.awt.GraphicsEnvironment;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -44,8 +45,10 @@ public class ViTeMBPEmbedded {
         // create system controller state machine
         StateMachine machine = StateMachine.getSingleton();
         
-        // start GUI
-        GUI.start(machine::setSensorsChangedCallback, machine::setSensorsReadCallback);
+        if (!GraphicsEnvironment.isHeadless()) {
+            // start GUI
+            GUI.start(machine::setSensorsChangedCallback, machine::setSensorsReadCallback);
+        }
         
         // start state machine
         machine.start();
