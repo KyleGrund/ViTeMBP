@@ -110,76 +110,30 @@ class PlatformFactory {
      */
     public static Platform create(SystemBoardUdooNeo board){
         // get gpio182 which controls the sync light
-        final GPIOPort lightPort = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio182"))
-                .findFirst()
-                .get();
+        final GPIOPort lightPort = getGPIOPortByName(board, "gpio182");
         
         // get gpio4 which controls the buzzer
-        final GPIOPort buzzerPort = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio4"))
-                .findFirst()
-                .get();
+        final GPIOPort buzzerPort = getGPIOPortByName(board, "gpio4");
         
         // get gpio106 which controls button 1
-        final GPIOPort buttonOne = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio106"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonOne = getGPIOPortByName(board, "gpio106");
         
         // get gpio107 which controls button 2
-        final GPIOPort buttonTwo = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio107"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonTwo = getGPIOPortByName(board, "gpio107");
         
         // get gpio180 which controls button 3
-        final GPIOPort buttonThree = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio180"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonThree = getGPIOPortByName(board, "gpio180");
         
         // get gpio181 which controls button 4
-        final GPIOPort buttonFour = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio181"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonFour = getGPIOPortByName(board, "gpio181");
         
         return new PlatformFunctor(
                 lightPort::setValue,
                 buzzerPort::setValue,
                 (Consumer<Character> cb) -> {
                     // add polled event listeners to supply button press events
-                    new GPIOPolledEvent(
-                            buttonOne,
-                            8,
-                            (Boolean released) -> {
-                                if (!released) cb.accept('1');
-                            }).start();
-//                    new GPIOPolledEvent(
-//                            buttonTwo,
-//                            10,
-//                            (Boolean released) -> {
-//                                if (!released) cb.accept('2');
-//                            }).start();
-//                    new GPIOPolledEvent(
-//                            buttonThree,
-//                            10,
-//                            (Boolean released) -> {
-//                                if (!released) cb.accept('3');
-//                            }).start();
-                    new GPIOPolledEvent(
-                            buttonFour,
-                            8,
-                            (Boolean released) -> {
-                                if (!released) cb.accept('4');
-                            }).start();
+                    startGPIOEvent(cb, buttonOne, '1');
+                    startGPIOEvent(cb, buttonFour, '4');
                 },
                 () -> {
                     Set<Sensor> toReturn = new HashSet<>();
@@ -225,76 +179,30 @@ class PlatformFactory {
      */
     public static Platform create(SystemBoardUdooQdl board){
         // get gpio182 which controls the sync light
-        final GPIOPort lightPort = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio123"))
-                .findFirst()
-                .get();
+        final GPIOPort lightPort = getGPIOPortByName(board, "gpio123");
         
         // get gpio133 which controls the buzzer
-        final GPIOPort buzzerPort = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio133"))
-                .findFirst()
-                .get();
+        final GPIOPort buzzerPort = getGPIOPortByName(board, "gpio133");
         
         // get gpio106 which controls button 1
-        final GPIOPort buttonOne = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio124"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonOne = getGPIOPortByName(board, "gpio124");
         
         // get gpio107 which controls button 2
-        final GPIOPort buttonTwo = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio125"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonTwo = getGPIOPortByName(board, "gpio125");
         
         // get gpio180 which controls button 3
-        final GPIOPort buttonThree = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio126"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonThree = getGPIOPortByName(board, "gpio126");
         
         // get gpio181 which controls button 4
-        final GPIOPort buttonFour = board.getGPIOPorts()
-                .stream()
-                .filter((p) -> p.getName().equals("gpio127"))
-                .findFirst()
-                .get();
+        final GPIOPort buttonFour = getGPIOPortByName(board, "gpio127");
         
         return new PlatformFunctor(
                 lightPort::setValue,
                 buzzerPort::setValue,
                 (Consumer<Character> cb) -> {
                     // add polled event listeners to supply button press events
-                    new GPIOPolledEvent(
-                            buttonOne,
-                            8,
-                            (Boolean released) -> {
-                                if (!released) cb.accept('1');
-                            }).start();
-//                    new GPIOPolledEvent(
-//                            buttonTwo,
-//                            10,
-//                            (Boolean released) -> {
-//                                if (!released) cb.accept('2');
-//                            }).start();
-//                    new GPIOPolledEvent(
-//                            buttonThree,
-//                            10,
-//                            (Boolean released) -> {
-//                                if (!released) cb.accept('3');
-//                            }).start();
-                    new GPIOPolledEvent(
-                            buttonFour,
-                            8,
-                            (Boolean released) -> {
-                                if (!released) cb.accept('4');
-                            }).start();
+                    startGPIOEvent(cb, buttonOne, '1');
+                    startGPIOEvent(cb, buttonFour, '4');
                 },
                 () -> {
                     Set<Sensor> toReturn = new HashSet<>();
@@ -331,6 +239,37 @@ class PlatformFactory {
                     }
                 },
                 IfmetricInterface::setInterfaceMetric);
+    }
+    
+    /**
+     * Gets a GPIO port by name from the system board.
+     * @param board The system board to get port from.
+     * @param name The name of the port.
+     * @return The port for the given name.
+     */
+    private static GPIOPort getGPIOPortByName(SystemBoard board, String name) {
+        return board.getGPIOPorts()
+                .stream()
+                .filter((p) -> p.getName().equals(name))
+                .findFirst()
+                .get();
+    }
+    
+    /**
+     * Creates and starts a GPIOPolledEvent for the port that calls the callback
+     * with the character.
+     * @param cb The callback to call.
+     * @param port The GPIOPort to poll.
+     * @param ch The character to return to the callback.
+     */
+    private static void startGPIOEvent(Consumer<Character> cb, GPIOPort port, char ch) {
+        // add polled event listeners to supply button press events
+        new GPIOPolledEvent(
+                port,
+                8,
+                (Boolean released) -> {
+                    if (!released) cb.accept(ch);
+                }).start();
     }
     
     /**

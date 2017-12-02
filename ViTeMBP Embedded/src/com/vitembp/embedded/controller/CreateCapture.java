@@ -23,7 +23,6 @@ import com.vitembp.embedded.data.CaptureFactory;
 import com.vitembp.embedded.data.CaptureTypes;
 import com.vitembp.embedded.datacollection.CaptureSession;
 import com.vitembp.embedded.hardware.HardwareInterface;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
