@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.stream.XMLStreamException;
@@ -76,7 +75,7 @@ class SamplePageManager {
     /**
      * The start time of the first sample.
      */
-    private Instant startTime;
+    private final Instant startTime;
     
     /**
      * The interval between samples.
@@ -121,7 +120,7 @@ class SamplePageManager {
      * Adds a new sample.
      * @param toAdd The sample to add.
      */
-    public void addSample(Sample toAdd) {
+    void addSample(Sample toAdd) {
         if (lastPage.isFull()) {
             try {
                 this.addPage();
@@ -137,7 +136,7 @@ class SamplePageManager {
      * Gets the number of samples.
      * @return The number of samples.
      */
-    public int getSampleCount() {
+    int getSampleCount() {
         // number of samples equals the number of full pages (pageCount - 1)
         // times the size of pages (pageSize) plust the number in the last page
         return this.lastPage.sampleCount() + ((this.pageCount - 1) * this.pageSize);

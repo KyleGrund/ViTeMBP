@@ -70,7 +70,7 @@ interface UuidStringStore {
     public abstract void removeCaptureDescription(UUID location) throws IOException;
     
     /**
-     * Returns a boolean description of a capture in the store.
+     * Returns a CaptureDescription object of a capture in the store.
      * @param location The capture to find.
      * @throws IOException If an exception occurs while removing the UUID to the
      * list of captures in the persistent store.

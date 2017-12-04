@@ -156,14 +156,14 @@ class PlatformFactory {
                 () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
                 () -> { 
                     try {
-                        lightPort.setDirection(GpioDirection.Output);
+                        lightPort.setDirection(GPIODirection.Output);
                         lightPort.setValue(false);
                     } catch (IOException ex) {
                         LOGGER.error ("Could not initialize sync light port.", ex);
                     }
                     
                     try {
-                        buzzerPort.setDirection(GpioDirection.Output);
+                        buzzerPort.setDirection(GPIODirection.Output);
                         buzzerPort.setValue(false);
                     } catch (IOException ex) {
                         LOGGER.error ("Could not initialize sync buzzer port.", ex);
@@ -225,14 +225,14 @@ class PlatformFactory {
                 () -> Paths.get("/com/vitembp/embedded/configuration/DefaultConfigUdooNeo.xml"),
                 () -> { 
                     try {
-                        lightPort.setDirection(GpioDirection.Output);
+                        lightPort.setDirection(GPIODirection.Output);
                         lightPort.setValue(false);
                     } catch (IOException ex) {
                         LOGGER.error ("Could not initialize sync light port.", ex);
                     }
                     
                     try {
-                        buzzerPort.setDirection(GpioDirection.Output);
+                        buzzerPort.setDirection(GPIODirection.Output);
                         buzzerPort.setValue(false);
                     } catch (IOException ex) {
                         LOGGER.error ("Could not initialize sync buzzer port.", ex);

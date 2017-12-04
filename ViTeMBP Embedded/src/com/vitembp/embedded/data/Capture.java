@@ -238,7 +238,7 @@ public abstract class Capture {
      * Returns a representation of this class as an XML fragment.
      * @return A representation of this class as an XML fragment.
      */
-    public String toXml() {
+    String toXml() {
         StringWriter sw = new StringWriter();
             
         try {
@@ -256,7 +256,7 @@ public abstract class Capture {
      * @param toWriteTo The XMLStreamWriter to write to.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
-    public void writeTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
+    protected void writeTo(XMLStreamWriter toWriteTo) throws XMLStreamException {
         toWriteTo.writeStartDocument();
         
         Map<String, UUID> sensors = this.getSensorTypes();

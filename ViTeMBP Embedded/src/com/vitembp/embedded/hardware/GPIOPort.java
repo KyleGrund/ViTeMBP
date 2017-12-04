@@ -20,7 +20,7 @@ package com.vitembp.embedded.hardware;
 import java.io.IOException;
 
 /**
- * An abstract class providing a logtical inteface GPIOPort.
+ * An abstract class providing a logical interface GPIOPort.
  */
 public abstract class GPIOPort {
     /**
@@ -34,14 +34,14 @@ public abstract class GPIOPort {
      * @return The direction of the GPIOPort port.
      * @throws java.io.IOException If an exception occurs getting the port direction.
      */
-    public abstract GpioDirection getDirection() throws IOException;
+    public abstract GPIODirection getDirection() throws IOException;
     
     /**
      * Sets the direction of the GPIOPort port.
      * @param direction The direction to set the GPIOPort port to.
      * @throws java.io.IOException If an exception occurs setting the port direction.
      */
-    public abstract void setDirection(GpioDirection direction) throws IOException;
+    public abstract void setDirection(GPIODirection direction) throws IOException;
     
     /**
      * Returns the boolean value representing the state of the port.

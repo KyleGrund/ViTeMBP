@@ -60,9 +60,9 @@ class GPIOPortFile extends GPIOPort {
     private boolean hasDirectionBeenSet = false;
     
     /**
-     * A GpioDirection indicating what the direction of the port has been set to.
+     * A GPIODirection indicating what the direction of the port has been set to.
      */
-    private GpioDirection setDirection;
+    private GPIODirection setDirection;
     
     /**
      * Initializes a new instance of the GPIOPortFile class.
@@ -159,7 +159,7 @@ class GPIOPortFile extends GPIOPort {
     }
 
     @Override
-    public GpioDirection getDirection() throws IOException {
+    public GPIODirection getDirection() throws IOException {
         // read lines from the direction file
         List<String> dirLines = Files.readAllLines(this.directionPath);
         
@@ -177,25 +177,25 @@ class GPIOPortFile extends GPIOPort {
         String line = dirLines.get(0);
         switch (line) {
             case "in":
-                return GpioDirection.Input;
+                return GPIODirection.Input;
             case "out":
-                return GpioDirection.Output;
+                return GPIODirection.Output;
             default:
                 throw new IOException("Unexpected data read from direction file: \"" + line + "\".");
         }
     }
 
     @Override
-    public void setDirection(GpioDirection direction) throws IOException {
+    public void setDirection(GPIODirection direction) throws IOException {
         // write in or out to the direction file to set the port direction
         switch (direction) {
             case Input:
                 Files.write(this.directionPath, Arrays.asList(new String[] { "in" }), StandardOpenOption.WRITE);
-                this.setDirection = GpioDirection.Input;
+                this.setDirection = GPIODirection.Input;
                 break;
             case Output:
                 Files.write(this.directionPath, Arrays.asList(new String[] { "out" }), StandardOpenOption.WRITE);
-                this.setDirection = GpioDirection.Output;
+                this.setDirection = GPIODirection.Output;
                 break;
             default:
                 throw new IOException("Linux GPIO file interface only supports input or output modes.");
@@ -234,8 +234,8 @@ class GPIOPortFile extends GPIOPort {
     @Override
     public void setValue(boolean value) throws IOException {
         // make sure port is set to output
-        if (!this.hasDirectionBeenSet || this.setDirection != GpioDirection.Output) {
-            this.setDirection(GpioDirection.Output);
+        if (!this.hasDirectionBeenSet || this.setDirection != GPIODirection.Output) {
+            this.setDirection(GPIODirection.Output);
         }
         
         // write a 1 or 0 to the value file to set it to high or low respectively

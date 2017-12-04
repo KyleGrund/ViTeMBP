@@ -315,7 +315,7 @@ class SamplePage {
     }
     
     /**
-     * Read data for this Capture from an XMLStreamWriter.
+     * Read data for this SamplePage from an XMLStreamWriter.
      * @param toReadFrom The XMLStreamReader to read from.
      * @throws XMLStreamException If an exception occurs writing to the stream.
      */
