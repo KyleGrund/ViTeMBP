@@ -1,10 +1,3 @@
-package com.vitembp.services.sensors;
-
-import com.vitembp.embedded.data.Sample;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-
 /*
  * Video Telemetry for Mountain Bike Platform back-end services.
  * Copyright (C) 2017 Kyle Grund
@@ -22,6 +15,12 @@ import java.util.function.Function;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package com.vitembp.services.sensors;
+
+import com.vitembp.embedded.data.Sample;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * Class providing an interface to the VL53L0X sensor.

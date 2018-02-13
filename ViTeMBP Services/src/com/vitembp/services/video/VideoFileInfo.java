@@ -228,7 +228,6 @@ public class VideoFileInfo {
         
         if (!foundFPS) {
             LOGGER.error("Frame rate not found.");
-            return;
         }
     }
 }

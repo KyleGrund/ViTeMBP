@@ -18,7 +18,6 @@
 package com.vitembp.services.sensors;
 
 import com.vitembp.embedded.data.Sample;
-import java.util.Optional;
 
 /**
  * A base class providing an interface for sensors.

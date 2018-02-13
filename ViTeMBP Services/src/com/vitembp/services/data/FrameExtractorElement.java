@@ -119,6 +119,5 @@ class FrameExtractorElement implements PipelineElement {
         }
         
         return state;
-    }
-    
+    }    
 }

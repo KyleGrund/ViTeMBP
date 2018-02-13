@@ -42,6 +42,7 @@ class SeedValueElement implements PipelineElement {
         this.bindingToAdd = bindingToAdd;
         this.valueToAdd = valueToAdd;
     }
+    
     @Override
     public Map<String, Object> accept(Map<String, Object> state) throws PipelineExecutionException {
         // simply adds the value if it is not already there

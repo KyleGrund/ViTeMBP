@@ -46,6 +46,8 @@ public class CaptureCalculations {
      * Calculates and returns summary information about the capture.
      * @param captureLocation The location of the capture in the data store.
      * @return The summarized data about the capture.
+     * @throws java.io.IOException If there is an exception reading the summary
+     * data.
      */
     public static String getSummaryData(UUID captureLocation) throws IOException {
         StringBuilder data = new StringBuilder();
@@ -98,6 +100,7 @@ public class CaptureCalculations {
      * @return The summarized data about the capture.
      * @throws java.io.IOException If an error occurs reading from data store.
      */
+    @SuppressWarnings("unchecked")
     public static String buildGraphDataForCapture(UUID captureLocation, int points) throws IOException {
         // load the capture
         Capture toProcess = CaptureOperations.getCaptureAtLocation(captureLocation);
@@ -126,9 +129,10 @@ public class CaptureCalculations {
                 Map<String, Object> stats = CaptureProcessor.process(toProc.stream(), statsPipe);
                 
                 // get maps
-                Map<Sensor, Double> mins = (Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING);
-                Map<Sensor, Double> maxs = (Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING);
-                Map<Sensor, Double> avgs = (Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING);
+                Map<Sensor, Double> mins, maxs, avgs;
+                mins = (Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING);
+                maxs = (Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING);
+                avgs = (Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING);
                 
                 // get specific results changing map key to sensor name
                 if (mins != null) {
@@ -191,6 +195,7 @@ public class CaptureCalculations {
      * @return The summarized data about the capture.
      * @throws java.io.IOException If an error occurs reading from data store.
      */
+    @SuppressWarnings("unchecked")
     public static String buildCsvGraphDataForCapture(UUID captureLocation, int points) throws IOException {
         // load the capture
         Capture toProcess = CaptureOperations.getCaptureAtLocation(captureLocation);
@@ -219,9 +224,10 @@ public class CaptureCalculations {
                 Map<String, Object> stats = CaptureProcessor.process(toProc.stream(), statsPipe);
                 
                 // get maps
-                Map<Sensor, Double> mins = (Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING);
-                Map<Sensor, Double> maxs = (Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING);
-                Map<Sensor, Double> avgs = (Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING);
+                Map<Sensor, Double> mins, maxs, avgs;
+                mins = (Map<Sensor, Double>)stats.get(StandardPipelines.MIN_BINDING);
+                maxs = (Map<Sensor, Double>)stats.get(StandardPipelines.MAX_BINDING);
+                avgs = (Map<Sensor, Double>)stats.get(StandardPipelines.AVERAGE_BINDING);
                 
                 // get specific results changing map key to sensor name
                 if (mins != null) {

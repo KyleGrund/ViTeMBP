@@ -199,6 +199,8 @@ public class Conversion {
      * This method concatenates the two specified videos.
      * @param destination The video to append to.
      * @param toAppend The video to append.
+     * @throws java.io.IOException If there is an exception combining the video
+     * files.
      */
     public static void combineVideos(Path destination, Path toAppend) throws IOException {
         // get two temp files
@@ -279,6 +281,12 @@ public class Conversion {
         Files.delete(fileList);
     }
 
+    /**
+     * Copies audio from a source video to a destination video.
+     * @param sourceFile The source video.
+     * @param destFile The destination video.
+     * @throws IOException If an error occurs copying the audio.
+     */
     public static void copyAudio(Path sourceFile, Path destFile) throws IOException {
         // get two temp files
         Path outputPath = destFile.getParent();

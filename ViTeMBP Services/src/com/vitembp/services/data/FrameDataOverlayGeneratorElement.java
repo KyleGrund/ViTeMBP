@@ -55,6 +55,7 @@ class FrameDataOverlayGeneratorElement implements PipelineElement {
      * @throws InstantiationException If sensor instances cannot be built for
      * all sensors in the capture.
      */
+    @SuppressWarnings("unchecked")
     FrameDataOverlayGeneratorElement(Capture toBuildFor, VideoFileInfo videoInfo, String overlayDefinition, String framePathBinding) throws InstantiationException {
         // save parameters
         this.framePathBinding = framePathBinding;

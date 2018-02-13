@@ -62,6 +62,13 @@ public class CommandLine {
         printUsage();
     }
 
+    /**
+     * Processes commands used to start servers.
+     * @param args The array of arguments passed in with the command.
+     * @param functions ApiFunctions used to process the command.
+     * @return A boolean value indicating whether the command executed
+     * successfully.
+     */
     private static boolean processServerCommands(String[] args, ApiFunctions functions) {
         if (args[0].toUpperCase().equals("-HS")) {
             if (args.length >= 2) {
@@ -86,6 +93,13 @@ public class CommandLine {
         return false;
     }
 
+    /**
+     * Processes service commands.
+     * @param args The arguments passed in with the command.
+     * @param functions The API functions used to process the command.
+     * @return A boolean value indicating whether the command was executed
+     * successfully.
+     */
     public static boolean processStandardCommands(String[] args, ApiFunctions functions) {
         if (args[0].toUpperCase().equals("-FS")) {
             // command: -fs <filename> [<color channel>]

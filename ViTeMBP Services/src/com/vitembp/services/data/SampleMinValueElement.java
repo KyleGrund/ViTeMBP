@@ -69,6 +69,7 @@ class SampleMinValueElement implements PipelineElement {
             state.put(this.outputBinding, new HashMap<>());
         }
         
+        @SuppressWarnings("unchecked")
         Map<Sensor, Double> minValues = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double minValue = minValues.get(this.sensorBinding);
         Optional<Double> value = parser.apply(toAccept);

@@ -42,7 +42,8 @@ public class Processing {
      * @param sourceFile The source wave file.
      * @param signalFrequency The sync signal frequency.
      * @return A list of sync frames where the audio signal was detected.
-     * @throws java.io.IOException
+     * @throws java.io.IOException If there is an exception processing the video
+     * file.
      */
     public static List<Integer> findSyncFrames(String sourceFile, double signalFrequency) throws IOException {
         // create a temporary file for the output

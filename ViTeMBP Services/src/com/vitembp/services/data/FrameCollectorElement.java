@@ -155,6 +155,5 @@ class FrameCollectorElement implements PipelineElement {
         }
         
         return state;
-    }
-    
+    }    
 }

@@ -70,6 +70,7 @@ class SampleMaxValueElement implements PipelineElement {
             state.put(this.outputBinding, new HashMap<>());
         }
         
+        @SuppressWarnings("unchecked")
         Map<Sensor, Double> maxValues = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double maxValue = maxValues.get(this.sensorBinding);
         Optional<Double> value = parser.apply(toAccept);

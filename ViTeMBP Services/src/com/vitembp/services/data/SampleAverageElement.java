@@ -79,6 +79,7 @@ class SampleAverageElement implements PipelineElement {
         }
         
         // get the average for our sensor from the averages collection
+        @SuppressWarnings("unchecked")
         Map<Sensor, Double> averages = (Map<Sensor, Double>)state.get(this.outputBinding);
         Double average = averages.get(this.sensorBinding);
         Long count = (Long)state.get(this.elementCountBinding);

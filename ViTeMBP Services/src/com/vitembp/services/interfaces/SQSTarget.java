@@ -36,6 +36,8 @@ public class SQSTarget {
     /**
      * Processes the command from the SQS queue.
      * @param cmd The command to process.
+     * @param functions The ApiFunctions instance to use when processing the
+     * commands.
      * @return The result of the command.
      */
     public static String parseCommand(String cmd, ApiFunctions functions) {
