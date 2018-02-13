@@ -46,11 +46,6 @@ public class SystemConfigTest {
      */
     private static final String TWO_NAMES_30SPS = "<?xml version=\"1.0\" ?><configuration><systemname></systemname><systemid>2ae1239a-3389-4580-b704-ff5c7b4dd3ee</systemid><samplingfrequency>30</samplingfrequency><sensornames><name>Name 1</name><name>Name 2</name></sensornames><sensorbindingsites></sensorbindingsites><sensorbindings></sensorbindings><sensorcalibrations></sensorcalibrations><capturetype>EmbeddedH2</capturetype><enablecompression>true</enablecompression><cloud><uploadtocloud>true</uploadtocloud><deleteonuploadtocloud>true</deleteonuploadtocloud></cloud><networkinterfaces><wiredethernet><metric>0</metric></wiredethernet><wirelessethernet><metric>0</metric></wirelessethernet><bluetooth><metric>0</metric></bluetooth></networkinterfaces></configuration>";
     
-    
-    
-    public SystemConfigTest() {
-    }
-    
     @BeforeClass
     public static void setUpClass() throws Exception {
         // this will ensure that the DEFAULT actually reflects the XML output

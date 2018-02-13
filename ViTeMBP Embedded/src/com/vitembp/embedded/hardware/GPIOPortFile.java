@@ -109,6 +109,13 @@ class GPIOPortFile extends GPIOPort {
         this.valuePath = value;
     }
     
+    /**
+     * Builds GPIO port instances for the provided path.
+     * @param ports The path which contains the port interface files.
+     * @return A set of port files for the provided path.
+     * @throws IOException If an error occurs while accessing the port control
+     * files.
+     */
     static Set<GPIOPort> buildPortsForPath(Path ports) throws IOException {
         Set<GPIOPort> toReturn = new HashSet<>();
         

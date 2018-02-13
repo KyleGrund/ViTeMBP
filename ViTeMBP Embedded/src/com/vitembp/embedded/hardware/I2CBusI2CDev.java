@@ -364,6 +364,12 @@ class I2CBusI2CDev extends I2CBusFunctor {
         return found;
     }
     
+    /**
+     * Builds I2CBus control object instances for the given path.
+     * @param busDir The path containing the control objects for the busses.
+     * @return The I2CBus control object instances for the given path.
+     * @throws IOException If there is an error accessing the I2C busses.
+     */
     static Set<I2CBus> buildBusesForPath(Path busDir) throws IOException {
         Set<I2CBus> toReturn = new HashSet<>();
         

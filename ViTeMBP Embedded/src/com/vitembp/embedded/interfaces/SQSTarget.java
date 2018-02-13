@@ -44,6 +44,7 @@ public class SQSTarget {
     /**
      * Parses a message sent through the FROMUUID command.
      * @param toProcess The message to process.
+     * @return The result of processing the message.
      */
     public static String parseUuidMessage(String toProcess) {
         LOGGER.info("Processing uuid message: " + toProcess);

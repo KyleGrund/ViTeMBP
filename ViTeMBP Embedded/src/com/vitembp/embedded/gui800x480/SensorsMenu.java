@@ -31,6 +31,8 @@ public class SensorsMenu extends javax.swing.JDialog {
     
     /**
      * Creates new form CaptureStatus
+     * @param parent The parent frame of this window.
+     * @param modal A boolean value indicating whether this window is modal.
      */
     public SensorsMenu(java.awt.Frame parent, boolean modal) {
         super(parent, modal);

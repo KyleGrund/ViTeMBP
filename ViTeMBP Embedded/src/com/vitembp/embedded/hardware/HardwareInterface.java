@@ -181,20 +181,6 @@ public class HardwareInterface {
     }
     
     /**
-     * Sets the metric for an interface
-     * @throws IOException if the shutdown process cannot be started.
-     */
-    public void setInterfaceMetric(String iface, int metric) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(new String[] {"sudo", "shutdown", "-r", "now"});
-        LOGGER.info("Executing command: " + Arrays.toString(pb.command().toArray()));
-        // execute the command
-        Process proc = pb.start();
-        
-        LOGGER.info("Sytem shutting down.");
-        System.exit(0);
-    }
-    
-    /**
      * Initializes resources such as resolving sensor bindings for system
      * interface.
      */

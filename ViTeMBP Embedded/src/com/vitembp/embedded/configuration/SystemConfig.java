@@ -223,6 +223,7 @@ public class SystemConfig {
     
     /**
      * Gets calibration data for the sensor name if available.
+     * @param name The name of the sensor.
      * @return The calibration data if available or an empty String.
      */
     public String getSensorCalibration(String name) {

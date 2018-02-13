@@ -54,6 +54,8 @@ public class CaptureStatus extends javax.swing.JDialog {
     
     /**
      * Creates new form CaptureStatus
+     * @param parent The parent frame of the window.
+     * @param modal Boolean indicating whether the window is modal.
      */
     public CaptureStatus(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -312,7 +314,7 @@ public class CaptureStatus extends javax.swing.JDialog {
         this.sensors.clear();
         this.sensors.addAll(currentSensors);
         
-        DefaultListModel model = new DefaultListModel();
+        DefaultListModel<String> model = new DefaultListModel<>();
         this.sensors.forEach(model::addElement);
         
         java.awt.EventQueue.invokeLater((Runnable)() -> sensorsList.setModel(model));
@@ -323,7 +325,7 @@ public class CaptureStatus extends javax.swing.JDialog {
      * @param dataReadCallback The latest sensor reading.
      */
     void sensorReading(Map<String, String> readData) {
-        DefaultListModel model = new DefaultListModel();
+        DefaultListModel<String> model = new DefaultListModel<>();
         readData.forEach((String sensor, String data) -> model.addElement(
                 sensor + " - " + data));
         

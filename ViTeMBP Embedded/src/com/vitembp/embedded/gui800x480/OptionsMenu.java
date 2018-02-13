@@ -27,6 +27,9 @@ public class OptionsMenu extends javax.swing.JDialog {
 
     /**
      * Creates new form CaptureStatus
+     * @param parent The parent of this window.
+     * @param modal A boolean value indicating whether this window should be
+     * modal.
      */
     public OptionsMenu(java.awt.Frame parent, boolean modal) {
         super(parent, modal);

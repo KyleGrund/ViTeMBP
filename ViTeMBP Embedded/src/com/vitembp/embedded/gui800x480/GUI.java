@@ -50,8 +50,10 @@ public class GUI {
     
     /**
      * Starts the GUI.
-     * @param sensorsChangedCallback
-     * @param dataReadCallback
+     * @param sensorsChangedCallback Callback which registers listener for
+     * sensor change events.
+     * @param dataReadCallback Callback which registers listener for processing
+     * periodic data read from sensors.
      */
     public static void start(
             Consumer<Consumer<Set<String>>> sensorsChangedCallback,
